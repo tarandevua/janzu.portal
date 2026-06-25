@@ -1,10 +1,10 @@
 import type { Locale } from "@/lib/i18n/config";
 import type { PractitionerProfile } from "@/server/models/practitioner.model";
 import { savePractitionerProfile } from "@/features/practitioners/actions";
+import { PublicProfileCheckbox } from "@/features/practitioners/components/public-profile-checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -103,10 +103,10 @@ export function PractitionerProfileForm({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-md border p-3">
-            <Checkbox id="isPublic" name="isPublic" defaultChecked={profile?.isPublic ?? false} />
-            <Label htmlFor="isPublic">{dictionary.isPublic}</Label>
-          </div>
+          <PublicProfileCheckbox
+            label={dictionary.isPublic}
+            defaultChecked={profile?.isPublic ?? false}
+          />
 
           <Button type="submit" className="w-fit">
             {dictionary.save}

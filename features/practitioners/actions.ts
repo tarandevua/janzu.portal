@@ -29,7 +29,7 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
     languages: parseLanguages(formData.get("languages")),
     website: formData.get("website"),
     profileImageUrl: formData.get("profileImageUrl"),
-    isPublic: formData.get("isPublic") === "on",
+    isPublic: formData.get("isPublic") === "true",
   });
 
   if (!parsed.success) {
