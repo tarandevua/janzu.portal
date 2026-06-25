@@ -63,5 +63,41 @@
       "unknownCity": "Practicante de Janzu",
       "profileTitle": "Perfil de practicante"
     }
+  },
+  "clients": {
+    "title": "CRM de clientes",
+    "formTitle": "Agregar cliente",
+    "formDescription": "Crea un registro privado de cliente para tu propia practica.",
+    "listTitle": "Clientes privados",
+    "listDescription": "Solo tu y administradores autorizados pueden acceder a estos registros.",
+    "name": "Nombre",
+    "email": "Correo electronico",
+    "phone": "Telefono",
+    "notes": "Notas",
+    "create": "Crear cliente",
+    "created": "Cliente creado.",
+    "invalid": "Revisa los campos del cliente e intentalo nuevamente.",
+    "empty": "Aun no hay clientes.",
+    "private": "Privado"
+  },
+  "sessions": {
+    "title": "Sesiones",
+    "formTitle": "Registrar sesion",
+    "formDescription": "Registra una sesion de Janzu para tu historial privado de practica.",
+    "listTitle": "Historial de sesiones",
+    "listDescription": "La validacion por feedback se conectara en el proximo sprint.",
+    "client": "Cliente",
+    "noClient": "Sin cliente",
+    "date": "Fecha",
+    "duration": "Duracion en minutos",
+    "location": "Ubicacion",
+    "notes": "Notas",
+    "create": "Registrar sesion",
+    "created": "Sesion registrada.",
+    "invalid": "Revisa los campos de la sesion e intentalo nuevamente.",
+    "empty": "Aun no hay sesiones.",
+    "validation": "Validacion",
+    "pending": "Pendiente",
+    "validated": "Validada"
   }
 }

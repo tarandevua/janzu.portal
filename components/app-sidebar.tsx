@@ -32,7 +32,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import type { Locale } from "@/lib/i18n/config"
-import type { Role, RoleAccess } from "@/server/models/rbac.model"
+import type { RoleAccess } from "@/server/models/rbac.model"
 
 function getData(locale: Locale, access: RoleAccess[]) {
   return {
@@ -54,12 +54,12 @@ function getData(locale: Locale, access: RoleAccess[]) {
     },
     {
       title: "Clients",
-      url: "#",
+      url: `/${locale}/dashboard/clients`,
       icon: ListIcon,
     },
     {
       title: "Sessions",
-      url: "#",
+      url: `/${locale}/dashboard/sessions`,
       icon: ClipboardListIcon,
     },
     {
@@ -112,7 +112,6 @@ function getData(locale: Locale, access: RoleAccess[]) {
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   locale: Locale
-  activeRole: Role
   access: RoleAccess[]
   user: {
     name: string

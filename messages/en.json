@@ -63,5 +63,41 @@
       "unknownCity": "Janzu practitioner",
       "profileTitle": "Practitioner profile"
     }
+  },
+  "clients": {
+    "title": "Client CRM",
+    "formTitle": "Add client",
+    "formDescription": "Create a private client record for your own practice.",
+    "listTitle": "Private clients",
+    "listDescription": "Only you and authorized admins can access these records.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "notes": "Notes",
+    "create": "Create client",
+    "created": "Client created.",
+    "invalid": "Check the client fields and try again.",
+    "empty": "No clients yet.",
+    "private": "Private"
+  },
+  "sessions": {
+    "title": "Sessions",
+    "formTitle": "Log session",
+    "formDescription": "Record a Janzu session for your private practice history.",
+    "listTitle": "Session history",
+    "listDescription": "Feedback validation will be connected in the next sprint.",
+    "client": "Client",
+    "noClient": "No client",
+    "date": "Date",
+    "duration": "Duration minutes",
+    "location": "Location",
+    "notes": "Notes",
+    "create": "Log session",
+    "created": "Session logged.",
+    "invalid": "Check the session fields and try again.",
+    "empty": "No sessions yet.",
+    "validation": "Validation",
+    "pending": "Pending",
+    "validated": "Validated"
   }
 }

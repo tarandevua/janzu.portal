@@ -55,7 +55,6 @@ export default async function RoleDashboardPage({ params }: RoleDashboardPagePro
   return (
     <JanzuDashboardBlock
       locale={locale}
-      activeRole={role}
       access={access}
       user={{
         name: data.user.user_metadata.full_name ?? data.user.email ?? "Janzu Practitioner",

@@ -120,6 +120,78 @@ export type Database = {
         };
         Relationships: [];
       };
+      clients: {
+        Row: {
+          id: string;
+          practitioner_id: string;
+          name: string;
+          email: string | null;
+          phone: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          practitioner_id: string;
+          name: string;
+          email?: string | null;
+          phone?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          practitioner_id?: string;
+          name?: string;
+          email?: string | null;
+          phone?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      sessions: {
+        Row: {
+          id: string;
+          practitioner_id: string;
+          client_id: string | null;
+          session_date: string;
+          duration_minutes: number;
+          location: string | null;
+          notes: string | null;
+          is_validated: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          practitioner_id: string;
+          client_id?: string | null;
+          session_date: string;
+          duration_minutes: number;
+          location?: string | null;
+          notes?: string | null;
+          is_validated?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          practitioner_id?: string;
+          client_id?: string | null;
+          session_date?: string;
+          duration_minutes?: number;
+          location?: string | null;
+          notes?: string | null;
+          is_validated?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -127,6 +199,13 @@ export type Database = {
         Args: {
           target_user_id: string;
           role_name: "admin" | "manager" | "facilitator" | "practitioner";
+        };
+        Returns: boolean;
+      };
+      session_client_matches_practitioner: {
+        Args: {
+          target_practitioner_id: string;
+          target_client_id: string | null;
         };
         Returns: boolean;
       };

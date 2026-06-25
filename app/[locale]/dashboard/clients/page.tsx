@@ -1,19 +1,20 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
-import { PractitionerProfileForm } from "@/features/practitioners/components/practitioner-profile-form";
+import { ClientForm } from "@/features/clients/components/client-form";
+import { ClientList } from "@/features/clients/components/client-list";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getMyPractitionerProfile } from "@/server/services/practitioner.service";
+import { listMyClients } from "@/server/services/client.service";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getPrimaryRole, getRoleAccessList } from "@/server/services/rbac.service";
 
-type ProfilePageProps = {
+type ClientsPageProps = {
   params: Promise<{ locale: Locale }>;
   searchParams: Promise<{ status?: string }>;
 };
 
-export default async function ProfilePage({ params, searchParams }: ProfilePageProps) {
+export default async function ClientsPage({ params, searchParams }: ClientsPageProps) {
   const [{ locale }, { status }] = await Promise.all([params, searchParams]);
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
@@ -25,9 +26,9 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
     redirect(`/${locale}/login?status=auth-required`);
   }
 
-  const [profile, roles] = await Promise.all([
-    getMyPractitionerProfile(supabase, data.user.id),
+  const [roles, clients] = await Promise.all([
     listUserRoles(supabase, data.user.id),
+    listMyClients(supabase, data.user.id),
   ]);
   const primaryRole = getPrimaryRole(roles);
 
@@ -39,7 +40,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
     <JanzuDashboardFrame
       locale={locale}
       access={getRoleAccessList(roles)}
-      title={dictionary.practitioners.form.title}
+      title={dictionary.clients.title}
       user={{
         name: data.user.user_metadata.full_name ?? data.user.email ?? "Janzu Practitioner",
         email: data.user.email ?? "",
@@ -47,13 +48,9 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
       }}
     >
       <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-        <PractitionerProfileForm
-          locale={locale}
-          profile={profile}
-          dictionary={dictionary.practitioners.form}
-          status={status}
-        />
+        <div className="@container/main grid flex-1 gap-4 p-4 md:grid-cols-[360px_1fr] md:p-6">
+          <ClientForm locale={locale} status={status} dictionary={dictionary.clients} />
+          <ClientList clients={clients} dictionary={dictionary.clients} />
         </div>
       </div>
     </JanzuDashboardFrame>

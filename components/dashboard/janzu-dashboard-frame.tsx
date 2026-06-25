@@ -3,7 +3,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import type { Locale } from "@/lib/i18n/config"
-import type { Role, RoleAccess } from "@/server/models/rbac.model"
+import type { RoleAccess } from "@/server/models/rbac.model"
 
 type DashboardUser = {
   name: string
@@ -13,7 +13,6 @@ type DashboardUser = {
 
 type JanzuDashboardFrameProps = {
   locale: Locale
-  activeRole: Role
   access: RoleAccess[]
   user: DashboardUser
   title: string
@@ -22,7 +21,6 @@ type JanzuDashboardFrameProps = {
 
 export function JanzuDashboardFrame({
   locale,
-  activeRole,
   access,
   user,
   title,
@@ -33,7 +31,6 @@ export function JanzuDashboardFrame({
       <AppSidebar
         variant="inset"
         locale={locale}
-        activeRole={activeRole}
         access={access}
         user={user}
       />

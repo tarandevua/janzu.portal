@@ -4,11 +4,10 @@ import { janzuWorkflowData } from "@/components/dashboard/janzu-dashboard-data"
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame"
 import { SectionCards } from "@/components/section-cards"
 import type { Locale } from "@/lib/i18n/config"
-import type { Role, RoleAccess } from "@/server/models/rbac.model"
+import type { RoleAccess } from "@/server/models/rbac.model"
 
 type JanzuDashboardBlockProps = {
   locale: Locale
-  activeRole: Role
   access: RoleAccess[]
   user: {
     name: string
@@ -20,7 +19,6 @@ type JanzuDashboardBlockProps = {
 
 export function JanzuDashboardBlock({
   locale,
-  activeRole,
   access,
   user,
   title,
@@ -28,7 +26,6 @@ export function JanzuDashboardBlock({
   return (
     <JanzuDashboardFrame
       locale={locale}
-      activeRole={activeRole}
       access={access}
       user={user}
       title={title}
