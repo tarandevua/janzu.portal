@@ -1,0 +1,67 @@
+{
+  "auth": {
+    "login": {
+      "heroTitle": "Un espacio operativo sereno para practicantes de Janzu en todo el mundo.",
+      "heroBody": "Gestiona clientes, sesiones, progreso de certificacion, ubicaciones, eventos y flujos comunitarios desde un portal seguro.",
+      "title": "Iniciar sesion con enlace magico",
+      "description": "Ingresa tu correo y enviaremos un enlace seguro de acceso.",
+      "emailLabel": "Correo electronico",
+      "emailPlaceholder": "tu@ejemplo.com",
+      "submit": "Enviar enlace magico",
+      "sending": "Enviando...",
+      "success": "Revisa tu correo para acceder con el enlace.",
+      "invalidEmail": "Ingresa un correo electronico valido.",
+      "genericError": "No pudimos enviar el enlace magico. Intentalo nuevamente.",
+      "authRequired": "Inicia sesion para continuar.",
+      "invalidLink": "Ese enlace de acceso no es valido o expiro."
+    }
+  },
+  "dashboard": {
+    "title": "Base del panel lista",
+    "description": "Primero queda conectada la autenticacion. Los paneles por rol se agregaran despues de implementar RBAC.",
+    "pendingTitle": "Acceso pendiente",
+    "pendingDescription": "Tu cuenta esta activa, pero aun no tiene un rol asignado en el portal.",
+    "roles": {
+      "admin": {
+        "title": "Panel de administracion",
+        "description": "Gestiona usuarios, aprobaciones, decisiones de certificacion y operaciones de la plataforma."
+      },
+      "manager": {
+        "title": "Panel de gestion",
+        "description": "Coordina revisiones operativas, eventos, ubicaciones aprobadas y apoyo a practicantes."
+      },
+      "facilitator": {
+        "title": "Panel de facilitacion",
+        "description": "Apoya sesiones, guia para practicantes y flujos de facilitacion."
+      },
+      "practitioner": {
+        "title": "Panel de practicante",
+        "description": "Gestiona tu perfil, clientes privados, sesiones, feedback y progreso de certificacion."
+      }
+    }
+  },
+  "practitioners": {
+    "form": {
+      "title": "Perfil de practicante",
+      "description": "Gestiona la informacion que puede aparecer en tu perfil publico de practicante.",
+      "bio": "Bio",
+      "country": "Pais",
+      "city": "Ciudad",
+      "latitude": "Latitud",
+      "longitude": "Longitud",
+      "languages": "Idiomas",
+      "website": "Sitio web",
+      "profileImageUrl": "URL de imagen de perfil",
+      "isPublic": "Hacer publico este perfil",
+      "save": "Guardar perfil",
+      "saved": "Perfil guardado.",
+      "invalid": "Revisa los campos del perfil e intentalo nuevamente."
+    },
+    "public": {
+      "title": "Encontrar practicantes de Janzu",
+      "description": "Explora perfiles publicos por ubicacion, idioma y enfoque de practica.",
+      "unknownCity": "Practicante de Janzu",
+      "profileTitle": "Perfil de practicante"
+    }
+  }
+}

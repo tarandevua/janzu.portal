@@ -1,0 +1,67 @@
+{
+  "auth": {
+    "login": {
+      "heroTitle": "A calm operating home for Janzu practitioners worldwide.",
+      "heroBody": "Manage clients, sessions, certification progress, locations, events, and community workflows from one secure portal.",
+      "title": "Sign in with magic link",
+      "description": "Enter your email and we will send a secure sign-in link.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "submit": "Send magic link",
+      "sending": "Sending...",
+      "success": "Check your email for the sign-in link.",
+      "invalidEmail": "Enter a valid email address.",
+      "genericError": "We could not send the magic link. Try again.",
+      "authRequired": "Please sign in to continue.",
+      "invalidLink": "That sign-in link is invalid or expired."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard foundation ready",
+    "description": "Authentication is wired first. Role-specific dashboards will be introduced after RBAC is implemented.",
+    "pendingTitle": "Access pending",
+    "pendingDescription": "Your account is active, but no portal role has been assigned yet.",
+    "roles": {
+      "admin": {
+        "title": "Admin dashboard",
+        "description": "Manage users, approvals, certification decisions, and platform operations."
+      },
+      "manager": {
+        "title": "Manager dashboard",
+        "description": "Coordinate operational reviews, events, approved locations, and practitioner support."
+      },
+      "facilitator": {
+        "title": "Facilitator dashboard",
+        "description": "Support sessions, practitioner guidance, and facilitation workflows."
+      },
+      "practitioner": {
+        "title": "Practitioner dashboard",
+        "description": "Manage your profile, private clients, sessions, feedback, and certification progress."
+      }
+    }
+  },
+  "practitioners": {
+    "form": {
+      "title": "Practitioner profile",
+      "description": "Manage the information that can appear on your public practitioner profile.",
+      "bio": "Bio",
+      "country": "Country",
+      "city": "City",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "languages": "Languages",
+      "website": "Website",
+      "profileImageUrl": "Profile image URL",
+      "isPublic": "Make this profile public",
+      "save": "Save profile",
+      "saved": "Profile saved.",
+      "invalid": "Check the profile fields and try again."
+    },
+    "public": {
+      "title": "Find Janzu practitioners",
+      "description": "Explore public practitioner profiles by location, language, and practice focus.",
+      "unknownCity": "Janzu practitioner",
+      "profileTitle": "Practitioner profile"
+    }
+  }
+}
