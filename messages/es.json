@@ -225,5 +225,18 @@
     "full": "Completo",
     "rsvpCreated": "Tu RSVP esta confirmado.",
     "rsvpInvalid": "No pudimos procesar ese RSVP."
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "listTitle": "Bandeja de notificaciones",
+    "listDescription": "Sigue feedback de sesiones, aprobaciones, RSVP, progreso de certificacion y novedades comunitarias.",
+    "empty": "Aun no hay notificaciones.",
+    "unread": "Sin leer",
+    "read": "Leida",
+    "createdAt": "Creada",
+    "action": "Accion",
+    "view": "Ver",
+    "markRead": "Marcar como leida",
+    "invalid": "No se pudo actualizar esa notificacion."
   }
 }

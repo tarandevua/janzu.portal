@@ -11,6 +11,7 @@ import {
   HelpCircleIcon,
   LayoutDashboardIcon,
   ListIcon,
+  BellIcon,
   SettingsIcon,
   UsersIcon,
   MapIcon,
@@ -71,6 +72,11 @@ function getData(locale: Locale, access: RoleAccess[]) {
       title: "Events",
       url: `/${locale}/dashboard/events`,
       icon: CalendarDaysIcon,
+    },
+    {
+      title: "Notifications",
+      url: `/${locale}/dashboard/notifications`,
+      icon: BellIcon,
     },
     {
       title: "Community",

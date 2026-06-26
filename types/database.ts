@@ -444,6 +444,63 @@ export type Database = {
         };
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type:
+            | "session_request_received"
+            | "feedback_received"
+            | "location_approved"
+            | "event_invitation"
+            | "event_rsvp_received"
+            | "certification_progress"
+            | "certification_approved";
+          title: string;
+          body: string | null;
+          href: string | null;
+          read_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type:
+            | "session_request_received"
+            | "feedback_received"
+            | "location_approved"
+            | "event_invitation"
+            | "event_rsvp_received"
+            | "certification_progress"
+            | "certification_approved";
+          title: string;
+          body?: string | null;
+          href?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          type?:
+            | "session_request_received"
+            | "feedback_received"
+            | "location_approved"
+            | "event_invitation"
+            | "event_rsvp_received"
+            | "certification_progress"
+            | "certification_approved";
+          title?: string;
+          body?: string | null;
+          href?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -534,6 +591,16 @@ export type Database = {
           updated_at: string;
         }[];
       };
+      insert_notification: {
+        Args: {
+          target_user_id: string;
+          notification_type: Database["public"]["Enums"]["notification_type"];
+          notification_title: string;
+          notification_body?: string | null;
+          notification_href?: string | null;
+        };
+        Returns: string;
+      };
     };
     Enums: {
       app_role: "admin" | "manager" | "facilitator" | "practitioner";
@@ -542,6 +609,14 @@ export type Database = {
       approval_status: "pending" | "approved" | "rejected";
       event_type: "retreat" | "training" | "community_gathering";
       event_status: "draft" | "published" | "cancelled";
+      notification_type:
+        | "session_request_received"
+        | "feedback_received"
+        | "location_approved"
+        | "event_invitation"
+        | "event_rsvp_received"
+        | "certification_progress"
+        | "certification_approved";
     };
     CompositeTypes: Record<string, never>;
   };

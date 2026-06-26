@@ -225,5 +225,18 @@
     "full": "Full",
     "rsvpCreated": "Your RSVP is confirmed.",
     "rsvpInvalid": "We could not process that RSVP."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "listTitle": "Notification inbox",
+    "listDescription": "Track session feedback, approvals, RSVPs, certification progress, and community updates.",
+    "empty": "No notifications yet.",
+    "unread": "Unread",
+    "read": "Read",
+    "createdAt": "Created",
+    "action": "Action",
+    "view": "View",
+    "markRead": "Mark read",
+    "invalid": "That notification could not be updated."
   }
 }
