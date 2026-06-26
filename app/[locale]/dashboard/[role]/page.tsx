@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type { Route } from "next";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
+import { FacilitatorDashboard } from "@/components/dashboard/facilitator-dashboard";
 import { JanzuDashboardBlock } from "@/components/dashboard/janzu-dashboard-block";
 import { PractitionerDashboard } from "@/components/dashboard/practitioner-dashboard";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -8,6 +9,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getAdminDashboardData } from "@/server/services/admin-dashboard.service";
+import { getFacilitatorDashboardData } from "@/server/services/facilitator-dashboard.service";
 import { getPractitionerDashboardData } from "@/server/services/practitioner-dashboard.service";
 import {
   canAccessDashboard,
@@ -77,7 +79,7 @@ export default async function RoleDashboardPage({ params }: RoleDashboardPagePro
     );
   }
 
-  if (role === "admin") {
+  if (role === "admin" || role === "manager") {
     const dashboardData = await getAdminDashboardData(supabase, data.user.id);
 
     return (
@@ -88,6 +90,21 @@ export default async function RoleDashboardPage({ params }: RoleDashboardPagePro
         title={roleDictionary.title}
         data={dashboardData}
         dictionary={dictionary.dashboard.adminData}
+      />
+    );
+  }
+
+  if (role === "facilitator") {
+    const dashboardData = await getFacilitatorDashboardData(supabase);
+
+    return (
+      <FacilitatorDashboard
+        locale={locale}
+        access={access}
+        user={user}
+        title={roleDictionary.title}
+        data={dashboardData}
+        dictionary={dictionary.dashboard.facilitatorData}
       />
     );
   }
