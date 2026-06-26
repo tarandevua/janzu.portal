@@ -28,7 +28,13 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
-const chartData = [
+export type SessionActivityChartPoint = {
+  date: string
+  desktop: number
+  mobile: number
+}
+
+const demoChartData: SessionActivityChartPoint[] = [
   { date: "2024-04-01", desktop: 222, mobile: 150 },
   { date: "2024-04-02", desktop: 97, mobile: 180 },
   { date: "2024-04-03", desktop: 167, mobile: 120 },
@@ -128,15 +134,23 @@ const chartConfig = {
   },
   desktop: {
     label: "Logged",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(var(--primary))",
   },
   mobile: {
     label: "Validated",
-    color: "hsl(var(--chart-2))",
+    color: "#a0442c",
   },
 } satisfies ChartConfig
 
-export function ChartAreaInteractive() {
+type ChartAreaInteractiveProps = {
+  data?: SessionActivityChartPoint[]
+  locale?: string
+}
+
+export function ChartAreaInteractive({
+  data = demoChartData,
+  locale = "en-US",
+}: ChartAreaInteractiveProps) {
   const isMobile = useIsMobile()
   const [timeRange, setTimeRange] = React.useState("30d")
 
@@ -146,9 +160,13 @@ export function ChartAreaInteractive() {
     }
   }, [isMobile])
 
-  const filteredData = chartData.filter((item) => {
+  const referenceDate = React.useMemo(() => {
+    const lastPoint = data.at(-1)
+    return lastPoint ? new Date(lastPoint.date) : new Date("2024-06-30")
+  }, [data])
+
+  const filteredData = data.filter((item) => {
     const date = new Date(item.date)
-    const referenceDate = new Date("2024-06-30")
     let daysToSubtract = 90
     if (timeRange === "30d") {
       daysToSubtract = 30
@@ -250,7 +268,7 @@ export function ChartAreaInteractive() {
               minTickGap={32}
               tickFormatter={(value) => {
                 const date = new Date(value)
-                return date.toLocaleDateString("en-US", {
+                return date.toLocaleDateString(locale, {
                   month: "short",
                   day: "numeric",
                 })
@@ -261,7 +279,7 @@ export function ChartAreaInteractive() {
               content={
                 <ChartTooltipContent
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
+                    return new Date(value).toLocaleDateString(locale, {
                       month: "short",
                       day: "numeric",
                     })
