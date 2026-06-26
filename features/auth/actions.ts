@@ -32,3 +32,11 @@ export async function sendMagicLink(locale: Locale, formData: FormData) {
 
   redirect(`/${locale}/login?status=sent`);
 }
+
+export async function signOut(locale: Locale) {
+  const supabase = await createSupabaseServerClient();
+
+  await supabase.auth.signOut();
+
+  redirect(`/${locale}/login?status=signed-out`);
+}

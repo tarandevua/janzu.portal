@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useTransition } from "react"
 import {
   BellIcon,
   LogOutIcon,
@@ -28,6 +29,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { signOut } from "@/features/auth/actions"
 import type { Locale } from "@/lib/i18n/config"
 
 export function NavUser({
@@ -42,6 +44,7 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const [isLoggingOut, startLogoutTransition] = useTransition()
 
   return (
     <SidebarMenu>
@@ -101,9 +104,17 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={isLoggingOut}
+              onSelect={(event) => {
+                event.preventDefault()
+                startLogoutTransition(() => {
+                  void signOut(locale)
+                })
+              }}
+            >
               <LogOutIcon />
-              Log out
+              {isLoggingOut ? "Logging out..." : "Log out"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

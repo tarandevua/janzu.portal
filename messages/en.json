@@ -13,7 +13,8 @@
       "invalidEmail": "Enter a valid email address.",
       "genericError": "We could not send the magic link. Try again.",
       "authRequired": "Please sign in to continue.",
-      "invalidLink": "That sign-in link is invalid or expired."
+      "invalidLink": "That sign-in link is invalid or expired.",
+      "signedOut": "You have been signed out."
     }
   },
   "dashboard": {

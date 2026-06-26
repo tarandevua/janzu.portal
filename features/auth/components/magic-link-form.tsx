@@ -15,6 +15,7 @@ type MagicLinkDictionary = {
   genericError: string;
   authRequired: string;
   invalidLink: string;
+  signedOut: string;
 };
 
 type MagicLinkFormProps = {
@@ -28,13 +29,14 @@ const statusCopy: Record<string, keyof MagicLinkDictionary> = {
   "invalid-email": "invalidEmail",
   error: "genericError",
   "auth-required": "authRequired",
-  "invalid-link": "invalidLink"
+  "invalid-link": "invalidLink",
+  "signed-out": "signedOut"
 };
 
 export function MagicLinkForm({ dictionary, locale, status }: MagicLinkFormProps) {
   const messageKey = status ? statusCopy[status] : undefined;
   const message = messageKey ? dictionary[messageKey] : undefined;
-  const isError = status ? status !== "sent" : false;
+  const isError = status ? !["sent", "signed-out"].includes(status) : false;
   const action = sendMagicLink.bind(null, locale);
 
   return (

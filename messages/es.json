@@ -13,7 +13,8 @@
       "invalidEmail": "Ingresa un correo electronico valido.",
       "genericError": "No pudimos enviar el enlace magico. Intentalo nuevamente.",
       "authRequired": "Inicia sesion para continuar.",
-      "invalidLink": "Ese enlace de acceso no es valido o expiro."
+      "invalidLink": "Ese enlace de acceso no es valido o expiro.",
+      "signedOut": "Has cerrado sesion."
     }
   },
   "dashboard": {
