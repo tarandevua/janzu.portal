@@ -39,6 +39,15 @@ export async function submitFeedbackForm(locale: Locale, token: string, formData
     rating: formData.get("rating"),
     experienceText: formData.get("experienceText"),
     emotionalImpact: formData.get("emotionalImpact"),
+    feltInFacilitatorArms: formData.get("feltInFacilitatorArms"),
+    supportAtEnd: formData.get("supportAtEnd"),
+    supportOtherText: formData.get("supportOtherText"),
+    continueWaterProcess: formData.get("continueWaterProcess"),
+    interestedLearningJanzu: formData.get("interestedLearningJanzu") === "on",
+    learningName: formData.get("learningName"),
+    learningPhone: formData.get("learningPhone"),
+    anythingElse: formData.get("anythingElse"),
+    gdprAgreed: formData.get("gdprAgreed") === "on",
   });
 
   if (!parsed.success) {

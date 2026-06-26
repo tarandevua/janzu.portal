@@ -5,6 +5,15 @@ export type SessionFeedback = {
   rating: number;
   experienceText: string | null;
   emotionalImpact: string | null;
+  feltInFacilitatorArms: string | null;
+  supportAtEnd: "yes" | "not_enough" | "other" | null;
+  supportOtherText: string | null;
+  continueWaterProcess: "another_session" | "no_thank_you" | null;
+  interestedLearningJanzu: boolean;
+  learningName: string | null;
+  learningPhone: string | null;
+  anythingElse: string | null;
+  gdprAgreed: boolean;
   submittedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -14,6 +23,15 @@ export type FeedbackInput = {
   rating: number;
   experienceText?: string | null;
   emotionalImpact?: string | null;
+  feltInFacilitatorArms?: string | null;
+  supportAtEnd: "yes" | "not_enough" | "other";
+  supportOtherText?: string | null;
+  continueWaterProcess: "another_session" | "no_thank_you";
+  interestedLearningJanzu: boolean;
+  learningName?: string | null;
+  learningPhone?: string | null;
+  anythingElse?: string | null;
+  gdprAgreed: boolean;
 };
 
 export type FeedbackStatus = {
