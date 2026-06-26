@@ -58,6 +58,15 @@ export type DashboardFeedback = {
   rating: number;
   experienceText: string | null;
   emotionalImpact: string | null;
+  feltInFacilitatorArms: string | null;
+  supportAtEnd: string | null;
+  supportOtherText: string | null;
+  continueWaterProcess: string | null;
+  interestedLearningJanzu: boolean;
+  learningName: string | null;
+  learningPhone: string | null;
+  anythingElse: string | null;
+  gdprAgreed: boolean;
   submittedAt: string;
 };
 

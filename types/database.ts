@@ -652,6 +652,15 @@ export type Database = {
           rating: number;
           experience_text: string | null;
           emotional_impact: string | null;
+          felt_in_facilitator_arms: string | null;
+          support_at_end: string | null;
+          support_other_text: string | null;
+          continue_water_process: string | null;
+          interested_learning_janzu: boolean;
+          learning_name: string | null;
+          learning_phone: string | null;
+          anything_else: string | null;
+          gdpr_agreed: boolean;
           submitted_at: string;
           total_count: number;
         }[];

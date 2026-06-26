@@ -10,6 +10,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
   Table,
   TableBody,
   TableCell,
@@ -31,6 +39,23 @@ type FeedbackDashboardDictionary = {
   rating: string;
   experienceText: string;
   emotionalImpact: string;
+  feltInFacilitatorArms: string;
+  supportAtEnd: string;
+  supportOtherText: string;
+  continueWaterProcess: string;
+  interestedLearningJanzu: string;
+  learningName: string;
+  learningPhone: string;
+  anythingElse: string;
+  gdprAgreement: string;
+  yes: string;
+  no: string;
+  supportYes: string;
+  supportNotEnough: string;
+  supportOther: string;
+  continueAnotherSession: string;
+  continueNoThankYou: string;
+  details: string;
   submittedAt: string;
   emptyDashboard: string;
   previous: string;
@@ -63,6 +88,90 @@ function formatDateTime(locale: Locale, value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function formatSupport(value: string | null, dictionary: FeedbackDashboardDictionary) {
+  if (value === "yes") {
+    return dictionary.supportYes;
+  }
+
+  if (value === "not_enough") {
+    return dictionary.supportNotEnough;
+  }
+
+  if (value === "other") {
+    return dictionary.supportOther;
+  }
+
+  return "";
+}
+
+function formatContinueProcess(value: string | null, dictionary: FeedbackDashboardDictionary) {
+  if (value === "another_session") {
+    return dictionary.continueAnotherSession;
+  }
+
+  if (value === "no_thank_you") {
+    return dictionary.continueNoThankYou;
+  }
+
+  return "";
+}
+
+function DetailItem({ label, value }: { label: string; value: string | number | null | undefined }) {
+  return (
+    <div className="grid gap-1 rounded-md border p-3">
+      <dt className="text-xs font-medium uppercase text-muted-foreground">{label}</dt>
+      <dd className="text-sm leading-6">{value || ""}</dd>
+    </div>
+  );
+}
+
+function FeedbackDetailSheet({
+  item,
+  locale,
+  dictionary,
+}: {
+  item: DashboardFeedback;
+  locale: Locale;
+  dictionary: FeedbackDashboardDictionary;
+}) {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="sm">
+          {dictionary.details}
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
+        <SheetHeader>
+          <SheetTitle>{dictionary.dashboardTitle}</SheetTitle>
+          <SheetDescription>{formatDateTime(locale, item.submittedAt)}</SheetDescription>
+        </SheetHeader>
+        <dl className="mt-6 grid gap-3">
+          <DetailItem label={dictionary.sessionDate} value={formatDate(locale, item.sessionDate)} />
+          <DetailItem label={dictionary.client} value={item.clientName} />
+          <DetailItem label={dictionary.rating} value={item.rating} />
+          <DetailItem label={dictionary.feltInFacilitatorArms} value={item.feltInFacilitatorArms} />
+          <DetailItem label={dictionary.experienceText} value={item.experienceText} />
+          <DetailItem label={dictionary.supportAtEnd} value={formatSupport(item.supportAtEnd, dictionary)} />
+          <DetailItem label={dictionary.supportOtherText} value={item.supportOtherText} />
+          <DetailItem label={dictionary.anythingElse} value={item.anythingElse} />
+          <DetailItem
+            label={dictionary.continueWaterProcess}
+            value={formatContinueProcess(item.continueWaterProcess, dictionary)}
+          />
+          <DetailItem
+            label={dictionary.interestedLearningJanzu}
+            value={item.interestedLearningJanzu ? dictionary.yes : dictionary.no}
+          />
+          <DetailItem label={dictionary.learningName} value={item.learningName} />
+          <DetailItem label={dictionary.learningPhone} value={item.learningPhone} />
+          <DetailItem label={dictionary.gdprAgreement} value={item.gdprAgreed ? dictionary.yes : dictionary.no} />
+        </dl>
+      </SheetContent>
+    </Sheet>
+  );
 }
 
 export function DashboardFeedbackList({
@@ -121,8 +230,8 @@ export function DashboardFeedbackList({
                   <TableHead>{dictionary.client}</TableHead>
                   <TableHead>{dictionary.rating}</TableHead>
                   <TableHead>{dictionary.experienceText}</TableHead>
-                  <TableHead>{dictionary.emotionalImpact}</TableHead>
                   <TableHead>{dictionary.submittedAt}</TableHead>
+                  <TableHead>{dictionary.details}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -147,11 +256,11 @@ export function DashboardFeedbackList({
                     <TableCell className="max-w-[18rem] text-sm text-muted-foreground">
                       {item.experienceText ?? ""}
                     </TableCell>
-                    <TableCell className="max-w-[18rem] text-sm text-muted-foreground">
-                      {item.emotionalImpact ?? ""}
-                    </TableCell>
                     <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                       {formatDateTime(locale, item.submittedAt)}
+                    </TableCell>
+                    <TableCell>
+                      <FeedbackDetailSheet item={item} locale={locale} dictionary={dictionary} />
                     </TableCell>
                   </TableRow>
                 ))}

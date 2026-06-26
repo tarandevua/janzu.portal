@@ -283,7 +283,7 @@ export function PractitionerDashboard({
                             <TableCell>{formatDate(locale, feedback.submittedAt)}</TableCell>
                             <TableCell>{feedback.rating}</TableCell>
                             <TableCell className="max-w-xl text-sm text-muted-foreground">
-                              {feedback.experienceText ?? feedback.emotionalImpact ?? ""}
+                              {feedback.experienceText ?? ""}
                             </TableCell>
                           </TableRow>
                         ))}

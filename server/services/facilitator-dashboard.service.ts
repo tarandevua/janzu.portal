@@ -30,7 +30,6 @@ type RecentFeedbackRow = {
   id: string;
   rating: number;
   experience_text: string | null;
-  emotional_impact: string | null;
   submitted_at: string;
   sessions: {
     session_date: string;
@@ -142,7 +141,7 @@ function toRecentFeedback(row: RecentFeedbackRow): FacilitatorRecentFeedback {
   return {
     id: row.id,
     rating: row.rating,
-    text: row.experience_text ?? row.emotional_impact,
+    text: row.experience_text,
     submittedAt: row.submitted_at,
     sessionDate: row.sessions?.session_date ?? row.submitted_at,
     practitionerName: practitioner.name,
@@ -208,7 +207,7 @@ export async function getFacilitatorDashboardData(
   const recentFeedbackQuery = supabase
     .from("session_feedback")
     .select(
-      "id, rating, experience_text, emotional_impact, submitted_at, sessions(session_date, practitioners(users(email, full_name)))"
+      "id, rating, experience_text, submitted_at, sessions(session_date, practitioners(users(email, full_name)))"
     )
     .not("submitted_at", "is", null)
     .order("submitted_at", { ascending: false })

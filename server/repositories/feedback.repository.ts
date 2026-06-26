@@ -87,6 +87,15 @@ function toDashboardFeedback(row: DashboardFeedbackRow): DashboardFeedback {
     rating: row.rating,
     experienceText: row.experience_text,
     emotionalImpact: row.emotional_impact,
+    feltInFacilitatorArms: row.felt_in_facilitator_arms,
+    supportAtEnd: row.support_at_end,
+    supportOtherText: row.support_other_text,
+    continueWaterProcess: row.continue_water_process,
+    interestedLearningJanzu: row.interested_learning_janzu,
+    learningName: row.learning_name,
+    learningPhone: row.learning_phone,
+    anythingElse: row.anything_else,
+    gdprAgreed: row.gdpr_agreed,
     submittedAt: row.submitted_at,
   };
 }

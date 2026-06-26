@@ -274,7 +274,7 @@ export function AdminDashboard({
                           </TableCell>
                           <TableCell>{feedback.rating}</TableCell>
                           <TableCell className="max-w-sm text-sm text-muted-foreground">
-                            {feedback.experienceText ?? feedback.emotionalImpact ?? ""}
+                            {feedback.experienceText ?? ""}
                           </TableCell>
                         </TableRow>
                       ))}
