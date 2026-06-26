@@ -98,7 +98,7 @@ function getData(locale: Locale, access: RoleAccess[]) {
     },
     {
       name: "Certification",
-      url: "#",
+      url: `/${locale}/dashboard/certification`,
       icon: DatabaseIcon,
     },
     {

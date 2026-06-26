@@ -116,5 +116,27 @@
     "submitted": "Gracias. Feedback enviado.",
     "invalid": "Revisa los campos de feedback e intentalo nuevamente.",
     "alreadySubmitted": "El feedback ya fue enviado para esta sesion."
+  },
+  "certification": {
+    "title": "Certificacion",
+    "description": "La certificacion requiere 50 sesiones validadas y aprobacion final de administracion o gestion.",
+    "validated": "Sesiones validadas",
+    "required": "Requeridas",
+    "remaining": "Restantes",
+    "status": "Estado",
+    "inProgress": "En progreso",
+    "eligible": "Elegible para aprobacion",
+    "approved": "Aprobada",
+    "approvalTitle": "Aprobaciones de certificacion",
+    "approvalDescription": "Revisa practicantes elegibles y aprueba la certificacion final despues de 50 sesiones validadas.",
+    "practitioner": "Practicante",
+    "location": "Ubicacion",
+    "sessions": "Sesiones",
+    "action": "Accion",
+    "approve": "Aprobar",
+    "emptyQueue": "No hay practicantes elegibles esperando aprobacion de certificacion.",
+    "approvalSaved": "Certificacion aprobada.",
+    "approvalInvalid": "No se pudo procesar la aprobacion de certificacion.",
+    "approvalForbidden": "Se requiere acceso de administracion o gestion para aprobar certificaciones."
   }
 }

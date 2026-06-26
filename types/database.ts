@@ -228,6 +228,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      certification_progress: {
+        Row: {
+          id: string;
+          practitioner_id: string;
+          validated_sessions_count: number;
+          required_sessions_count: number;
+          status: "in_progress" | "eligible" | "approved";
+          approved_by: string | null;
+          approved_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          practitioner_id: string;
+          validated_sessions_count?: number;
+          required_sessions_count?: number;
+          status?: "in_progress" | "eligible" | "approved";
+          approved_by?: string | null;
+          approved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          practitioner_id?: string;
+          validated_sessions_count?: number;
+          required_sessions_count?: number;
+          status?: "in_progress" | "eligible" | "approved";
+          approved_by?: string | null;
+          approved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -263,9 +299,44 @@ export type Database = {
           submitted_at: string | null;
         }[];
       };
+      sync_certification_progress: {
+        Args: {
+          target_practitioner_id: string;
+        };
+        Returns: Database["public"]["Tables"]["certification_progress"]["Row"];
+      };
+      approve_certification: {
+        Args: {
+          target_practitioner_id: string;
+          approver_user_id: string;
+        };
+        Returns: Database["public"]["Tables"]["certification_progress"]["Row"];
+      };
+      list_certification_approval_candidates: {
+        Args: {
+          reviewer_user_id: string;
+        };
+        Returns: {
+          id: string;
+          practitioner_id: string;
+          user_id: string;
+          practitioner_name: string;
+          practitioner_email: string;
+          country: string | null;
+          city: string | null;
+          validated_sessions_count: number;
+          required_sessions_count: number;
+          status: "in_progress" | "eligible" | "approved";
+          approved_by: string | null;
+          approved_at: string | null;
+          created_at: string;
+          updated_at: string;
+        }[];
+      };
     };
     Enums: {
       app_role: "admin" | "manager" | "facilitator" | "practitioner";
+      certification_status: "in_progress" | "eligible" | "approved";
     };
     CompositeTypes: Record<string, never>;
   };

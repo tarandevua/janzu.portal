@@ -116,5 +116,27 @@
     "submitted": "Thank you. Feedback submitted.",
     "invalid": "Check the feedback fields and try again.",
     "alreadySubmitted": "Feedback was already submitted for this session."
+  },
+  "certification": {
+    "title": "Certification",
+    "description": "Certification requires 50 validated sessions and final admin or manager approval.",
+    "validated": "Validated sessions",
+    "required": "Required",
+    "remaining": "Remaining",
+    "status": "Status",
+    "inProgress": "In progress",
+    "eligible": "Eligible for approval",
+    "approved": "Approved",
+    "approvalTitle": "Certification approvals",
+    "approvalDescription": "Review eligible practitioners and approve final certification after 50 validated sessions.",
+    "practitioner": "Practitioner",
+    "location": "Location",
+    "sessions": "Sessions",
+    "action": "Action",
+    "approve": "Approve",
+    "emptyQueue": "No eligible practitioners are waiting for certification approval.",
+    "approvalSaved": "Certification approved.",
+    "approvalInvalid": "Certification approval could not be processed.",
+    "approvalForbidden": "Admin or manager access is required to approve certification."
   }
 }

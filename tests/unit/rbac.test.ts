@@ -29,6 +29,7 @@ describe("RBAC service", () => {
   it("checks roles and permissions", () => {
     expect(hasRole(["facilitator"], "facilitator")).toBe(true);
     expect(hasPermission(["admin"], "certifications:approve")).toBe(true);
+    expect(hasPermission(["manager"], "certifications:approve")).toBe(true);
     expect(hasPermission(["practitioner"], "certifications:approve")).toBe(false);
   });
 

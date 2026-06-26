@@ -10,7 +10,7 @@ export const roleAccess: Record<Role, Omit<RoleAccess, "role">> = {
   manager: {
     label: "Manager",
     dashboardPath: "manager",
-    permissions: ["locations:approve", "events:manage", "sessions:facilitate"]
+    permissions: ["locations:approve", "certifications:approve", "events:manage", "sessions:facilitate"]
   },
   facilitator: {
     label: "Facilitator",
