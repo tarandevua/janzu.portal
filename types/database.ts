@@ -228,6 +228,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      session_requests: {
+        Row: {
+          id: string;
+          practitioner_id: string;
+          requester_name: string;
+          requester_email: string;
+          requester_phone: string | null;
+          preferred_date: string | null;
+          message: string | null;
+          status: "pending" | "accepted" | "declined";
+          reviewed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          practitioner_id: string;
+          requester_name: string;
+          requester_email: string;
+          requester_phone?: string | null;
+          preferred_date?: string | null;
+          message?: string | null;
+          status?: "pending" | "accepted" | "declined";
+          reviewed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          practitioner_id?: string;
+          requester_name?: string;
+          requester_email?: string;
+          requester_phone?: string | null;
+          preferred_date?: string | null;
+          message?: string | null;
+          status?: "pending" | "accepted" | "declined";
+          reviewed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       certification_progress: {
         Row: {
           id: string;
@@ -609,6 +651,7 @@ export type Database = {
       approval_status: "pending" | "approved" | "rejected";
       event_type: "retreat" | "training" | "community_gathering";
       event_status: "draft" | "published" | "cancelled";
+      session_request_status: "pending" | "accepted" | "declined";
       notification_type:
         | "session_request_received"
         | "feedback_received"

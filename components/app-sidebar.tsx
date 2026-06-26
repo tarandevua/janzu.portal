@@ -8,11 +8,8 @@ import {
   ClipboardListIcon,
   DatabaseIcon,
   FileTextIcon,
-  HelpCircleIcon,
   LayoutDashboardIcon,
-  ListIcon,
   BellIcon,
-  SettingsIcon,
   UsersIcon,
   MapIcon,
   MapPinnedIcon,
@@ -49,14 +46,9 @@ function getData(locale: Locale, access: RoleAccess[]) {
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Profile",
-      url: `/${locale}/dashboard/profile`,
-      icon: UserCircleIcon,
-    },
-    {
       title: "Clients",
       url: `/${locale}/dashboard/clients`,
-      icon: ListIcon,
+      icon: UsersIcon,
     },
     {
       title: "Sessions",
@@ -73,29 +65,8 @@ function getData(locale: Locale, access: RoleAccess[]) {
       url: `/${locale}/dashboard/events`,
       icon: CalendarDaysIcon,
     },
-    {
-      title: "Notifications",
-      url: `/${locale}/dashboard/notifications`,
-      icon: BellIcon,
-    },
-    {
-      title: "Community",
-      url: "#",
-      icon: UsersIcon,
-    },
   ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: SettingsIcon,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: HelpCircleIcon,
-    },
-  ],
+  navSecondary: [],
   documents: [
     {
       name: "Practitioner Map",
@@ -168,7 +139,7 @@ export function AppSidebar({
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={{ ...user, avatar: user.avatar ?? "" }} />
+        <NavUser locale={locale} user={{ ...user, avatar: user.avatar ?? "" }} />
       </SidebarFooter>
     </Sidebar>
   )

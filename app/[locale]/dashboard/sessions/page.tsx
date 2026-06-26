@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import { SessionRequestList } from "@/features/session-requests/components/session-request-list";
 import { SessionForm } from "@/features/sessions/components/session-form";
 import { SessionList } from "@/features/sessions/components/session-list";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -8,6 +9,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listClientsByPractitionerId } from "@/server/repositories/client.repository";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
+import { listSessionRequestsByPractitionerId } from "@/server/repositories/session-request.repository";
 import { listSessionsByPractitionerId } from "@/server/repositories/session.repository";
 import { findFeedbackForSessions } from "@/server/services/feedback.service";
 import { getPrimaryRole, getRoleAccessList } from "@/server/services/rbac.service";
@@ -43,9 +45,10 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
     redirect(`/${locale}/dashboard/profile`);
   }
 
-  const [clients, sessions] = await Promise.all([
+  const [clients, sessions, sessionRequests] = await Promise.all([
     listClientsByPractitionerId(supabase, practitioner.id),
     listSessionsByPractitionerId(supabase, practitioner.id),
+    listSessionRequestsByPractitionerId(supabase, practitioner.id),
   ]);
   const feedbackLinks = await findFeedbackForSessions(
     supabase,
@@ -79,6 +82,12 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
             feedbackLinks={feedbackLinks}
             siteUrl={siteUrl.replace(/\/$/, "")}
             dictionary={dictionary.sessions}
+          />
+          <SessionRequestList
+            locale={locale}
+            requests={sessionRequests}
+            status={status}
+            dictionary={dictionary.sessionRequests}
           />
         </div>
       </div>
