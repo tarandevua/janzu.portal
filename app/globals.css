@@ -102,6 +102,25 @@
     font-weight: 700;
   }
   .dark {
+    --background: 220 14% 9%;
+    --foreground: 210 20% 96%;
+    --card: 220 14% 11%;
+    --card-foreground: 210 20% 96%;
+    --popover: 220 14% 11%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 178 54% 42%;
+    --primary-foreground: 220 14% 9%;
+    --secondary: 218 15% 18%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 218 15% 16%;
+    --muted-foreground: 215 14% 70%;
+    --accent: 190 26% 19%;
+    --accent-foreground: 210 20% 96%;
+    --destructive: 0 63% 42%;
+    --destructive-foreground: 210 20% 96%;
+    --border: 218 15% 22%;
+    --input: 218 15% 22%;
+    --ring: 178 54% 42%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

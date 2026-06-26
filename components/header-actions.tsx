@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Route } from "next";
 import { BellIcon, LanguagesIcon } from "lucide-react";
+import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/i18n/config";
@@ -33,12 +34,6 @@ export function HeaderActions({ locale, unreadCount }: HeaderActionsProps) {
 
   return (
     <div className="ml-auto flex items-center gap-2">
-      <Button asChild variant="ghost" size="sm" className="gap-2">
-        <Link href={languageHref as Route}>
-          <LanguagesIcon className="h-4 w-4" />
-          <span className="uppercase">{nextLocale}</span>
-        </Link>
-      </Button>
       <Button asChild variant="ghost" size="icon" className="relative">
         <Link href={`/${locale}/dashboard/notifications`}>
           <BellIcon className="h-4 w-4" />
@@ -50,6 +45,14 @@ export function HeaderActions({ locale, unreadCount }: HeaderActionsProps) {
           ) : null}
         </Link>
       </Button>
+      <ThemeModeToggle />
+      <Button asChild variant="ghost" size="sm" className="gap-2">
+        <Link href={languageHref as Route}>
+          <LanguagesIcon className="h-4 w-4" />
+          <span className="uppercase">{nextLocale}</span>
+        </Link>
+      </Button>
+      
     </div>
   );
 }
