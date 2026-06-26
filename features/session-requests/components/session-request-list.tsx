@@ -1,4 +1,5 @@
 import { CheckIcon, XIcon } from "lucide-react";
+import { PaginationControls } from "@/components/dashboard/pagination-controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +18,11 @@ import type { SessionRequest } from "@/server/models/session-request.model";
 type SessionRequestListProps = {
   locale: Locale;
   requests: SessionRequest[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  previousHref: string;
+  nextHref: string;
   status?: string;
   dictionary: {
     listTitle: string;
@@ -37,6 +43,9 @@ type SessionRequestListProps = {
     reviewInvalid: string;
     reviewAccepted: string;
     reviewDeclined: string;
+    previous: string;
+    next: string;
+    page: string;
   };
 };
 
@@ -55,6 +64,11 @@ function getStatusLabel(status: SessionRequest["status"], dictionary: SessionReq
 export function SessionRequestList({
   locale,
   requests,
+  page,
+  pageSize,
+  totalCount,
+  previousHref,
+  nextHref,
   status,
   dictionary,
 }: SessionRequestListProps) {
@@ -140,6 +154,14 @@ export function SessionRequestList({
                 ))}
               </TableBody>
             </Table>
+            <PaginationControls
+              page={page}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              previousHref={previousHref}
+              nextHref={nextHref}
+              dictionary={dictionary}
+            />
           </div>
         )}
       </CardContent>

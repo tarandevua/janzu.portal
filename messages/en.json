@@ -109,6 +109,9 @@
     "createFeedback": "Create link",
     "copyFeedback": "Copy link",
     "copiedFeedback": "Copied",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
     "feedbackCreated": "Feedback link created.",
     "feedbackInvalid": "Could not create feedback link."
   },
@@ -146,7 +149,10 @@
     "empty": "No session requests yet.",
     "reviewInvalid": "That session request could not be updated.",
     "reviewAccepted": "Session request accepted.",
-    "reviewDeclined": "Session request declined."
+    "reviewDeclined": "Session request declined.",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
   },
   "certification": {
     "title": "Certification",

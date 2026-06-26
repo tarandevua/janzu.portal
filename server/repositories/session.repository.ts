@@ -37,6 +37,32 @@ export async function listSessionsByPractitionerId(
   return (data ?? []).map(toSession);
 }
 
+export async function listSessionsByPractitionerIdPage(
+  supabase: SupabaseServerClient,
+  practitionerId: string,
+  page: number,
+  pageSize: number
+) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await supabase
+    .from("sessions")
+    .select("*", { count: "exact" })
+    .eq("practitioner_id", practitionerId)
+    .order("session_date", { ascending: false })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    items: (data ?? []).map(toSession),
+    totalCount: count ?? 0,
+  };
+}
+
 export async function createSessionForPractitioner(
   supabase: SupabaseServerClient,
   practitionerId: string,

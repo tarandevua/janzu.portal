@@ -2,6 +2,7 @@ import type { Client } from "@/server/models/client.model";
 import type { SessionFeedback } from "@/server/models/feedback.model";
 import type { Session } from "@/server/models/session.model";
 import type { Locale } from "@/lib/i18n/config";
+import { PaginationControls } from "@/components/dashboard/pagination-controls";
 import { createFeedbackLink } from "@/features/feedback/actions";
 import { CopyFeedbackLinkButton } from "@/features/feedback/components/copy-feedback-link-button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,11 @@ type SessionListProps = {
   clients: Client[];
   feedbackLinks: SessionFeedback[];
   siteUrl: string;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  previousHref: string;
+  nextHref: string;
   dictionary: {
     listTitle: string;
     listDescription: string;
@@ -37,6 +43,9 @@ type SessionListProps = {
     createFeedback: string;
     copyFeedback: string;
     copiedFeedback: string;
+    previous: string;
+    next: string;
+    page: string;
   };
 };
 
@@ -46,6 +55,11 @@ export function SessionList({
   clients,
   feedbackLinks,
   siteUrl,
+  page,
+  pageSize,
+  totalCount,
+  previousHref,
+  nextHref,
   dictionary,
 }: SessionListProps) {
   const clientNames = new Map(clients.map((client) => [client.id, client.name]));
@@ -106,6 +120,14 @@ export function SessionList({
                 ))}
               </TableBody>
             </Table>
+            <PaginationControls
+              page={page}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              previousHref={previousHref}
+              nextHref={nextHref}
+              dictionary={dictionary}
+            />
           </div>
         )}
       </CardContent>

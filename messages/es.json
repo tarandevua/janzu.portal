@@ -109,6 +109,9 @@
     "createFeedback": "Crear enlace",
     "copyFeedback": "Copiar enlace",
     "copiedFeedback": "Copiado",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Pagina",
     "feedbackCreated": "Enlace de feedback creado.",
     "feedbackInvalid": "No se pudo crear el enlace de feedback."
   },
@@ -146,7 +149,10 @@
     "empty": "Aun no hay solicitudes de sesion.",
     "reviewInvalid": "No se pudo actualizar esa solicitud de sesion.",
     "reviewAccepted": "Solicitud de sesion aceptada.",
-    "reviewDeclined": "Solicitud de sesion rechazada."
+    "reviewDeclined": "Solicitud de sesion rechazada.",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Pagina"
   },
   "certification": {
     "title": "Certificacion",
