@@ -264,6 +264,114 @@ export type Database = {
         };
         Relationships: [];
       };
+      locations: {
+        Row: {
+          id: string;
+          submitted_by: string;
+          name: string;
+          location_type: "pool" | "spa" | "natural_water";
+          description: string | null;
+          latitude: number;
+          longitude: number;
+          access_info: string | null;
+          status: "pending" | "approved" | "rejected";
+          approved_by: string | null;
+          approved_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          submitted_by: string;
+          name: string;
+          location_type: "pool" | "spa" | "natural_water";
+          description?: string | null;
+          latitude: number;
+          longitude: number;
+          access_info?: string | null;
+          status?: "pending" | "approved" | "rejected";
+          approved_by?: string | null;
+          approved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          submitted_by?: string;
+          name?: string;
+          location_type?: "pool" | "spa" | "natural_water";
+          description?: string | null;
+          latitude?: number;
+          longitude?: number;
+          access_info?: string | null;
+          status?: "pending" | "approved" | "rejected";
+          approved_by?: string | null;
+          approved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      location_media: {
+        Row: {
+          id: string;
+          location_id: string;
+          storage_key: string | null;
+          public_url: string | null;
+          alt_text: string | null;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          location_id: string;
+          storage_key?: string | null;
+          public_url?: string | null;
+          alt_text?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          location_id?: string;
+          storage_key?: string | null;
+          public_url?: string | null;
+          alt_text?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      location_reviews: {
+        Row: {
+          id: string;
+          location_id: string;
+          reviewer_id: string;
+          rating: number;
+          review_text: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          location_id: string;
+          reviewer_id: string;
+          rating: number;
+          review_text?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          location_id?: string;
+          reviewer_id?: string;
+          rating?: number;
+          review_text?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -312,6 +420,20 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["certification_progress"]["Row"];
       };
+      approve_location: {
+        Args: {
+          target_location_id: string;
+          reviewer_user_id: string;
+        };
+        Returns: Database["public"]["Tables"]["locations"]["Row"];
+      };
+      reject_location: {
+        Args: {
+          target_location_id: string;
+          reviewer_user_id: string;
+        };
+        Returns: Database["public"]["Tables"]["locations"]["Row"];
+      };
       list_certification_approval_candidates: {
         Args: {
           reviewer_user_id: string;
@@ -337,6 +459,8 @@ export type Database = {
     Enums: {
       app_role: "admin" | "manager" | "facilitator" | "practitioner";
       certification_status: "in_progress" | "eligible" | "approved";
+      location_type: "pool" | "spa" | "natural_water";
+      approval_status: "pending" | "approved" | "rejected";
     };
     CompositeTypes: Record<string, never>;
   };

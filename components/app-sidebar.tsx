@@ -63,6 +63,11 @@ function getData(locale: Locale, access: RoleAccess[]) {
       icon: ClipboardListIcon,
     },
     {
+      title: "Locations",
+      url: `/${locale}/dashboard/locations`,
+      icon: MapPinnedIcon,
+    },
+    {
       title: "Events",
       url: "#",
       icon: CalendarDaysIcon,
