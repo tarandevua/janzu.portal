@@ -9,6 +9,7 @@ import { listClientsByPractitionerId } from "@/server/repositories/client.reposi
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 import { listSessionsByPractitionerId } from "@/server/repositories/session.repository";
+import { findFeedbackForSessions } from "@/server/services/feedback.service";
 import { getPrimaryRole, getRoleAccessList } from "@/server/services/rbac.service";
 
 type SessionsPageProps = {
@@ -46,6 +47,11 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
     listClientsByPractitionerId(supabase, practitioner.id),
     listSessionsByPractitionerId(supabase, practitioner.id),
   ]);
+  const feedbackLinks = await findFeedbackForSessions(
+    supabase,
+    sessions.map((session) => session.id)
+  );
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000";
 
   return (
     <JanzuDashboardFrame
@@ -66,7 +72,14 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
             status={status}
             dictionary={dictionary.sessions}
           />
-          <SessionList sessions={sessions} clients={clients} dictionary={dictionary.sessions} />
+          <SessionList
+            locale={locale}
+            sessions={sessions}
+            clients={clients}
+            feedbackLinks={feedbackLinks}
+            siteUrl={siteUrl.replace(/\/$/, "")}
+            dictionary={dictionary.sessions}
+          />
         </div>
       </div>
     </JanzuDashboardFrame>

@@ -192,6 +192,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      session_feedback: {
+        Row: {
+          id: string;
+          session_id: string;
+          token: string;
+          rating: number;
+          experience_text: string | null;
+          emotional_impact: string | null;
+          submitted_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          token: string;
+          rating?: number;
+          experience_text?: string | null;
+          emotional_impact?: string | null;
+          submitted_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          token?: string;
+          rating?: number;
+          experience_text?: string | null;
+          emotional_impact?: string | null;
+          submitted_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -208,6 +244,24 @@ export type Database = {
           target_client_id: string | null;
         };
         Returns: boolean;
+      };
+      submit_session_feedback: {
+        Args: {
+          feedback_token: string;
+          feedback_rating: number;
+          feedback_experience_text: string | null;
+          feedback_emotional_impact: string | null;
+        };
+        Returns: Database["public"]["Tables"]["session_feedback"]["Row"];
+      };
+      get_session_feedback_status: {
+        Args: {
+          feedback_token: string;
+        };
+        Returns: {
+          token: string;
+          submitted_at: string | null;
+        }[];
       };
     };
     Enums: {

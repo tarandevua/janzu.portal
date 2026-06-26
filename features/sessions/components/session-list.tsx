@@ -1,6 +1,11 @@
 import type { Client } from "@/server/models/client.model";
+import type { SessionFeedback } from "@/server/models/feedback.model";
 import type { Session } from "@/server/models/session.model";
+import type { Locale } from "@/lib/i18n/config";
+import { createFeedbackLink } from "@/features/feedback/actions";
+import { CopyFeedbackLinkButton } from "@/features/feedback/components/copy-feedback-link-button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -12,8 +17,11 @@ import {
 } from "@/components/ui/table";
 
 type SessionListProps = {
+  locale: Locale;
   sessions: Session[];
   clients: Client[];
+  feedbackLinks: SessionFeedback[];
+  siteUrl: string;
   dictionary: {
     listTitle: string;
     listDescription: string;
@@ -25,11 +33,24 @@ type SessionListProps = {
     validation: string;
     pending: string;
     validated: string;
+    feedback: string;
+    createFeedback: string;
+    copyFeedback: string;
+    copiedFeedback: string;
   };
 };
 
-export function SessionList({ sessions, clients, dictionary }: SessionListProps) {
+export function SessionList({
+  locale,
+  sessions,
+  clients,
+  feedbackLinks,
+  siteUrl,
+  dictionary,
+}: SessionListProps) {
   const clientNames = new Map(clients.map((client) => [client.id, client.name]));
+  const feedbackBySessionId = new Map(feedbackLinks.map((feedback) => [feedback.sessionId, feedback]));
+  const action = createFeedbackLink.bind(null, locale);
 
   return (
     <Card>
@@ -50,6 +71,7 @@ export function SessionList({ sessions, clients, dictionary }: SessionListProps)
                   <TableHead>{dictionary.duration}</TableHead>
                   <TableHead>{dictionary.location}</TableHead>
                   <TableHead>{dictionary.validation}</TableHead>
+                  <TableHead>{dictionary.feedback}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -63,6 +85,22 @@ export function SessionList({ sessions, clients, dictionary }: SessionListProps)
                       <Badge variant={session.isValidated ? "default" : "secondary"}>
                         {session.isValidated ? dictionary.validated : dictionary.pending}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {feedbackBySessionId.has(session.id) ? (
+                        <CopyFeedbackLinkButton
+                          url={`${siteUrl}/${locale}/feedback/${feedbackBySessionId.get(session.id)?.token}`}
+                          label={dictionary.copyFeedback}
+                          copiedLabel={dictionary.copiedFeedback}
+                        />
+                      ) : (
+                        <form action={action}>
+                          <input type="hidden" name="sessionId" value={session.id} />
+                          <Button type="submit" variant="outline" size="sm">
+                            {dictionary.createFeedback}
+                          </Button>
+                        </form>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

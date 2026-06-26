@@ -98,6 +98,23 @@
     "empty": "Aun no hay sesiones.",
     "validation": "Validacion",
     "pending": "Pendiente",
-    "validated": "Validada"
+    "validated": "Validada",
+    "feedback": "Feedback",
+    "createFeedback": "Crear enlace",
+    "copyFeedback": "Copiar enlace",
+    "copiedFeedback": "Copiado",
+    "feedbackCreated": "Enlace de feedback creado.",
+    "feedbackInvalid": "No se pudo crear el enlace de feedback."
+  },
+  "feedback": {
+    "title": "Feedback de sesion",
+    "description": "Tu feedback ayuda a validar esta sesion de Janzu.",
+    "rating": "Calificacion",
+    "experienceText": "Experiencia",
+    "emotionalImpact": "Impacto emocional",
+    "submit": "Enviar feedback",
+    "submitted": "Gracias. Feedback enviado.",
+    "invalid": "Revisa los campos de feedback e intentalo nuevamente.",
+    "alreadySubmitted": "El feedback ya fue enviado para esta sesion."
   }
 }

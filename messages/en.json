@@ -98,6 +98,23 @@
     "empty": "No sessions yet.",
     "validation": "Validation",
     "pending": "Pending",
-    "validated": "Validated"
+    "validated": "Validated",
+    "feedback": "Feedback",
+    "createFeedback": "Create link",
+    "copyFeedback": "Copy link",
+    "copiedFeedback": "Copied",
+    "feedbackCreated": "Feedback link created.",
+    "feedbackInvalid": "Could not create feedback link."
+  },
+  "feedback": {
+    "title": "Session feedback",
+    "description": "Your feedback helps validate this Janzu session.",
+    "rating": "Rating",
+    "experienceText": "Experience",
+    "emotionalImpact": "Emotional impact",
+    "submit": "Submit feedback",
+    "submitted": "Thank you. Feedback submitted.",
+    "invalid": "Check the feedback fields and try again.",
+    "alreadySubmitted": "Feedback was already submitted for this session."
   }
 }
