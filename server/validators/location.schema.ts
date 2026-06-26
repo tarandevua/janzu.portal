@@ -8,14 +8,25 @@ const emptyToNull = (value: unknown) => {
   return value;
 };
 
+const emptyToUndefined = (value: unknown) => {
+  if (typeof value === "string" && value.trim() === "") {
+    return undefined;
+  }
+
+  return value;
+};
+
+const coordinate = (min: number, max: number) =>
+  z.preprocess(emptyToUndefined, z.coerce.number().min(min).max(max));
+
 export const locationTypes = ["pool", "spa", "natural_water"] as const;
 
 export const locationSchema = z.object({
   name: z.string().trim().min(1).max(180),
   locationType: z.enum(locationTypes),
   description: z.preprocess(emptyToNull, z.string().trim().max(5000).nullable().optional()),
-  latitude: z.coerce.number().min(-90).max(90),
-  longitude: z.coerce.number().min(-180).max(180),
+  latitude: coordinate(-90, 90),
+  longitude: coordinate(-180, 180),
   accessInfo: z.preprocess(emptyToNull, z.string().trim().max(3000).nullable().optional()),
   photoUrl: z.preprocess(emptyToNull, z.string().trim().url().nullable().optional()),
 });

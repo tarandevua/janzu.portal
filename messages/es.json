@@ -61,7 +61,8 @@
       "title": "Encontrar practicantes de Janzu",
       "description": "Explora perfiles publicos por ubicacion, idioma y enfoque de practica.",
       "unknownCity": "Practicante de Janzu",
-      "profileTitle": "Perfil de practicante"
+      "profileTitle": "Perfil de practicante",
+      "emptyMap": "Aun no hay coordenadas publicas de practicantes disponibles."
     }
   },
   "clients": {
@@ -157,6 +158,10 @@
     "description": "Descripcion",
     "latitude": "Latitud",
     "longitude": "Longitud",
+    "mapPickerTitle": "Coloca un pin en el mapa",
+    "mapPickerDescription": "Haz clic en el lugar exacto de esta ubicacion. La latitud y longitud se tomaran del pin.",
+    "selectedCoordinates": "Coordenadas seleccionadas",
+    "noCoordinatesSelected": "Aun no has seleccionado un pin.",
     "coordinates": "Coordenadas",
     "accessInfo": "Informacion de acceso",
     "photoUrl": "URL de foto",
@@ -173,6 +178,7 @@
     "empty": "Aun no has enviado ubicaciones.",
     "emptyReview": "No hay ubicaciones esperando revision.",
     "emptyPublic": "Aun no hay ubicaciones aprobadas publicamente.",
+    "emptyMap": "Aun no hay coordenadas de ubicaciones aprobadas disponibles.",
     "reviewApproved": "Ubicacion aprobada.",
     "reviewRejected": "Ubicacion rechazada.",
     "reviewInvalid": "No se pudo procesar la revision de la ubicacion.",

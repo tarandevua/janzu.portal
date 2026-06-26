@@ -41,6 +41,66 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+
+  .janzu-map-marker {
+    align-items: center;
+    border: 2px solid hsl(var(--background));
+    border-radius: 9999px;
+    box-shadow: 0 8px 20px rgb(15 23 42 / 0.22);
+    color: hsl(var(--primary-foreground));
+    display: flex;
+    font-size: 0.75rem;
+    font-weight: 700;
+    height: 2rem;
+    justify-content: center;
+    width: 2rem;
+  }
+
+  .janzu-map-marker.practitioner {
+    background: hsl(var(--primary));
+  }
+
+  .janzu-map-marker.location {
+    background: #a0442c;
+  }
+
+  .janzu-map-popup {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 10rem;
+  }
+
+  .janzu-map-popup strong {
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+  }
+
+  .janzu-map-popup span,
+  .janzu-map-popup p {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.75rem;
+    margin: 0;
+  }
+
+  .janzu-map-popup a {
+    color: hsl(var(--primary));
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .marker-cluster-small,
+  .marker-cluster-medium,
+  .marker-cluster-large {
+    background-color: rgb(20 111 108 / 0.2);
+  }
+
+  .marker-cluster-small div,
+  .marker-cluster-medium div,
+  .marker-cluster-large div {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-weight: 700;
+  }
   .dark {
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;

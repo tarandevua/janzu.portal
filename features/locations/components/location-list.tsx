@@ -1,4 +1,5 @@
 import type { LocationWithMedia } from "@/server/models/location.model";
+import { formatCoordinate } from "@/features/maps/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -80,7 +81,7 @@ export function LocationList({ locations, dictionary }: LocationListProps) {
                     <TableCell className="font-medium">{location.name}</TableCell>
                     <TableCell>{getTypeLabel(location.locationType, dictionary)}</TableCell>
                     <TableCell>
-                      {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                      {formatCoordinate(location.latitude)}, {formatCoordinate(location.longitude)}
                     </TableCell>
                     <TableCell>
                       <Badge variant={location.status === "approved" ? "default" : "secondary"}>

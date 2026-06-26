@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/i18n/config";
 import { submitLocation } from "@/features/locations/actions";
+import { LocationCoordinatePicker } from "@/features/locations/components/location-coordinate-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +23,10 @@ type LocationFormProps = {
     description: string;
     latitude: string;
     longitude: string;
+    mapPickerTitle: string;
+    mapPickerDescription: string;
+    selectedCoordinates: string;
+    noCoordinatesSelected: string;
     accessInfo: string;
     photoUrl: string;
     submit: string;
@@ -68,16 +73,7 @@ export function LocationForm({ locale, status, dictionary }: LocationFormProps) 
             </Select>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="latitude">{dictionary.latitude}</Label>
-              <Input id="latitude" name="latitude" type="number" step="any" required />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="longitude">{dictionary.longitude}</Label>
-              <Input id="longitude" name="longitude" type="number" step="any" required />
-            </div>
-          </div>
+          <LocationCoordinatePicker dictionary={dictionary} />
 
           <div className="grid gap-2">
             <Label htmlFor="description">{dictionary.description}</Label>

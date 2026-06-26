@@ -2,6 +2,7 @@ import { CheckCircle2Icon, XCircleIcon } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { LocationWithMedia } from "@/server/models/location.model";
 import { reviewLocationSubmission } from "@/features/locations/actions";
+import { formatCoordinate } from "@/features/maps/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -138,7 +139,7 @@ export function LocationReviewQueue({
                     <TableCell className="font-medium">{location.name}</TableCell>
                     <TableCell>{getTypeLabel(location.locationType, dictionary)}</TableCell>
                     <TableCell>
-                      {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                      {formatCoordinate(location.latitude)}, {formatCoordinate(location.longitude)}
                     </TableCell>
                     <TableCell>
                       <Badge variant={location.status === "approved" ? "default" : "secondary"}>

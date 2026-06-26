@@ -1,5 +1,8 @@
 import Link from "next/link";
 import type { Route } from "next";
+import { ClusteredMap } from "@/features/maps/components/clustered-map";
+import type { MapMarker } from "@/features/maps/types";
+import { hasValidCoordinates } from "@/features/maps/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -18,6 +21,16 @@ export default async function PractitionersPage({ params }: PractitionersPagePro
     createSupabaseServerClient(),
   ]);
   const profiles = await findPublicPractitionerProfiles(supabase);
+  const markers: MapMarker[] = profiles.filter(hasValidCoordinates).map((profile) => ({
+    id: profile.id,
+    kind: "practitioner",
+    title: profile.city ?? dictionary.practitioners.public.unknownCity,
+    description: profile.bio,
+    latitude: profile.latitude,
+    longitude: profile.longitude,
+    href: `/${locale}/practitioners/${profile.id}`,
+    meta: [profile.country, profile.city].filter(Boolean).join(", "),
+  }));
 
   return (
     <main className="min-h-screen bg-muted/40 p-6">
@@ -28,6 +41,12 @@ export default async function PractitionersPage({ params }: PractitionersPagePro
             {dictionary.practitioners.public.description}
           </p>
         </div>
+
+        <ClusteredMap
+          markers={markers}
+          emptyText={dictionary.practitioners.public.emptyMap}
+          className="min-h-[460px]"
+        />
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {profiles.map((profile) => (

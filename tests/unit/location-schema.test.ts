@@ -27,6 +27,17 @@ describe("locationSchema", () => {
       })
     ).toThrow();
   });
+
+  it("rejects empty coordinates", () => {
+    expect(() =>
+      locationSchema.parse({
+        name: "Unpinned place",
+        locationType: "pool",
+        latitude: "",
+        longitude: "",
+      })
+    ).toThrow();
+  });
 });
 
 describe("locationReviewSchema", () => {

@@ -1,4 +1,7 @@
 import type { LocationWithMedia } from "@/server/models/location.model";
+import { ClusteredMap } from "@/features/maps/components/clustered-map";
+import type { MapMarker } from "@/features/maps/types";
+import { formatCoordinate } from "@/features/maps/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -13,6 +16,7 @@ type PublicLocationListProps = {
     naturalWater: string;
     coordinates: string;
     accessInfo: string;
+    emptyMap: string;
   };
 };
 
@@ -32,12 +36,24 @@ function getTypeLabel(
 }
 
 export function PublicLocationList({ locations, dictionary }: PublicLocationListProps) {
+  const markers: MapMarker[] = locations.map((location) => ({
+    id: location.id,
+    kind: "location",
+    title: location.name,
+    description: location.description,
+    latitude: location.latitude,
+    longitude: location.longitude,
+    meta: getTypeLabel(location.locationType, dictionary),
+  }));
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-6">
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
         <p className="max-w-3xl text-muted-foreground">{dictionary.publicDescription}</p>
       </div>
+
+      <ClusteredMap markers={markers} emptyText={dictionary.emptyMap} className="min-h-[460px]" />
 
       {locations.length === 0 ? (
         <Card>
@@ -54,8 +70,8 @@ export function PublicLocationList({ locations, dictionary }: PublicLocationList
                   <div>
                     <CardTitle>{location.name}</CardTitle>
                     <CardDescription>
-                      {dictionary.coordinates}: {location.latitude.toFixed(4)},{" "}
-                      {location.longitude.toFixed(4)}
+                      {dictionary.coordinates}: {formatCoordinate(location.latitude)},{" "}
+                      {formatCoordinate(location.longitude)}
                     </CardDescription>
                   </div>
                   <Badge variant="secondary">{getTypeLabel(location.locationType, dictionary)}</Badge>

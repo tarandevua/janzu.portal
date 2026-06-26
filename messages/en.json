@@ -61,7 +61,8 @@
       "title": "Find Janzu practitioners",
       "description": "Explore public practitioner profiles by location, language, and practice focus.",
       "unknownCity": "Janzu practitioner",
-      "profileTitle": "Practitioner profile"
+      "profileTitle": "Practitioner profile",
+      "emptyMap": "No public practitioner coordinates are available yet."
     }
   },
   "clients": {
@@ -157,6 +158,10 @@
     "description": "Description",
     "latitude": "Latitude",
     "longitude": "Longitude",
+    "mapPickerTitle": "Drop a pin on the map",
+    "mapPickerDescription": "Click the exact place for this location. The latitude and longitude will be captured from the pin.",
+    "selectedCoordinates": "Selected coordinates",
+    "noCoordinatesSelected": "No pin selected yet.",
     "coordinates": "Coordinates",
     "accessInfo": "Access info",
     "photoUrl": "Photo URL",
@@ -173,6 +178,7 @@
     "empty": "No locations submitted yet.",
     "emptyReview": "No locations are waiting for review.",
     "emptyPublic": "No approved locations are public yet.",
+    "emptyMap": "No approved location coordinates are available yet.",
     "reviewApproved": "Location approved.",
     "reviewRejected": "Location rejected.",
     "reviewInvalid": "Location review could not be processed.",
