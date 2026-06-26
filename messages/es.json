@@ -40,6 +40,29 @@
         "description": "Gestiona tu perfil, clientes privados, sesiones, feedback y progreso de certificacion."
       }
     },
+    "sidebar": {
+      "roles": {
+        "admin": "Administrador",
+        "manager": "Gestion",
+        "facilitator": "Facilitador",
+        "practitioner": "Practicante"
+      },
+      "dashboard": "Panel",
+      "users": "Usuarios",
+      "clients": "Clientes",
+      "sessions": "Sesiones",
+      "locations": "Ubicaciones",
+      "events": "Eventos",
+      "community": "Comunidad",
+      "practitionerMap": "Mapa de practicantes",
+      "locationMap": "Mapa de ubicaciones",
+      "certification": "Certificacion",
+      "feedback": "Feedback",
+      "profile": "Perfil",
+      "notifications": "Notificaciones",
+      "logout": "Cerrar sesion",
+      "loggingOut": "Cerrando sesion..."
+    },
     "practitionerData": {
       "setupTitle": "Completa tu perfil.",
       "setupDescription": "Crea tu perfil de practicante antes de usar el panel de practicante.",

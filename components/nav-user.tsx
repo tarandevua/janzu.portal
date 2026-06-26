@@ -35,12 +35,19 @@ import type { Locale } from "@/lib/i18n/config"
 export function NavUser({
   locale,
   user,
+  dictionary,
 }: {
   locale: Locale
   user: {
     name: string
     email: string
     avatar: string
+  }
+  dictionary: {
+    profile: string
+    notifications: string
+    logout: string
+    loggingOut: string
   }
 }) {
   const { isMobile } = useSidebar()
@@ -93,13 +100,13 @@ export function NavUser({
               <DropdownMenuItem asChild>
                 <Link href={`/${locale}/dashboard/profile`}>
                   <UserCircleIcon />
-                  Profile
+                  {dictionary.profile}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href={`/${locale}/dashboard/notifications`}>
                   <BellIcon />
-                  Notifications
+                  {dictionary.notifications}
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -114,7 +121,7 @@ export function NavUser({
               }}
             >
               <LogOutIcon />
-              {isLoggingOut ? "Logging out..." : "Log out"}
+              {isLoggingOut ? dictionary.loggingOut : dictionary.logout}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

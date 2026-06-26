@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import {
-  ArrowUpCircleIcon,
+  Shell,
   CalendarDaysIcon,
   ClipboardListIcon,
   DatabaseIcon,
@@ -29,51 +29,70 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import type { Locale } from "@/lib/i18n/config"
-import type { RoleAccess } from "@/server/models/rbac.model"
+import type { Role, RoleAccess } from "@/server/models/rbac.model"
 
-function getData(locale: Locale, access: RoleAccess[]) {
+type SidebarDictionary = {
+  roles: Record<Role, string>
+  dashboard: string
+  users: string
+  clients: string
+  sessions: string
+  locations: string
+  events: string
+  community: string
+  practitionerMap: string
+  locationMap: string
+  certification: string
+  feedback: string
+  profile: string
+  notifications: string
+  logout: string
+  loggingOut: string
+}
+
+function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictionary) {
   const canManageUsers = access.some((item) => item.permissions.includes("users:manage"))
 
   return {
     roleLinks: access.map((item) => ({
-      title: item.label,
+      title: dictionary.roles[item.role],
       url: `/${locale}/dashboard/${item.dashboardPath}`,
       icon: LayoutDashboardIcon,
     })),
     navMain: [
     {
-      title: "Dashboard",
+      title: dictionary.dashboard,
       url: `/${locale}/dashboard`,
       icon: LayoutDashboardIcon,
     },
     ...(canManageUsers
       ? [
           {
-            title: "Users",
+            title: dictionary.users,
             url: `/${locale}/dashboard/users`,
             icon: UserCogIcon,
           },
         ]
       : []),
     {
-      title: "Clients",
+      title: dictionary.clients,
       url: `/${locale}/dashboard/clients`,
       icon: UsersIcon,
     },
     {
-      title: "Sessions",
+      title: dictionary.sessions,
       url: `/${locale}/dashboard/sessions`,
       icon: ClipboardListIcon,
     },
     {
-      title: "Locations",
+      title: dictionary.locations,
       url: `/${locale}/dashboard/locations`,
       icon: MapPinnedIcon,
     },
     ...(canManageUsers
       ? [
           {
-            title: "Events",
+            title: dictionary.events,
             url: `/${locale}/dashboard/events`,
             icon: CalendarDaysIcon,
           }
@@ -83,27 +102,27 @@ function getData(locale: Locale, access: RoleAccess[]) {
   navSecondary: [],
   documents: [
     {
-      name: "Practitioner Map",
+      name: dictionary.practitionerMap,
       url: `/${locale}/practitioners`,
       icon: MapIcon,
     },
     {
-      name: "Location Map",
+      name: dictionary.locationMap,
       url: `/${locale}/locations`,
       icon: MapPinnedIcon,
     },
     {
-      name: "Certification",
+      name: dictionary.certification,
       url: `/${locale}/dashboard/certification`,
       icon: DatabaseIcon,
     },
     {
-      name: "Feedback",
+      name: dictionary.feedback,
       url: `/${locale}/dashboard/feedback`,
       icon: FileTextIcon,
     },
     {
-      name: "Events",
+      name: dictionary.events,
       url: `/${locale}/events`,
       icon: CalendarDaysIcon,
     },
@@ -119,15 +138,17 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
     email: string
     avatar?: string
   }
+  dictionary: SidebarDictionary
 }
 
 export function AppSidebar({
   locale,
   access,
   user,
+  dictionary,
   ...props
 }: AppSidebarProps) {
-  const data = getData(locale, access)
+  const data = getData(locale, access, dictionary)
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -139,7 +160,7 @@ export function AppSidebar({
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <Link href={`/${locale}/dashboard`}>
-                <ArrowUpCircleIcon className="h-5 w-5" />
+                <Shell className="h-5 w-5" />
                 <span className="text-base font-semibold">Janzu Portal</span>
               </Link>
             </SidebarMenuButton>
@@ -149,11 +170,11 @@ export function AppSidebar({
       <SidebarContent>
         <NavMain items={data.roleLinks} />
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <NavDocuments items={data.documents} label={dictionary.community} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser locale={locale} user={{ ...user, avatar: user.avatar ?? "" }} />
+        <NavUser locale={locale} user={{ ...user, avatar: user.avatar ?? "" }} dictionary={dictionary} />
       </SidebarFooter>
     </Sidebar>
   )

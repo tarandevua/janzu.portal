@@ -40,6 +40,29 @@
         "description": "Manage your profile, private clients, sessions, feedback, and certification progress."
       }
     },
+    "sidebar": {
+      "roles": {
+        "admin": "Admin",
+        "manager": "Manager",
+        "facilitator": "Facilitator",
+        "practitioner": "Practitioner"
+      },
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "clients": "Clients",
+      "sessions": "Sessions",
+      "locations": "Locations",
+      "events": "Events",
+      "community": "Community",
+      "practitionerMap": "Practitioner Map",
+      "locationMap": "Location Map",
+      "certification": "Certification",
+      "feedback": "Feedback",
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "logout": "Log out",
+      "loggingOut": "Logging out..."
+    },
     "practitionerData": {
       "setupTitle": "Complete your profile.",
       "setupDescription": "Create your practitioner profile before using the practitioner dashboard.",
