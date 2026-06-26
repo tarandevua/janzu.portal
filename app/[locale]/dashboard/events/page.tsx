@@ -47,6 +47,7 @@ export default async function EventsPage({ params, searchParams }: EventsPagePro
       access={getRoleAccessList(roles)}
       title={dictionary.events.title}
       user={{
+        id: data.user.id,
         name: data.user.user_metadata.full_name ?? data.user.email ?? "Janzu Practitioner",
         email: data.user.email ?? "",
         avatar: data.user.user_metadata.avatar_url,

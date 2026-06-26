@@ -41,6 +41,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
       access={getRoleAccessList(roles)}
       title={dictionary.practitioners.form.title}
       user={{
+        id: data.user.id,
         name: data.user.user_metadata.full_name ?? data.user.email ?? "Janzu Practitioner",
         email: data.user.email ?? "",
         avatar: data.user.user_metadata.avatar_url,

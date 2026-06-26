@@ -64,6 +64,7 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
       access={getRoleAccessList(roles)}
       title={dictionary.sessions.title}
       user={{
+        id: data.user.id,
         name: data.user.user_metadata.full_name ?? data.user.email ?? "Janzu Practitioner",
         email: data.user.email ?? "",
         avatar: data.user.user_metadata.avatar_url,

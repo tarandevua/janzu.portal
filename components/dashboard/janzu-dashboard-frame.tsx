@@ -3,9 +3,12 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import type { Locale } from "@/lib/i18n/config"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type { RoleAccess } from "@/server/models/rbac.model"
+import { countMyUnreadNotifications } from "@/server/services/notification.service"
 
 type DashboardUser = {
+  id: string
   name: string
   email: string
   avatar?: string
@@ -19,13 +22,17 @@ type JanzuDashboardFrameProps = {
   children: ReactNode
 }
 
-export function JanzuDashboardFrame({
+export async function JanzuDashboardFrame({
   locale,
   access,
   user,
   title,
   children,
 }: JanzuDashboardFrameProps) {
+  const unreadCount = await createSupabaseServerClient()
+    .then((supabase) => countMyUnreadNotifications(supabase, user.id))
+    .catch(() => 0)
+
   return (
     <SidebarProvider>
       <AppSidebar
@@ -35,7 +42,7 @@ export function JanzuDashboardFrame({
         user={user}
       />
       <SidebarInset>
-        <SiteHeader title={title} />
+        <SiteHeader title={title} locale={locale} unreadCount={unreadCount} />
         {children}
       </SidebarInset>
     </SidebarProvider>

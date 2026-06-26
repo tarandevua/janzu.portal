@@ -10,6 +10,7 @@ type JanzuDashboardBlockProps = {
   locale: Locale
   access: RoleAccess[]
   user: {
+    id: string
     name: string
     email: string
     avatar?: string

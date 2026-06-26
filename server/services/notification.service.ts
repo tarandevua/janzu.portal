@@ -1,11 +1,16 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import {
+  countUnreadNotificationsForUser,
   listNotificationsForUser,
   markNotificationReadForUser,
 } from "@/server/repositories/notification.repository";
 
 export function listMyNotifications(supabase: SupabaseServerClient, userId: string) {
   return listNotificationsForUser(supabase, userId);
+}
+
+export function countMyUnreadNotifications(supabase: SupabaseServerClient, userId: string) {
+  return countUnreadNotificationsForUser(supabase, userId);
 }
 
 export function markMyNotificationRead(

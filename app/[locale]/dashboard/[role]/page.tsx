@@ -57,6 +57,7 @@ export default async function RoleDashboardPage({ params }: RoleDashboardPagePro
       locale={locale}
       access={access}
       user={{
+        id: data.user.id,
         name: data.user.user_metadata.full_name ?? data.user.email ?? "Janzu Practitioner",
         email: data.user.email ?? "",
         avatar: data.user.user_metadata.avatar_url

@@ -44,6 +44,7 @@ export default async function ClientsPage({ params, searchParams }: ClientsPageP
       access={getRoleAccessList(roles)}
       title={dictionary.clients.title}
       user={{
+        id: data.user.id,
         name: data.user.user_metadata.full_name ?? data.user.email ?? "Janzu Practitioner",
         email: data.user.email ?? "",
         avatar: data.user.user_metadata.avatar_url,
