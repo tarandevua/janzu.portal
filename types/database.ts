@@ -595,6 +595,40 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["users"]["Row"];
       };
+      list_feedback_participants: {
+        Args: {
+          actor_user_id: string;
+        };
+        Returns: {
+          practitioner_id: string;
+          user_id: string;
+          display_name: string;
+          email: string;
+        }[];
+      };
+      list_feedback_dashboard: {
+        Args: {
+          actor_user_id: string;
+          participant_filter?: string | null;
+          page_number?: number;
+          page_size?: number;
+        };
+        Returns: {
+          feedback_id: string;
+          session_id: string;
+          practitioner_id: string;
+          practitioner_user_id: string;
+          practitioner_name: string;
+          practitioner_email: string;
+          client_name: string | null;
+          session_date: string;
+          rating: number;
+          experience_text: string | null;
+          emotional_impact: string | null;
+          submitted_at: string;
+          total_count: number;
+        }[];
+      };
       session_client_matches_practitioner: {
         Args: {
           target_practitioner_id: string;

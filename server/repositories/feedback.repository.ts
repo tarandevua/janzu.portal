@@ -1,12 +1,26 @@
 import { randomBytes } from "node:crypto";
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
-import type { FeedbackInput, FeedbackStatus, SessionFeedback } from "@/server/models/feedback.model";
+import type {
+  DashboardFeedback,
+  DashboardFeedbackPage,
+  FeedbackInput,
+  FeedbackParticipant,
+  FeedbackStatus,
+  SessionFeedback,
+} from "@/server/models/feedback.model";
 
 type FeedbackRow = Database["public"]["Tables"]["session_feedback"]["Row"];
 type SubmitFeedbackArgs = Database["public"]["Functions"]["submit_session_feedback"]["Args"];
 type FeedbackStatusArgs = Database["public"]["Functions"]["get_session_feedback_status"]["Args"];
 type FeedbackStatusRow = Database["public"]["Functions"]["get_session_feedback_status"]["Returns"][number];
+type DashboardFeedbackArgs = Database["public"]["Functions"]["list_feedback_dashboard"]["Args"];
+type DashboardFeedbackRow =
+  Database["public"]["Functions"]["list_feedback_dashboard"]["Returns"][number];
+type FeedbackParticipantArgs =
+  Database["public"]["Functions"]["list_feedback_participants"]["Args"];
+type FeedbackParticipantRow =
+  Database["public"]["Functions"]["list_feedback_participants"]["Returns"][number];
 type SubmitFeedbackRpcClient = {
   rpc(
     functionName: "submit_session_feedback",
@@ -18,6 +32,16 @@ type FeedbackStatusRpcClient = {
     functionName: "get_session_feedback_status",
     args: FeedbackStatusArgs
   ): Promise<{ data: FeedbackStatusRow[] | null; error: { message: string } | null }>;
+};
+type FeedbackDashboardRpcClient = {
+  rpc(
+    functionName: "list_feedback_dashboard",
+    args: DashboardFeedbackArgs
+  ): Promise<{ data: DashboardFeedbackRow[] | null; error: { message: string } | null }>;
+  rpc(
+    functionName: "list_feedback_participants",
+    args: FeedbackParticipantArgs
+  ): Promise<{ data: FeedbackParticipantRow[] | null; error: { message: string } | null }>;
 };
 
 function toFeedback(row: FeedbackRow): SessionFeedback {
@@ -38,6 +62,32 @@ function toFeedbackStatus(row: FeedbackStatusRow): FeedbackStatus {
   return {
     token: row.token,
     submittedAt: row.submitted_at,
+  };
+}
+
+function toDashboardFeedback(row: DashboardFeedbackRow): DashboardFeedback {
+  return {
+    feedbackId: row.feedback_id,
+    sessionId: row.session_id,
+    practitionerId: row.practitioner_id,
+    practitionerUserId: row.practitioner_user_id,
+    practitionerName: row.practitioner_name,
+    practitionerEmail: row.practitioner_email,
+    clientName: row.client_name,
+    sessionDate: row.session_date,
+    rating: row.rating,
+    experienceText: row.experience_text,
+    emotionalImpact: row.emotional_impact,
+    submittedAt: row.submitted_at,
+  };
+}
+
+function toFeedbackParticipant(row: FeedbackParticipantRow): FeedbackParticipant {
+  return {
+    practitionerId: row.practitioner_id,
+    userId: row.user_id,
+    displayName: row.display_name,
+    email: row.email,
   };
 }
 
@@ -80,6 +130,47 @@ export async function listFeedbackBySessionIds(
   }
 
   return (data ?? []).map(toFeedback);
+}
+
+export async function listFeedbackDashboard(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  participantFilter?: string | null,
+  page = 1,
+  pageSize = 10
+): Promise<DashboardFeedbackPage> {
+  const rpcClient = supabase as unknown as FeedbackDashboardRpcClient;
+  const { data, error } = await rpcClient.rpc("list_feedback_dashboard", {
+    actor_user_id: actorUserId,
+    participant_filter: participantFilter ?? null,
+    page_number: page,
+    page_size: pageSize,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    items: (data ?? []).map(toDashboardFeedback),
+    totalCount: data?.[0]?.total_count ?? 0,
+  };
+}
+
+export async function listFeedbackParticipants(
+  supabase: SupabaseServerClient,
+  actorUserId: string
+) {
+  const rpcClient = supabase as unknown as FeedbackDashboardRpcClient;
+  const { data, error } = await rpcClient.rpc("list_feedback_participants", {
+    actor_user_id: actorUserId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map(toFeedbackParticipant);
 }
 
 export async function getFeedbackByToken(supabase: SupabaseServerClient, token: string) {

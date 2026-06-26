@@ -5,6 +5,8 @@ import {
   getFeedbackStatusByToken,
   getFeedbackByToken,
   listFeedbackBySessionIds,
+  listFeedbackDashboard,
+  listFeedbackParticipants,
   submitFeedbackByToken,
 } from "@/server/repositories/feedback.repository";
 import { requireSessionPractitionerId } from "@/server/services/session.service";
@@ -37,6 +39,23 @@ export async function findFeedbackForSessions(
   sessionIds: string[]
 ) {
   return listFeedbackBySessionIds(supabase, sessionIds);
+}
+
+export function findDashboardFeedback(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  participantFilter?: string | null,
+  page?: number,
+  pageSize?: number
+) {
+  return listFeedbackDashboard(supabase, actorUserId, participantFilter, page, pageSize);
+}
+
+export function findFeedbackParticipants(
+  supabase: SupabaseServerClient,
+  actorUserId: string
+) {
+  return listFeedbackParticipants(supabase, actorUserId);
 }
 
 export async function submitPublicFeedback(

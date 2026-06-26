@@ -99,7 +99,7 @@ function getData(locale: Locale, access: RoleAccess[]) {
     },
     {
       name: "Feedback",
-      url: "#",
+      url: `/${locale}/dashboard/feedback`,
       icon: FileTextIcon,
     },
     {

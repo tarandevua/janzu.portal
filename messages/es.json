@@ -124,7 +124,20 @@
     "submit": "Enviar feedback",
     "submitted": "Gracias. Feedback enviado.",
     "invalid": "Revisa los campos de feedback e intentalo nuevamente.",
-    "alreadySubmitted": "El feedback ya fue enviado para esta sesion."
+    "alreadySubmitted": "El feedback ya fue enviado para esta sesion.",
+    "dashboardTitle": "Feedback de participantes",
+    "dashboardDescription": "Revisa feedback enviado de sesiones. Administracion y gestion pueden filtrar por participante.",
+    "participant": "Participante",
+    "allParticipants": "Todos los participantes",
+    "applyFilter": "Aplicar",
+    "sessionDate": "Fecha de sesion",
+    "client": "Cliente",
+    "experienceText": "Experiencia",
+    "submittedAt": "Enviado",
+    "emptyDashboard": "Aun no hay feedback enviado.",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Pagina"
   },
   "sessionRequests": {
     "formTitle": "Solicitar una sesion",

@@ -124,7 +124,20 @@
     "submit": "Submit feedback",
     "submitted": "Thank you. Feedback submitted.",
     "invalid": "Check the feedback fields and try again.",
-    "alreadySubmitted": "Feedback was already submitted for this session."
+    "alreadySubmitted": "Feedback was already submitted for this session.",
+    "dashboardTitle": "Participant feedback",
+    "dashboardDescription": "Review submitted session feedback. Admins and managers can filter by participant.",
+    "participant": "Participant",
+    "allParticipants": "All participants",
+    "applyFilter": "Apply",
+    "sessionDate": "Session date",
+    "client": "Client",
+    "experienceText": "Experience",
+    "submittedAt": "Submitted",
+    "emptyDashboard": "No submitted feedback yet.",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
   },
   "sessionRequests": {
     "formTitle": "Request a session",
