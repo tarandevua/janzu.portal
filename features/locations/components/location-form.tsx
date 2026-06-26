@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 type LocationFormProps = {
   locale: Locale;
   status?: string;
+  variant?: "card" | "plain";
   dictionary: {
     formTitle: string;
     formDescription: string;
@@ -35,19 +36,13 @@ type LocationFormProps = {
   };
 };
 
-export function LocationForm({ locale, status, dictionary }: LocationFormProps) {
+export function LocationForm({ locale, status, variant = "card", dictionary }: LocationFormProps) {
   const action = submitLocation.bind(null, locale);
   const message =
     status === "created" ? dictionary.created : status === "invalid" ? dictionary.invalid : null;
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{dictionary.formTitle}</CardTitle>
-        <CardDescription>{dictionary.formDescription}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form action={action} className="grid gap-4">
+  const form = (
+    <form action={action} className="grid gap-4">
           {message ? (
             <Alert variant={status === "invalid" ? "destructive" : "default"}>
               <AlertDescription>{message}</AlertDescription>
@@ -93,7 +88,21 @@ export function LocationForm({ locale, status, dictionary }: LocationFormProps) 
           <Button type="submit" className="w-fit">
             {dictionary.submit}
           </Button>
-        </form>
+    </form>
+  );
+
+  if (variant === "plain") {
+    return form;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{dictionary.formTitle}</CardTitle>
+        <CardDescription>{dictionary.formDescription}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {form}
       </CardContent>
     </Card>
   );

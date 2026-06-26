@@ -42,19 +42,14 @@ export function UserInviteForm({
   const assignableRoles = roles.filter((role) => canManageUserRole(actorRoles, role));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{dictionary.inviteTitle}</CardTitle>
-        <CardDescription>{dictionary.inviteDescription}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <>
         {status === "invited" ? (
           <p className="mb-4 text-sm font-medium text-emerald-700">{dictionary.invited}</p>
         ) : null}
         {status === "invite-invalid" ? (
           <p className="mb-4 text-sm font-medium text-destructive">{dictionary.inviteInvalid}</p>
         ) : null}
-        <form action={action} className="grid gap-4 lg:grid-cols-[1fr_1fr_220px_auto] lg:items-end">
+        <form action={action} className="grid gap-4">
           <div className="space-y-2">
             <Label htmlFor="fullName">{dictionary.fullName}</Label>
             <Input id="fullName" name="fullName" />
@@ -83,7 +78,6 @@ export function UserInviteForm({
             {dictionary.invite}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+     </>
   );
 }

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { ClientForm } from "@/features/clients/components/client-form";
 import { ClientList } from "@/features/clients/components/client-list";
@@ -31,6 +32,7 @@ export default async function ClientsPage({ params, searchParams }: ClientsPageP
     listMyClients(supabase, data.user.id),
   ]);
   const primaryRole = getPrimaryRole(roles);
+  const shouldOpenCreateDrawer = status === "invalid";
 
   if (!primaryRole) {
     redirect(`/${locale}/dashboard`);
@@ -48,8 +50,22 @@ export default async function ClientsPage({ params, searchParams }: ClientsPageP
       }}
     >
       <div className="flex flex-1 flex-col">
-        <div className="@container/main grid flex-1 gap-4 p-4 md:grid-cols-[360px_1fr] md:p-6">
-          <ClientForm locale={locale} status={status} dictionary={dictionary.clients} />
+        <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+          <div className="flex justify-end">
+            <DashboardActionDrawer
+              title={dictionary.clients.formTitle}
+              description={dictionary.clients.formDescription}
+              triggerLabel={dictionary.clients.formTitle}
+              defaultOpen={shouldOpenCreateDrawer}
+            >
+              <ClientForm
+                locale={locale}
+                status={status}
+                variant="plain"
+                dictionary={dictionary.clients}
+              />
+            </DashboardActionDrawer>
+          </div>
           <ClientList clients={clients} dictionary={dictionary.clients} />
         </div>
       </div>

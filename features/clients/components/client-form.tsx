@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 type ClientFormProps = {
   locale: Locale;
   status?: string;
+  variant?: "card" | "plain";
   dictionary: {
     formTitle: string;
     formDescription: string;
@@ -23,19 +24,13 @@ type ClientFormProps = {
   };
 };
 
-export function ClientForm({ locale, status, dictionary }: ClientFormProps) {
+export function ClientForm({ locale, status, variant = "card", dictionary }: ClientFormProps) {
   const action = createClient.bind(null, locale);
   const message =
     status === "created" ? dictionary.created : status === "invalid" ? dictionary.invalid : null;
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{dictionary.formTitle}</CardTitle>
-        <CardDescription>{dictionary.formDescription}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form action={action} className="grid gap-4">
+  const form = (
+    <form action={action} className="grid gap-4">
           {message ? (
             <Alert variant={status === "invalid" ? "destructive" : "default"}>
               <AlertDescription>{message}</AlertDescription>
@@ -63,7 +58,21 @@ export function ClientForm({ locale, status, dictionary }: ClientFormProps) {
           <Button type="submit" className="w-fit">
             {dictionary.create}
           </Button>
-        </form>
+    </form>
+  );
+
+  if (variant === "plain") {
+    return form;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{dictionary.formTitle}</CardTitle>
+        <CardDescription>{dictionary.formDescription}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {form}
       </CardContent>
     </Card>
   );

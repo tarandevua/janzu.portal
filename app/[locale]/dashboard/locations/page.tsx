@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { LocationForm } from "@/features/locations/components/location-form";
 import { LocationList } from "@/features/locations/components/location-list";
@@ -50,6 +51,7 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
     practitioner ? listMyLocations(supabase, data.user.id) : Promise.resolve([]),
     canApproveLocations ? listLocationReviewQueue(supabase) : Promise.resolve([]),
   ]);
+  const shouldOpenCreateDrawer = status === "invalid";
 
   return (
     <JanzuDashboardFrame
@@ -63,9 +65,23 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
       }}
     >
       <div className="flex flex-1 flex-col">
-        <div className="@container/main grid flex-1 gap-4 p-4 md:grid-cols-[380px_1fr] md:p-6">
+        <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
           {practitioner ? (
-            <LocationForm locale={locale} status={status} dictionary={dictionary.locations} />
+            <div className="flex justify-end">
+              <DashboardActionDrawer
+                title={dictionary.locations.formTitle}
+                description={dictionary.locations.formDescription}
+                triggerLabel={dictionary.locations.formTitle}
+                defaultOpen={shouldOpenCreateDrawer}
+              >
+                <LocationForm
+                  locale={locale}
+                  status={status}
+                  variant="plain"
+                  dictionary={dictionary.locations}
+                />
+              </DashboardActionDrawer>
+            </div>
           ) : null}
           <div className="grid gap-4">
             {practitioner ? (

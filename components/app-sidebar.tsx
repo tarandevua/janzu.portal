@@ -70,11 +70,15 @@ function getData(locale: Locale, access: RoleAccess[]) {
       url: `/${locale}/dashboard/locations`,
       icon: MapPinnedIcon,
     },
-    {
-      title: "Events",
-      url: `/${locale}/dashboard/events`,
-      icon: CalendarDaysIcon,
-    },
+    ...(canManageUsers
+      ? [
+          {
+            title: "Events",
+            url: `/${locale}/dashboard/events`,
+            icon: CalendarDaysIcon,
+          }
+        ]
+      : []),
   ],
   navSecondary: [],
   documents: [

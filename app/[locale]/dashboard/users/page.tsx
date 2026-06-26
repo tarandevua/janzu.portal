@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { UserInviteForm } from "@/features/user-management/components/user-invite-form";
 import { UserRoleManagementTable } from "@/features/user-management/components/user-role-management-table";
 import type { Locale } from "@/lib/i18n/config";
@@ -28,6 +29,7 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
 
   const roles = await listUserRoles(supabase, data.user.id);
   const primaryRole = getPrimaryRole(roles);
+  const shouldOpenCreateDrawer = status === "invalid";
 
   if (!primaryRole) {
     redirect(`/${locale}/dashboard`);
@@ -52,12 +54,21 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          <UserInviteForm
-            locale={locale}
-            actorRoles={roles}
-            status={status}
-            dictionary={dictionary.userManagement}
-          />
+          <div className="flex justify-end">
+            <DashboardActionDrawer
+              title={dictionary.userManagement.inviteTitle}
+              description={dictionary.userManagement.inviteDescription}
+              triggerLabel={dictionary.userManagement.invite}
+              defaultOpen={shouldOpenCreateDrawer}
+            >
+              <UserInviteForm
+                locale={locale}
+                actorRoles={roles}
+                status={status}
+                dictionary={dictionary.userManagement}
+              />
+            </DashboardActionDrawer>
+          </div>
           <UserRoleManagementTable
             locale={locale}
             users={users}

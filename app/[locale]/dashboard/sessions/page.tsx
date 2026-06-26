@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { SessionRequestList } from "@/features/session-requests/components/session-request-list";
 import { SessionForm } from "@/features/sessions/components/session-form";
@@ -55,6 +56,7 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
     sessions.map((session) => session.id)
   );
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000";
+  const shouldOpenCreateDrawer = status === "invalid";
 
   return (
     <JanzuDashboardFrame
@@ -68,13 +70,23 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
       }}
     >
       <div className="flex flex-1 flex-col">
-        <div className="@container/main grid flex-1 gap-4 p-4 md:grid-cols-[360px_1fr] md:p-6">
-          <SessionForm
-            locale={locale}
-            clients={clients}
-            status={status}
-            dictionary={dictionary.sessions}
-          />
+        <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+          <div className="flex justify-end">
+            <DashboardActionDrawer
+              title={dictionary.sessions.formTitle}
+              description={dictionary.sessions.formDescription}
+              triggerLabel={dictionary.sessions.formTitle}
+              defaultOpen={shouldOpenCreateDrawer}
+            >
+              <SessionForm
+                locale={locale}
+                clients={clients}
+                status={status}
+                variant="plain"
+                dictionary={dictionary.sessions}
+              />
+            </DashboardActionDrawer>
+          </div>
           <SessionList
             locale={locale}
             sessions={sessions}
