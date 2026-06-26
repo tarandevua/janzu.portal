@@ -1,6 +1,7 @@
 import type { Locale } from "@/lib/i18n/config";
 import type { PractitionerProfile } from "@/server/models/practitioner.model";
 import { savePractitionerProfile } from "@/features/practitioners/actions";
+import { CoordinatePicker } from "@/features/maps/components/coordinate-picker";
 import { PublicProfileCheckbox } from "@/features/practitioners/components/public-profile-checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -12,14 +13,20 @@ import { Textarea } from "@/components/ui/textarea";
 type PractitionerProfileFormProps = {
   locale: Locale;
   profile: PractitionerProfile | null;
+  fullName: string;
   dictionary: {
     title: string;
     description: string;
+    fullName: string;
     bio: string;
     country: string;
     city: string;
     latitude: string;
     longitude: string;
+    mapPickerTitle: string;
+    mapPickerDescription: string;
+    selectedCoordinates: string;
+    noCoordinatesSelected: string;
     languages: string;
     website: string;
     profileImageUrl: string;
@@ -34,6 +41,7 @@ type PractitionerProfileFormProps = {
 export function PractitionerProfileForm({
   locale,
   profile,
+  fullName,
   dictionary,
   status,
 }: PractitionerProfileFormProps) {
@@ -56,6 +64,11 @@ export function PractitionerProfileForm({
           ) : null}
 
           <div className="grid gap-2">
+            <Label htmlFor="fullName">{dictionary.fullName}</Label>
+            <Input id="fullName" name="fullName" defaultValue={fullName} />
+          </div>
+
+          <div className="grid gap-2">
             <Label htmlFor="bio">{dictionary.bio}</Label>
             <Textarea id="bio" name="bio" defaultValue={profile?.bio ?? ""} rows={5} />
           </div>
@@ -71,16 +84,12 @@ export function PractitionerProfileForm({
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="latitude">{dictionary.latitude}</Label>
-              <Input id="latitude" name="latitude" defaultValue={profile?.latitude ?? ""} inputMode="decimal" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="longitude">{dictionary.longitude}</Label>
-              <Input id="longitude" name="longitude" defaultValue={profile?.longitude ?? ""} inputMode="decimal" />
-            </div>
-          </div>
+          <CoordinatePicker
+            defaultLatitude={profile?.latitude}
+            defaultLongitude={profile?.longitude}
+            markerLabel="P"
+            dictionary={dictionary}
+          />
 
           <div className="grid gap-2">
             <Label htmlFor="languages">{dictionary.languages}</Label>

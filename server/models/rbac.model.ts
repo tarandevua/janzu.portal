@@ -7,6 +7,14 @@ export type UserRole = {
   role: Role;
 };
 
+export type ManagedUser = {
+  userId: string;
+  email: string;
+  fullName: string | null;
+  createdAt: string;
+  roles: Role[];
+};
+
 export type RolePermission =
   | "users:manage"
   | "locations:approve"

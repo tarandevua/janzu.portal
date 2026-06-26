@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canAccessDashboard,
+  canManageUserRole,
   getPrimaryRole,
   getRoleDashboardPath,
   hasPermission,
@@ -30,7 +31,16 @@ describe("RBAC service", () => {
     expect(hasRole(["facilitator"], "facilitator")).toBe(true);
     expect(hasPermission(["admin"], "certifications:approve")).toBe(true);
     expect(hasPermission(["manager"], "certifications:approve")).toBe(true);
+    expect(hasPermission(["manager"], "users:manage")).toBe(true);
     expect(hasPermission(["practitioner"], "certifications:approve")).toBe(false);
+  });
+
+  it("limits manager role administration to operational roles", () => {
+    expect(canManageUserRole(["admin"], "admin")).toBe(true);
+    expect(canManageUserRole(["manager"], "facilitator")).toBe(true);
+    expect(canManageUserRole(["manager"], "practitioner")).toBe(true);
+    expect(canManageUserRole(["manager"], "admin")).toBe(false);
+    expect(canManageUserRole(["manager"], "manager")).toBe(false);
   });
 
   it("builds locale-aware role dashboard paths", () => {

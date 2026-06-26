@@ -22,6 +22,7 @@ const coordinate = (minimum: number, maximum: number) =>
   z.preprocess(emptyToNull, z.coerce.number().min(minimum).max(maximum).nullable().optional());
 
 export const practitionerProfileSchema = z.object({
+  fullName: z.preprocess(emptyToNull, z.string().trim().max(160).nullable().optional()),
   bio: optionalText,
   country: z.preprocess(emptyToNull, z.string().trim().max(120).nullable().optional()),
   city: z.preprocess(emptyToNull, z.string().trim().max(120).nullable().optional()),

@@ -44,11 +44,16 @@
     "form": {
       "title": "Perfil de practicante",
       "description": "Gestiona la informacion que puede aparecer en tu perfil publico de practicante.",
+      "fullName": "Nombre completo",
       "bio": "Bio",
       "country": "Pais",
       "city": "Ciudad",
       "latitude": "Latitud",
       "longitude": "Longitud",
+      "mapPickerTitle": "Coloca tu pin de practicante en el mapa",
+      "mapPickerDescription": "Haz clic en el area publica exacta de practica para tu perfil. La latitud y longitud se tomaran del pin.",
+      "selectedCoordinates": "Coordenadas seleccionadas",
+      "noCoordinatesSelected": "Aun no has seleccionado un pin de practicante.",
       "languages": "Idiomas",
       "website": "Sitio web",
       "profileImageUrl": "URL de imagen de perfil",
@@ -263,5 +268,33 @@
     "view": "Ver",
     "markRead": "Marcar como leida",
     "invalid": "No se pudo actualizar esa notificacion."
+  },
+  "userManagement": {
+    "title": "Gestion de usuarios",
+    "description": "Gestiona usuarios del portal y asignaciones de roles. Gestion puede asignar roles de practicante y facilitador; administracion puede gestionar todos los roles.",
+    "inviteTitle": "Invitar usuario",
+    "inviteDescription": "Crea o encuentra un usuario, asigna un rol inicial y envia una invitacion por Brevo.",
+    "user": "Usuario",
+    "fullName": "Nombre completo",
+    "email": "Correo electronico",
+    "roles": "Roles",
+    "created": "Creado",
+    "assignRole": "Asignar rol",
+    "removeRole": "Quitar rol",
+    "invite": "Enviar invitacion",
+    "action": "Accion",
+    "empty": "No se encontraron usuarios.",
+    "assigned": "Rol asignado.",
+    "removed": "Rol eliminado.",
+    "invited": "Invitacion enviada.",
+    "invalid": "No se pudo procesar ese cambio de rol.",
+    "inviteInvalid": "No se pudo enviar esa invitacion. Revisa el correo y el rol.",
+    "forbidden": "Se requiere acceso de administracion o gestion para gestionar usuarios.",
+    "roleLabels": {
+      "admin": "Admin",
+      "manager": "Gestion",
+      "facilitator": "Facilitador",
+      "practitioner": "Practicante"
+    }
   }
 }

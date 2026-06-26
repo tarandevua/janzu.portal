@@ -9,11 +9,10 @@ import {
   DatabaseIcon,
   FileTextIcon,
   LayoutDashboardIcon,
-  BellIcon,
   UsersIcon,
   MapIcon,
   MapPinnedIcon,
-  UserCircleIcon,
+  UserCogIcon,
 } from "lucide-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -33,6 +32,8 @@ import type { Locale } from "@/lib/i18n/config"
 import type { RoleAccess } from "@/server/models/rbac.model"
 
 function getData(locale: Locale, access: RoleAccess[]) {
+  const canManageUsers = access.some((item) => item.permissions.includes("users:manage"))
+
   return {
     roleLinks: access.map((item) => ({
       title: item.label,
@@ -45,6 +46,15 @@ function getData(locale: Locale, access: RoleAccess[]) {
       url: `/${locale}/dashboard`,
       icon: LayoutDashboardIcon,
     },
+    ...(canManageUsers
+      ? [
+          {
+            title: "Users",
+            url: `/${locale}/dashboard/users`,
+            icon: UserCogIcon,
+          },
+        ]
+      : []),
     {
       title: "Clients",
       url: `/${locale}/dashboard/clients`,

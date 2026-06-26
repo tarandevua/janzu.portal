@@ -10,7 +10,7 @@ export const roleAccess: Record<Role, Omit<RoleAccess, "role">> = {
   manager: {
     label: "Manager",
     dashboardPath: "manager",
-    permissions: ["locations:approve", "certifications:approve", "events:manage", "sessions:facilitate"]
+    permissions: ["users:manage", "locations:approve", "certifications:approve", "events:manage", "sessions:facilitate"]
   },
   facilitator: {
     label: "Facilitator",
@@ -59,6 +59,11 @@ export function hasAnyRole(userRoles: Role[], requiredRoles: Role[]) {
 
 export function hasPermission(userRoles: Role[], permission: RolePermission) {
   return normalizeRoles(userRoles).some((role) => roleAccess[role].permissions.includes(permission));
+}
+
+export function canManageUserRole(actorRoles: Role[], targetRole: Role) {
+  return hasRole(actorRoles, "admin")
+    || (hasRole(actorRoles, "manager") && ["facilitator", "practitioner"].includes(targetRole));
 }
 
 export function canAccessDashboard(userRoles: Role[], dashboardRole: Role) {

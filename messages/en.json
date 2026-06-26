@@ -44,11 +44,16 @@
     "form": {
       "title": "Practitioner profile",
       "description": "Manage the information that can appear on your public practitioner profile.",
+      "fullName": "Full name",
       "bio": "Bio",
       "country": "Country",
       "city": "City",
       "latitude": "Latitude",
       "longitude": "Longitude",
+      "mapPickerTitle": "Drop your practitioner pin on the map",
+      "mapPickerDescription": "Click the exact public practice area for your profile. The latitude and longitude will be captured from the pin.",
+      "selectedCoordinates": "Selected coordinates",
+      "noCoordinatesSelected": "No practitioner pin selected yet.",
       "languages": "Languages",
       "website": "Website",
       "profileImageUrl": "Profile image URL",
@@ -263,5 +268,33 @@
     "view": "View",
     "markRead": "Mark read",
     "invalid": "That notification could not be updated."
+  },
+  "userManagement": {
+    "title": "User management",
+    "description": "Manage portal users and role assignments. Managers can assign practitioner and facilitator roles; admins can manage all roles.",
+    "inviteTitle": "Invite user",
+    "inviteDescription": "Create or find a user, assign an initial role, and send a Brevo invite email.",
+    "user": "User",
+    "fullName": "Full name",
+    "email": "Email",
+    "roles": "Roles",
+    "created": "Created",
+    "assignRole": "Assign role",
+    "removeRole": "Remove role",
+    "invite": "Send invite",
+    "action": "Action",
+    "empty": "No users found.",
+    "assigned": "Role assigned.",
+    "removed": "Role removed.",
+    "invited": "Invite sent.",
+    "invalid": "That role change could not be processed.",
+    "inviteInvalid": "That invite could not be sent. Check the email and role.",
+    "forbidden": "Admin or manager access is required to manage users.",
+    "roleLabels": {
+      "admin": "Admin",
+      "manager": "Manager",
+      "facilitator": "Facilitator",
+      "practitioner": "Practitioner"
+    }
   }
 }

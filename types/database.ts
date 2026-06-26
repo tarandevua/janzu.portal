@@ -553,6 +553,48 @@ export type Database = {
         };
         Returns: boolean;
       };
+      can_manage_user_role: {
+        Args: {
+          actor_user_id: string;
+          target_role: "admin" | "manager" | "facilitator" | "practitioner";
+        };
+        Returns: boolean;
+      };
+      list_user_role_management: {
+        Args: {
+          actor_user_id: string;
+        };
+        Returns: {
+          user_id: string;
+          email: string;
+          full_name: string | null;
+          created_at: string;
+          roles: ("admin" | "manager" | "facilitator" | "practitioner")[];
+        }[];
+      };
+      assign_user_role: {
+        Args: {
+          actor_user_id: string;
+          target_user_id: string;
+          target_role: "admin" | "manager" | "facilitator" | "practitioner";
+        };
+        Returns: undefined;
+      };
+      remove_user_role: {
+        Args: {
+          actor_user_id: string;
+          target_user_id: string;
+          target_role: "admin" | "manager" | "facilitator" | "practitioner";
+        };
+        Returns: undefined;
+      };
+      update_current_user_full_name: {
+        Args: {
+          target_user_id: string;
+          target_full_name: string | null;
+        };
+        Returns: Database["public"]["Tables"]["users"]["Row"];
+      };
       session_client_matches_practitioner: {
         Args: {
           target_practitioner_id: string;
