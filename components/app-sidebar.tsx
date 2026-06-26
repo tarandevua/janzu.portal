@@ -69,7 +69,7 @@ function getData(locale: Locale, access: RoleAccess[]) {
     },
     {
       title: "Events",
-      url: "#",
+      url: `/${locale}/dashboard/events`,
       icon: CalendarDaysIcon,
     },
     {
@@ -110,6 +110,11 @@ function getData(locale: Locale, access: RoleAccess[]) {
       name: "Feedback",
       url: "#",
       icon: FileTextIcon,
+    },
+    {
+      name: "Events",
+      url: `/${locale}/events`,
+      icon: CalendarDaysIcon,
     },
   ],
   }

@@ -372,6 +372,78 @@ export type Database = {
         };
         Relationships: [];
       };
+      events: {
+        Row: {
+          id: string;
+          created_by: string;
+          title: string;
+          description: string | null;
+          event_type: "retreat" | "training" | "community_gathering";
+          location_name: string;
+          latitude: number | null;
+          longitude: number | null;
+          starts_at: string;
+          ends_at: string;
+          capacity: number;
+          status: "draft" | "published" | "cancelled";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          created_by: string;
+          title: string;
+          description?: string | null;
+          event_type: "retreat" | "training" | "community_gathering";
+          location_name: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          starts_at: string;
+          ends_at: string;
+          capacity: number;
+          status?: "draft" | "published" | "cancelled";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          created_by?: string;
+          title?: string;
+          description?: string | null;
+          event_type?: "retreat" | "training" | "community_gathering";
+          location_name?: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          starts_at?: string;
+          ends_at?: string;
+          capacity?: number;
+          status?: "draft" | "published" | "cancelled";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      event_rsvps: {
+        Row: {
+          id: string;
+          event_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -434,6 +506,13 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["locations"]["Row"];
       };
+      rsvp_to_event: {
+        Args: {
+          target_event_id: string;
+          attendee_user_id: string;
+        };
+        Returns: Database["public"]["Tables"]["event_rsvps"]["Row"];
+      };
       list_certification_approval_candidates: {
         Args: {
           reviewer_user_id: string;
@@ -461,6 +540,8 @@ export type Database = {
       certification_status: "in_progress" | "eligible" | "approved";
       location_type: "pool" | "spa" | "natural_water";
       approval_status: "pending" | "approved" | "rejected";
+      event_type: "retreat" | "training" | "community_gathering";
+      event_status: "draft" | "published" | "cancelled";
     };
     CompositeTypes: Record<string, never>;
   };
