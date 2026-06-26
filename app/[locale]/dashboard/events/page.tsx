@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import { EventCreateDrawer } from "@/features/events/components/event-create-drawer";
 import { EventForm } from "@/features/events/components/event-form";
 import { EventList } from "@/features/events/components/event-list";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -38,6 +39,7 @@ export default async function EventsPage({ params, searchParams }: EventsPagePro
   }
 
   const events = await listEventsForManagement(supabase, roles);
+  const shouldOpenCreateDrawer = status === "invalid" || status === "forbidden";
 
   return (
     <JanzuDashboardFrame
@@ -51,8 +53,15 @@ export default async function EventsPage({ params, searchParams }: EventsPagePro
       }}
     >
       <div className="flex flex-1 flex-col">
-        <div className="@container/main grid flex-1 gap-4 p-4 md:grid-cols-[380px_1fr] md:p-6">
-          <EventForm locale={locale} status={status} dictionary={dictionary.events} />
+        <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+          <div className="flex justify-end">
+            <EventCreateDrawer
+              defaultOpen={shouldOpenCreateDrawer}
+              dictionary={dictionary.events}
+            >
+              <EventForm locale={locale} status={status} dictionary={dictionary.events} />
+            </EventCreateDrawer>
+          </div>
           <EventList events={events} dictionary={dictionary.events} />
         </div>
       </div>

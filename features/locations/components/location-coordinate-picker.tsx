@@ -105,7 +105,7 @@ export function LocationCoordinatePicker({ dictionary }: LocationCoordinatePicke
   const longitudeValue = coordinates ? formatCoordinate(coordinates.longitude) : "";
 
   return (
-    <div className="grid gap-2">
+    <div className="grid min-w-0 gap-2">
       <div className="space-y-1">
         <div className="flex items-center gap-2 text-sm font-medium">
           <MapPinIcon className="h-4 w-4" />
@@ -119,18 +119,18 @@ export function LocationCoordinatePicker({ dictionary }: LocationCoordinatePicke
 
       <div
         ref={containerRef}
-        className="min-h-[320px] overflow-hidden rounded-md border bg-muted"
+        className="min-h-[320px] min-w-0 overflow-hidden rounded-md border bg-muted"
         aria-label={dictionary.mapPickerTitle}
       />
 
       <div
         className={cn(
-          "rounded-md border p-3 text-sm",
+          "min-w-0 overflow-hidden rounded-md border p-3 text-sm",
           coordinates ? "bg-background" : "border-dashed text-muted-foreground"
         )}
       >
         {coordinates ? (
-          <span>
+          <span className="break-words">
             {dictionary.selectedCoordinates}: {dictionary.latitude} {latitudeValue},{" "}
             {dictionary.longitude} {longitudeValue}
           </span>
