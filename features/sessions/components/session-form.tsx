@@ -1,6 +1,7 @@
 import type { Locale } from "@/lib/i18n/config";
 import type { Client } from "@/server/models/client.model";
 import { createSession } from "@/features/sessions/actions";
+import { SessionDatePicker } from "@/features/sessions/components/session-date-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +27,7 @@ type SessionFormProps = {
     client: string;
     noClient: string;
     date: string;
+    pickDate: string;
     duration: string;
     location: string;
     notes: string;
@@ -72,13 +74,10 @@ export function SessionForm({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="sessionDate">{dictionary.date}</Label>
-              <Input id="sessionDate" name="sessionDate" type="date" required />
-            </div>
+            <SessionDatePicker label={dictionary.date} placeholder={dictionary.pickDate} />
             <div className="grid gap-2">
               <Label htmlFor="durationMinutes">{dictionary.duration}</Label>
-              <Input id="durationMinutes" name="durationMinutes" type="number" min="1" max="1440" required />
+              <Input id="durationMinutes" name="durationMinutes" type="number" min="1" max="1440" required value="60" />
             </div>
           </div>
 

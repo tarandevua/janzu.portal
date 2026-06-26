@@ -217,6 +217,7 @@
     "client": "Cliente",
     "noClient": "Sin cliente",
     "date": "Fecha",
+    "pickDate": "Seleccionar fecha",
     "duration": "Duracion en minutos",
     "location": "Ubicacion",
     "notes": "Notas",
