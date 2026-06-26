@@ -38,6 +38,36 @@
         "title": "Panel de practicante",
         "description": "Gestiona tu perfil, clientes privados, sesiones, feedback y progreso de certificacion."
       }
+    },
+    "practitionerData": {
+      "setupTitle": "Completa tu perfil.",
+      "setupDescription": "Crea tu perfil de practicante antes de usar el panel de practicante.",
+      "setupAction": "Abrir perfil",
+      "profileStatus": "Estado del perfil",
+      "publicProfile": "Publico",
+      "privateProfile": "Privado",
+      "certificationProgress": "Progreso de certificacion",
+      "validatedSessions": "Sesiones validadas",
+      "totalSessions": "sesiones totales",
+      "privateClients": "Clientes privados",
+      "pendingRequests": "Solicitudes pendientes",
+      "feedbackReceived": "feedback recibido",
+      "submittedLocations": "Ubicaciones enviadas",
+      "approvedLocations": "aprobadas",
+      "pendingLocations": "Ubicaciones pendientes",
+      "recentSessions": "Sesiones recientes",
+      "recentRequests": "Solicitudes recientes",
+      "recentFeedback": "Feedback reciente",
+      "viewAll": "Ver todo",
+      "emptySessions": "Aun no hay sesiones registradas.",
+      "emptyRequests": "Aun no hay solicitudes de sesion.",
+      "emptyFeedback": "Aun no hay feedback recibido.",
+      "date": "Fecha",
+      "duration": "Duracion",
+      "location": "Ubicacion",
+      "requestFrom": "Solicitud de",
+      "rating": "Calificacion",
+      "certificationRequired": "requeridas"
     }
   },
   "practitioners": {

@@ -38,6 +38,36 @@
         "title": "Practitioner dashboard",
         "description": "Manage your profile, private clients, sessions, feedback, and certification progress."
       }
+    },
+    "practitionerData": {
+      "setupTitle": "Complete your profile.",
+      "setupDescription": "Create your practitioner profile before using the practitioner dashboard.",
+      "setupAction": "Open profile",
+      "profileStatus": "Profile status",
+      "publicProfile": "Public",
+      "privateProfile": "Private",
+      "certificationProgress": "Certification progress",
+      "validatedSessions": "Validated sessions",
+      "totalSessions": "total sessions",
+      "privateClients": "Private clients",
+      "pendingRequests": "Pending requests",
+      "feedbackReceived": "feedback received",
+      "submittedLocations": "Submitted locations",
+      "approvedLocations": "approved",
+      "pendingLocations": "Pending locations",
+      "recentSessions": "Recent sessions",
+      "recentRequests": "Recent requests",
+      "recentFeedback": "Recent feedback",
+      "viewAll": "View all",
+      "emptySessions": "No sessions logged yet.",
+      "emptyRequests": "No session requests yet.",
+      "emptyFeedback": "No feedback received yet.",
+      "date": "Date",
+      "duration": "Duration",
+      "location": "Location",
+      "requestFrom": "Request from",
+      "rating": "Rating",
+      "certificationRequired": "required"
     }
   },
   "practitioners": {
