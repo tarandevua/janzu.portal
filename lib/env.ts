@@ -13,6 +13,14 @@ const serverEnvSchema = clientEnvSchema.extend({
   BREVO_SENDER_NAME: z.string().min(1).default("Janzu Community Portal")
 });
 
+const r2EnvSchema = z.object({
+  CLOUDFLARE_R2_ACCOUNT_ID: z.string().min(1),
+  CLOUDFLARE_R2_ACCESS_KEY_ID: z.string().min(1),
+  CLOUDFLARE_R2_SECRET_ACCESS_KEY: z.string().min(1),
+  CLOUDFLARE_R2_BUCKET: z.string().min(1),
+  CLOUDFLARE_R2_PUBLIC_URL: z.string().url()
+});
+
 export function getClientEnv() {
   return clientEnvSchema.parse({
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
@@ -30,5 +38,15 @@ export function getServerEnv() {
     BREVO_API_KEY: process.env.BREVO_API_KEY,
     BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL,
     BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME
+  });
+}
+
+export function getR2Env() {
+  return r2EnvSchema.parse({
+    CLOUDFLARE_R2_ACCOUNT_ID: process.env.CLOUDFLARE_R2_ACCOUNT_ID,
+    CLOUDFLARE_R2_ACCESS_KEY_ID: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+    CLOUDFLARE_R2_SECRET_ACCESS_KEY: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+    CLOUDFLARE_R2_BUCKET: process.env.CLOUDFLARE_R2_BUCKET,
+    CLOUDFLARE_R2_PUBLIC_URL: process.env.CLOUDFLARE_R2_PUBLIC_URL
   });
 }

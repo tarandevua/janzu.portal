@@ -5,6 +5,10 @@ import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { saveMyPractitionerProfile } from "@/server/services/practitioner.service";
+import {
+  isUploadedFile,
+  uploadPractitionerAvatar,
+} from "@/server/services/r2-storage.service";
 import type { Database } from "@/types/database";
 import {
   parseLanguages,
@@ -31,6 +35,23 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
     redirect(`/${locale}/login?status=auth-required`);
   }
 
+  const avatarFile = formData.get("avatarImage");
+  const currentProfileImageUrl = formData.get("profileImageUrl");
+  let profileImageUrl =
+    typeof currentProfileImageUrl === "string" && currentProfileImageUrl.trim()
+      ? currentProfileImageUrl
+      : null;
+
+  if (isUploadedFile(avatarFile) && avatarFile.size > 0) {
+    const upload = await uploadPractitionerAvatar(user.id, avatarFile);
+
+    if (!upload.ok) {
+      redirect(`/${locale}/dashboard/profile?status=${upload.code}`);
+    }
+
+    profileImageUrl = upload.url;
+  }
+
   const parsed = practitionerProfileSchema.safeParse({
     fullName: formData.get("fullName"),
     bio: formData.get("bio"),
@@ -40,7 +61,7 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
     longitude: formData.get("longitude"),
     languages: parseLanguages(formData.get("languages")),
     website: formData.get("website"),
-    profileImageUrl: formData.get("profileImageUrl"),
+    profileImageUrl,
     isPublic: formData.get("isPublic") === "true",
   });
 
@@ -53,6 +74,7 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
   await supabase.auth.updateUser({
     data: {
       full_name: fullName ?? undefined,
+      avatar_url: profileImageUrl ?? undefined,
     },
   });
 

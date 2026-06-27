@@ -168,7 +168,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.roleLinks} />
+        {data.roleLinks.length > 1 ? <NavMain items={data.roleLinks} /> : null}
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} label={dictionary.community} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />

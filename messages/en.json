@@ -179,10 +179,18 @@
       "languages": "Languages",
       "website": "Website",
       "profileImageUrl": "Profile image URL",
+      "profileImageUpload": "Profile image",
+      "profileImageUploadHelp": "Upload a JPG image up to 2 MB.",
       "isPublic": "Make this profile public",
       "save": "Save profile",
       "saved": "Profile saved.",
-      "invalid": "Check the profile fields and try again."
+      "invalid": "Check the profile fields and try again.",
+      "avatarType": "Upload a JPG image only.",
+      "avatarSize": "Profile image must be 2 MB or smaller.",
+      "avatarConfig": "Cloudflare R2 is not configured correctly. Check the R2 environment variables.",
+      "avatarAuth": "Cloudflare R2 rejected the upload credentials. Check the access key permissions for this bucket.",
+      "avatarBucket": "Cloudflare R2 bucket was not found. Check the bucket name and account ID.",
+      "avatarUpload": "Profile image could not be uploaded. Check R2 settings and try again."
     },
     "public": {
       "title": "Find Janzu practitioners",

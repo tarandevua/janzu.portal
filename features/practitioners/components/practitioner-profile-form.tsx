@@ -4,6 +4,7 @@ import { savePractitionerProfile } from "@/features/practitioners/actions";
 import { CoordinatePicker } from "@/features/maps/components/coordinate-picker";
 import { PublicProfileCheckbox } from "@/features/practitioners/components/public-profile-checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,13 +31,42 @@ type PractitionerProfileFormProps = {
     languages: string;
     website: string;
     profileImageUrl: string;
+    profileImageUpload: string;
+    profileImageUploadHelp: string;
     isPublic: string;
     save: string;
     saved: string;
     invalid: string;
+    avatarType: string;
+    avatarSize: string;
+    avatarConfig: string;
+    avatarAuth: string;
+    avatarBucket: string;
+    avatarUpload: string;
   };
   status?: string;
 };
+
+const statusMessages = {
+  saved: "saved",
+  invalid: "invalid",
+  "avatar-type": "avatarType",
+  "avatar-size": "avatarSize",
+  "avatar-config": "avatarConfig",
+  "avatar-auth": "avatarAuth",
+  "avatar-bucket": "avatarBucket",
+  "avatar-upload": "avatarUpload",
+} as const;
+
+function getAvatarFallback(fullName: string) {
+  const words = fullName.trim().split(/\s+/).filter(Boolean);
+
+  if (words.length >= 2) {
+    return `${words[0][0]}${words[1][0]}`.toUpperCase();
+  }
+
+  return (words[0]?.slice(0, 2) || "JP").toUpperCase();
+}
 
 export function PractitionerProfileForm({
   locale,
@@ -46,8 +76,10 @@ export function PractitionerProfileForm({
   status,
 }: PractitionerProfileFormProps) {
   const action = savePractitionerProfile.bind(null, locale);
-  const message =
-    status === "saved" ? dictionary.saved : status === "invalid" ? dictionary.invalid : null;
+  const messageKey = status ? statusMessages[status as keyof typeof statusMessages] : null;
+  const message = messageKey ? dictionary[messageKey] : null;
+  const isError = status !== "saved";
+  const avatarFallback = getAvatarFallback(fullName);
 
   return (
     <Card>
@@ -56,9 +88,9 @@ export function PractitionerProfileForm({
         <CardDescription>{dictionary.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={action} className="grid gap-5">
+        <form action={action} encType="multipart/form-data" className="grid gap-5">
           {message ? (
-            <Alert variant={status === "invalid" ? "destructive" : "default"}>
+            <Alert variant={isError ? "destructive" : "default"}>
               <AlertDescription>{message}</AlertDescription>
             </Alert>
           ) : null}
@@ -102,13 +134,31 @@ export function PractitionerProfileForm({
               <Input id="website" name="website" type="url" defaultValue={profile?.website ?? ""} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="profileImageUrl">{dictionary.profileImageUrl}</Label>
-              <Input
-                id="profileImageUrl"
-                name="profileImageUrl"
-                type="url"
-                defaultValue={profile?.profileImageUrl ?? ""}
-              />
+              <Label htmlFor="avatarImage">{dictionary.profileImageUpload}</Label>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12 rounded-lg">
+                  <AvatarImage src={profile?.profileImageUrl ?? ""} alt={fullName} />
+                  <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 gap-1">
+                  <input
+                    type="hidden"
+                    id="profileImageUrl"
+                    name="profileImageUrl"
+                    value={profile?.profileImageUrl ?? ""}
+                  />
+                  <Input
+                    id="avatarImage"
+                    name="avatarImage"
+                    type="file"
+                    accept="image/jpeg,.jpg,.jpeg"
+                  />
+                  <p className="text-xs text-muted-foreground">{dictionary.profileImageUploadHelp}</p>
+                </div>
+              </div>
+              <Label className="sr-only" htmlFor="profileImageUrl">
+                {dictionary.profileImageUrl}
+              </Label>
             </div>
           </div>
 

@@ -179,10 +179,18 @@
       "languages": "Idiomas",
       "website": "Sitio web",
       "profileImageUrl": "URL de imagen de perfil",
+      "profileImageUpload": "Imagen de perfil",
+      "profileImageUploadHelp": "Sube una imagen JPG de hasta 2 MB.",
       "isPublic": "Hacer publico este perfil",
       "save": "Guardar perfil",
       "saved": "Perfil guardado.",
-      "invalid": "Revisa los campos del perfil e intentalo nuevamente."
+      "invalid": "Revisa los campos del perfil e intentalo nuevamente.",
+      "avatarType": "Sube solo una imagen JPG.",
+      "avatarSize": "La imagen de perfil debe pesar 2 MB o menos.",
+      "avatarConfig": "Cloudflare R2 no esta configurado correctamente. Revisa las variables de entorno de R2.",
+      "avatarAuth": "Cloudflare R2 rechazo las credenciales de subida. Revisa los permisos de la clave para este bucket.",
+      "avatarBucket": "No se encontro el bucket de Cloudflare R2. Revisa el nombre del bucket y el account ID.",
+      "avatarUpload": "No se pudo subir la imagen de perfil. Revisa la configuracion de R2 e intentalo nuevamente."
     },
     "public": {
       "title": "Encontrar practicantes de Janzu",

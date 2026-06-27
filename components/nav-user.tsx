@@ -32,6 +32,28 @@ import {
 import { signOut } from "@/features/auth/actions"
 import type { Locale } from "@/lib/i18n/config"
 
+function getAvatarFallback(name: string, email: string) {
+  const source = name.trim() || email.trim()
+  const [localPart] = email.split("@")
+
+  if (!source) {
+    return "JP"
+  }
+
+  const words = source
+    .replace(/[._-]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+
+  if (words.length >= 2) {
+    return `${words[0][0]}${words[1][0]}`.toUpperCase()
+  }
+
+  const singleName = words[0] ?? localPart ?? "JP"
+
+  return singleName.slice(0, 2).toUpperCase()
+}
+
 export function NavUser({
   locale,
   user,
@@ -52,6 +74,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const [isLoggingOut, startLogoutTransition] = useTransition()
+  const avatarFallback = getAvatarFallback(user.name, user.email)
 
   return (
     <SidebarMenu>
@@ -64,7 +87,7 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -85,7 +108,7 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
