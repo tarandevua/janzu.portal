@@ -21,6 +21,16 @@ describe("practitionerProfileSchema", () => {
     expect(parsed.success).toBe(true);
   });
 
+  it("accepts app media profile image paths for private R2 objects", () => {
+    const parsed = practitionerProfileSchema.safeParse({
+      languages: [],
+      profileImageUrl: "/api/media/r2/avatars/user-id/profile.jpg",
+      isPublic: false,
+    });
+
+    expect(parsed.success).toBe(true);
+  });
+
   it("rejects invalid coordinates", () => {
     const parsed = practitionerProfileSchema.safeParse({
       latitude: "120",

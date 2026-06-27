@@ -13,6 +13,21 @@ const optionalUrl = z.preprocess(
   z.string().trim().url().nullable().optional()
 );
 
+const optionalProfileImageReference = z.preprocess(
+  emptyToNull,
+  z
+    .string()
+    .trim()
+    .max(2048)
+    .refine(
+      (value) =>
+        value.startsWith("/api/media/r2/avatars/") || z.string().url().safeParse(value).success,
+      "Profile image must be an app media path or URL."
+    )
+    .nullable()
+    .optional()
+);
+
 const optionalText = z.preprocess(
   emptyToNull,
   z.string().trim().max(5000).nullable().optional()
@@ -33,7 +48,7 @@ export const practitionerProfileSchema = z.object({
     .max(20)
     .default([]),
   website: optionalUrl,
-  profileImageUrl: optionalUrl,
+  profileImageUrl: optionalProfileImageReference,
   isPublic: z.boolean().default(false),
 });
 

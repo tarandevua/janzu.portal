@@ -3,6 +3,7 @@ import type { Route } from "next";
 import { ClusteredMap } from "@/features/maps/components/clustered-map";
 import type { MapMarker } from "@/features/maps/types";
 import { hasValidCoordinates } from "@/features/maps/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -14,6 +15,20 @@ type PractitionersPageProps = {
   params: Promise<{ locale: Locale }>;
 };
 
+function getPractitionerName(profile: { displayName?: string | null; city: string | null }, fallback: string) {
+  return profile.displayName?.trim() || profile.city || fallback;
+}
+
+function getAvatarFallback(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+
+  if (words.length >= 2) {
+    return `${words[0][0]}${words[1][0]}`.toUpperCase();
+  }
+
+  return (words[0]?.slice(0, 2) || "JP").toUpperCase();
+}
+
 export default async function PractitionersPage({ params }: PractitionersPageProps) {
   const { locale } = await params;
   const [dictionary, supabase] = await Promise.all([
@@ -24,7 +39,7 @@ export default async function PractitionersPage({ params }: PractitionersPagePro
   const markers: MapMarker[] = profiles.filter(hasValidCoordinates).map((profile) => ({
     id: profile.id,
     kind: "practitioner",
-    title: profile.city ?? dictionary.practitioners.public.unknownCity,
+    title: getPractitionerName(profile, dictionary.practitioners.public.unknownCity),
     description: profile.bio,
     latitude: profile.latitude,
     longitude: profile.longitude,
@@ -49,12 +64,30 @@ export default async function PractitionersPage({ params }: PractitionersPagePro
         />
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {profiles.map((profile) => (
+          {profiles.map((profile) => {
+            const practitionerName = getPractitionerName(
+              profile,
+              dictionary.practitioners.public.unknownCity
+            );
+
+            return (
             <Link key={profile.id} href={`/${locale}/practitioners/${profile.id}` as Route}>
               <Card className="h-full transition-colors hover:bg-accent/40">
                 <CardHeader>
-                  <CardTitle>{profile.city ?? dictionary.practitioners.public.unknownCity}</CardTitle>
-                  <CardDescription>{[profile.country, profile.city].filter(Boolean).join(", ")}</CardDescription>
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-12 w-12 rounded-lg">
+                      <AvatarImage src={profile.profileImageUrl ?? ""} alt={practitionerName} />
+                      <AvatarFallback className="rounded-lg">
+                        {getAvatarFallback(practitionerName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <CardTitle className="truncate">{practitionerName}</CardTitle>
+                      <CardDescription>
+                        {[profile.country, profile.city].filter(Boolean).join(", ")}
+                      </CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="line-clamp-3 text-sm text-muted-foreground">{profile.bio}</p>
@@ -68,7 +101,8 @@ export default async function PractitionersPage({ params }: PractitionersPagePro
                 </CardContent>
               </Card>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
     </main>

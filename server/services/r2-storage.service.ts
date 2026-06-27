@@ -2,13 +2,14 @@ import crypto from "node:crypto";
 import { getR2Env } from "@/lib/env";
 
 export const MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024;
+export const R2_MEDIA_ROUTE_PREFIX = "/api/media/r2";
 
 export type AvatarUploadValidationResult =
   | { ok: true }
   | { ok: false; code: "avatar-type" | "avatar-size" };
 
 export type AvatarUploadResult =
-  | { ok: true; url: string }
+  | { ok: true; key: string; url: string }
   | {
       ok: false;
       code:
@@ -25,8 +26,11 @@ type R2UploadConfig = {
   accessKeyId: string;
   secretAccessKey: string;
   bucket: string;
-  publicUrl: string;
 };
+
+export type R2ImageFetchResult =
+  | { ok: true; response: Response; contentType: string; contentLength: string | null; etag: string | null }
+  | { ok: false; status: number; message: string };
 
 function hmac(key: crypto.BinaryLike, value: string) {
   return crypto.createHmac("sha256", key).update(value).digest();
@@ -53,13 +57,18 @@ function getR2Config(): R2UploadConfig | null {
       accessKeyId: env.CLOUDFLARE_R2_ACCESS_KEY_ID,
       secretAccessKey: env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
       bucket: env.CLOUDFLARE_R2_BUCKET,
-      publicUrl: env.CLOUDFLARE_R2_PUBLIC_URL.replace(/\/$/, ""),
     };
   } catch (error) {
     console.error("Cloudflare R2 avatar config is invalid.", error);
 
     return null;
   }
+}
+
+function createR2ObjectUrl(config: R2UploadConfig, key: string) {
+  return new URL(
+    `https://${config.accountId}.r2.cloudflarestorage.com/${config.bucket}/${encodeKeyPath(key)}`
+  );
 }
 
 function getUploadErrorCode(status: number): Exclude<AvatarUploadResult, { ok: true }>["code"] {
@@ -94,6 +103,19 @@ export function createR2AuthorizationHeader({
 
 function encodeKeyPath(key: string) {
   return key.split("/").map(encodeURIComponent).join("/");
+}
+
+export function getR2MediaUrl(key: string) {
+  return `${R2_MEDIA_ROUTE_PREFIX}/${encodeKeyPath(key)}`;
+}
+
+export function isAllowedR2ImageKey(key: string) {
+  return (
+    key.startsWith("avatars/") &&
+    !key.includes("..") &&
+    !key.split("/").some((part) => part.trim() === "") &&
+    /\.jpe?g$/i.test(key)
+  );
 }
 
 function getAmzDates(date = new Date()) {
@@ -131,6 +153,57 @@ export function validateAvatarUploadFile(file: File): AvatarUploadValidationResu
   return { ok: true };
 }
 
+function createSignedR2RequestHeaders({
+  config,
+  method,
+  url,
+  payloadHash,
+}: {
+  config: R2UploadConfig;
+  method: "GET" | "PUT";
+  url: URL;
+  payloadHash: string;
+}) {
+  const { amzDate, dateStamp } = getAmzDates();
+  const canonicalHeaders = [
+    `host:${url.host}`,
+    `x-amz-content-sha256:${payloadHash}`,
+    `x-amz-date:${amzDate}`,
+    "",
+  ].join("\n");
+  const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+  const canonicalRequest = [
+    method,
+    url.pathname,
+    "",
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join("\n");
+  const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    amzDate,
+    credentialScope,
+    sha256Hex(canonicalRequest),
+  ].join("\n");
+  const signature = crypto
+    .createHmac("sha256", getSignatureKey(config.secretAccessKey, dateStamp))
+    .update(stringToSign)
+    .digest("hex");
+
+  return {
+    Authorization: createR2AuthorizationHeader({
+      accessKeyId: config.accessKeyId,
+      credentialScope,
+      signedHeaders,
+      signature,
+    }),
+    "x-amz-content-sha256": payloadHash,
+    "x-amz-date": amzDate,
+  };
+}
+
 export async function uploadPractitionerAvatar(userId: string, file: File): Promise<AvatarUploadResult> {
   const validation = validateAvatarUploadFile(file);
 
@@ -148,53 +221,20 @@ export async function uploadPractitionerAvatar(userId: string, file: File): Prom
     const body = Buffer.from(await file.arrayBuffer());
     const payloadHash = sha256Hex(body);
     const key = `avatars/${userId}/${Date.now()}-${crypto.randomUUID()}.jpg`;
-    const encodedKey = encodeKeyPath(key);
-    const url = new URL(
-      `https://${config.accountId}.r2.cloudflarestorage.com/${config.bucket}/${encodedKey}`
-    );
-    const { amzDate, dateStamp } = getAmzDates();
-    const canonicalUri = url.pathname;
-    const canonicalHeaders = [
-      `host:${url.host}`,
-      `x-amz-content-sha256:${payloadHash}`,
-      `x-amz-date:${amzDate}`,
-      "",
-    ].join("\n");
-    const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
-    const canonicalRequest = [
-      "PUT",
-      canonicalUri,
-      "",
-      canonicalHeaders,
-      signedHeaders,
+    const url = createR2ObjectUrl(config, key);
+    const signedHeaders = createSignedR2RequestHeaders({
+      config,
+      method: "PUT",
+      url,
       payloadHash,
-    ].join("\n");
-    const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
-    const stringToSign = [
-      "AWS4-HMAC-SHA256",
-      amzDate,
-      credentialScope,
-      sha256Hex(canonicalRequest),
-    ].join("\n");
-    const signature = crypto
-      .createHmac("sha256", getSignatureKey(config.secretAccessKey, dateStamp))
-      .update(stringToSign)
-      .digest("hex");
-    const authorization = createR2AuthorizationHeader({
-      accessKeyId: config.accessKeyId,
-      credentialScope,
-      signedHeaders,
-      signature,
     });
 
     const response = await fetch(url, {
       method: "PUT",
       headers: {
-        Authorization: authorization,
+        ...signedHeaders,
         "Cache-Control": "public, max-age=31536000, immutable",
         "Content-Type": "image/jpeg",
-        "x-amz-content-sha256": payloadHash,
-        "x-amz-date": amzDate,
       },
       body,
     });
@@ -215,11 +255,64 @@ export async function uploadPractitionerAvatar(userId: string, file: File): Prom
 
     return {
       ok: true,
-      url: `${config.publicUrl}/${key}`,
+      key,
+      url: getR2MediaUrl(key),
     };
   } catch (error) {
     console.error("Cloudflare R2 avatar upload threw an exception.", error);
 
     return { ok: false, code: "avatar-upload" };
+  }
+}
+
+export async function fetchPrivateR2ImageObject(key: string): Promise<R2ImageFetchResult> {
+  if (!isAllowedR2ImageKey(key)) {
+    return { ok: false, status: 400, message: "Invalid media key." };
+  }
+
+  const config = getR2Config();
+
+  if (!config) {
+    return { ok: false, status: 503, message: "Media storage is not configured." };
+  }
+
+  try {
+    const payloadHash = sha256Hex("");
+    const url = createR2ObjectUrl(config, key);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: createSignedR2RequestHeaders({
+        config,
+        method: "GET",
+        url,
+        payloadHash,
+      }),
+    });
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        status: response.status === 404 ? 404 : 502,
+        message: response.status === 404 ? "Media object was not found." : "Media object could not be fetched.",
+      };
+    }
+
+    const contentType = response.headers.get("content-type") ?? "image/jpeg";
+
+    if (contentType !== "image/jpeg") {
+      return { ok: false, status: 415, message: "Media object type is not supported." };
+    }
+
+    return {
+      ok: true,
+      response,
+      contentType,
+      contentLength: response.headers.get("content-length"),
+      etag: response.headers.get("etag"),
+    };
+  } catch (error) {
+    console.error("Cloudflare R2 private image fetch failed.", error);
+
+    return { ok: false, status: 502, message: "Media object could not be fetched." };
   }
 }

@@ -17,8 +17,7 @@ const r2EnvSchema = z.object({
   CLOUDFLARE_R2_ACCOUNT_ID: z.string().min(1),
   CLOUDFLARE_R2_ACCESS_KEY_ID: z.string().min(1),
   CLOUDFLARE_R2_SECRET_ACCESS_KEY: z.string().min(1),
-  CLOUDFLARE_R2_BUCKET: z.string().min(1),
-  CLOUDFLARE_R2_PUBLIC_URL: z.string().url()
+  CLOUDFLARE_R2_BUCKET: z.string().min(1)
 });
 
 export function getClientEnv() {
@@ -46,7 +45,6 @@ export function getR2Env() {
     CLOUDFLARE_R2_ACCOUNT_ID: process.env.CLOUDFLARE_R2_ACCOUNT_ID,
     CLOUDFLARE_R2_ACCESS_KEY_ID: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
     CLOUDFLARE_R2_SECRET_ACCESS_KEY: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
-    CLOUDFLARE_R2_BUCKET: process.env.CLOUDFLARE_R2_BUCKET,
-    CLOUDFLARE_R2_PUBLIC_URL: process.env.CLOUDFLARE_R2_PUBLIC_URL
+    CLOUDFLARE_R2_BUCKET: process.env.CLOUDFLARE_R2_BUCKET
   });
 }

@@ -1,6 +1,7 @@
 export type PractitionerProfile = {
   id: string;
   userId: string;
+  displayName?: string | null;
   bio: string | null;
   country: string | null;
   city: string | null;

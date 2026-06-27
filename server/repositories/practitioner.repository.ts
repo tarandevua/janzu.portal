@@ -5,6 +5,7 @@ import type { PractitionerProfile, PractitionerProfileInput } from "@/server/mod
 type PractitionerRow = {
   id: string;
   user_id: string;
+  display_name?: string | null;
   bio: string | null;
   country: string | null;
   city: string | null;
@@ -18,10 +19,21 @@ type PractitionerRow = {
   updated_at: string;
 };
 
+type PublicPractitionerRpcClient = {
+  rpc(
+    functionName: "list_public_practitioner_profiles"
+  ): Promise<{ data: PractitionerRow[] | null; error: { message: string } | null }>;
+  rpc(
+    functionName: "get_public_practitioner_profile",
+    args: { target_profile_id: string }
+  ): Promise<{ data: PractitionerRow[] | null; error: { message: string } | null }>;
+};
+
 function toProfile(row: PractitionerRow): PractitionerProfile {
   return {
     id: row.id,
     userId: row.user_id,
+    displayName: row.display_name,
     bio: row.bio,
     country: row.country,
     city: row.city,
@@ -57,27 +69,23 @@ export async function getPublicPractitionerProfile(
   supabase: SupabaseServerClient,
   profileId: string
 ) {
-  const { data, error } = await supabase
-    .from("practitioners")
-    .select("*")
-    .eq("id", profileId)
-    .eq("is_public", true)
-    .maybeSingle();
+  const publicRpcClient = supabase as unknown as PublicPractitionerRpcClient;
+  const { data, error } = await publicRpcClient.rpc("get_public_practitioner_profile", {
+    target_profile_id: profileId,
+  });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data ? toProfile(data) : null;
+  const [profile] = data ?? [];
+
+  return profile ? toProfile(profile) : null;
 }
 
 export async function listPublicPractitionerProfiles(supabase: SupabaseServerClient) {
-  const { data, error } = await supabase
-    .from("practitioners")
-    .select("*")
-    .eq("is_public", true)
-    .order("updated_at", { ascending: false })
-    .limit(50);
+  const publicRpcClient = supabase as unknown as PublicPractitionerRpcClient;
+  const { data, error } = await publicRpcClient.rpc("list_public_practitioner_profiles");
 
   if (error) {
     throw new Error(error.message);

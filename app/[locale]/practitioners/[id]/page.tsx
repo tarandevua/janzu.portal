@@ -1,4 +1,8 @@
 import { notFound } from "next/navigation";
+import { ClusteredMap } from "@/features/maps/components/clustered-map";
+import type { MapMarker } from "@/features/maps/types";
+import { hasValidCoordinates } from "@/features/maps/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SessionRequestForm } from "@/features/session-requests/components/session-request-form";
@@ -11,6 +15,20 @@ type PractitionerPublicProfilePageProps = {
   params: Promise<{ locale: Locale; id: string }>;
   searchParams: Promise<{ status?: string }>;
 };
+
+function getPractitionerName(profile: { displayName?: string | null; city: string | null }, fallback: string) {
+  return profile.displayName?.trim() || profile.city || fallback;
+}
+
+function getAvatarFallback(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+
+  if (words.length >= 2) {
+    return `${words[0][0]}${words[1][0]}`.toUpperCase();
+  }
+
+  return (words[0]?.slice(0, 2) || "JP").toUpperCase();
+}
 
 export default async function PractitionerPublicProfilePage({
   params,
@@ -27,17 +45,46 @@ export default async function PractitionerPublicProfilePage({
     notFound();
   }
 
+  const practitionerName = getPractitionerName(
+    profile,
+    dictionary.practitioners.public.unknownCity
+  );
+  const marker: MapMarker[] = hasValidCoordinates(profile)
+    ? [
+        {
+          id: profile.id,
+          kind: "practitioner",
+          title: practitionerName,
+          description: profile.bio,
+          latitude: profile.latitude,
+          longitude: profile.longitude,
+          meta: [profile.country, profile.city].filter(Boolean).join(", "),
+        },
+      ]
+    : [];
+
   return (
     <main className="min-h-screen bg-muted/40 p-6">
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_360px]">
         <Card>
           <CardHeader>
-            <CardTitle>{dictionary.practitioners.public.profileTitle}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {[profile.country, profile.city].filter(Boolean).join(", ")}
-            </p>
+            <div className="flex items-start gap-4">
+              <Avatar className="h-16 w-16 rounded-lg">
+                <AvatarImage src={profile.profileImageUrl ?? ""} alt={practitionerName} />
+                <AvatarFallback className="rounded-lg">
+                  {getAvatarFallback(practitionerName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <CardTitle>{practitionerName}</CardTitle>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {[profile.country, profile.city].filter(Boolean).join(", ")}
+                </p>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-5">
+            <p className="sr-only">{dictionary.practitioners.public.profileTitle}</p>
             <p className="leading-7">{profile.bio}</p>
             <div className="flex flex-wrap gap-2">
               {profile.languages.map((language) => (
@@ -54,6 +101,11 @@ export default async function PractitionerPublicProfilePage({
                 {profile.website}
               </a>
             ) : null}
+            <ClusteredMap
+              markers={marker}
+              emptyText={dictionary.practitioners.public.emptyMap}
+              className="min-h-[320px]"
+            />
           </CardContent>
         </Card>
         <SessionRequestForm
