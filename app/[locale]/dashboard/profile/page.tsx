@@ -6,7 +6,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMyPractitionerProfile } from "@/server/services/practitioner.service";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
-import { getPrimaryRole, getRoleAccessList } from "@/server/services/rbac.service";
+import { getPrimaryRole, getRoleAccessList, hasRole } from "@/server/services/rbac.service";
 
 type ProfilePageProps = {
   params: Promise<{ locale: Locale }>;
@@ -53,6 +53,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
           locale={locale}
           profile={profile}
           fullName={data.user.user_metadata.full_name ?? data.user.email ?? ""}
+          canPublishPublicProfile={hasRole(roles, "facilitator")}
           dictionary={dictionary.practitioners.form}
           status={status}
         />

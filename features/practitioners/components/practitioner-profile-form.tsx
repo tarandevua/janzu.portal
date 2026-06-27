@@ -15,6 +15,7 @@ type PractitionerProfileFormProps = {
   locale: Locale;
   profile: PractitionerProfile | null;
   fullName: string;
+  canPublishPublicProfile: boolean;
   dictionary: {
     title: string;
     description: string;
@@ -72,6 +73,7 @@ export function PractitionerProfileForm({
   locale,
   profile,
   fullName,
+  canPublishPublicProfile,
   dictionary,
   status,
 }: PractitionerProfileFormProps) {
@@ -164,7 +166,8 @@ export function PractitionerProfileForm({
 
           <PublicProfileCheckbox
             label={dictionary.isPublic}
-            defaultChecked={profile?.isPublic ?? false}
+            defaultChecked={canPublishPublicProfile ? profile?.isPublic ?? false : false}
+            disabled={!canPublishPublicProfile}
           />
 
           <Button type="submit" className="w-fit">

@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { saveMyPractitionerProfile } from "@/server/services/practitioner.service";
+import { hasRole } from "@/server/services/rbac.service";
 import {
   isUploadedFile,
   uploadPractitionerAvatar,
@@ -35,6 +37,8 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
     redirect(`/${locale}/login?status=auth-required`);
   }
 
+  const roles = await listUserRoles(supabase, user.id);
+  const canPublishPublicProfile = hasRole(roles, "facilitator");
   const avatarFile = formData.get("avatarImage");
   const currentProfileImageUrl = formData.get("profileImageUrl");
   let profileImageUrl =
@@ -62,7 +66,7 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
     languages: parseLanguages(formData.get("languages")),
     website: formData.get("website"),
     profileImageUrl,
-    isPublic: formData.get("isPublic") === "true",
+    isPublic: canPublishPublicProfile && formData.get("isPublic") === "true",
   });
 
   if (!parsed.success) {
