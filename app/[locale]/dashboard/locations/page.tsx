@@ -86,7 +86,7 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
           ) : null}
           <div className="grid gap-4">
             {practitioner ? (
-              <LocationList locations={myLocations} dictionary={dictionary.locations} />
+              <LocationList locale={locale} locations={myLocations} dictionary={dictionary.locations} />
             ) : null}
             {canApproveLocations ? (
               <LocationReviewQueue

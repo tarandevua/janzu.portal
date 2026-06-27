@@ -1,13 +1,15 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
-import type { LocationInput } from "@/server/models/location.model";
+import type { LocationInput, LocationMediaInput } from "@/server/models/location.model";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 import {
+  addLocationMedia,
   approveLocationById,
   createLocationForPractitioner,
   listApprovedLocations,
   listLocationsByPractitionerId,
   listLocationsForReview,
   rejectLocationById,
+  resubmitRejectedLocationById,
 } from "@/server/repositories/location.repository";
 
 export async function requireLocationPractitionerId(
@@ -41,6 +43,23 @@ export async function submitMyLocation(
   return createLocationForPractitioner(supabase, practitionerId, input);
 }
 
+export function saveLocationMedia(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  media: LocationMediaInput[]
+) {
+  return addLocationMedia(supabase, locationId, media);
+}
+
+export function resubmitRejectedLocation(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  userId: string,
+  input: LocationInput
+) {
+  return resubmitRejectedLocationById(supabase, locationId, userId, input);
+}
+
 export function listLocationReviewQueue(supabase: SupabaseServerClient) {
   return listLocationsForReview(supabase);
 }
@@ -49,11 +68,12 @@ export async function reviewLocation(
   supabase: SupabaseServerClient,
   locationId: string,
   reviewerUserId: string,
-  action: "approve" | "reject"
+  action: "approve" | "reject",
+  reason?: string | null
 ) {
   if (action === "approve") {
-    return approveLocationById(supabase, locationId, reviewerUserId);
+    return approveLocationById(supabase, locationId, reviewerUserId, reason);
   }
 
-  return rejectLocationById(supabase, locationId, reviewerUserId);
+  return rejectLocationById(supabase, locationId, reviewerUserId, reason ?? "");
 }

@@ -10,7 +10,6 @@ describe("locationSchema", () => {
       latitude: "47.0105",
       longitude: "28.8638",
       accessInfo: "Booking required.",
-      photoUrl: "https://example.com/pool.jpg",
     });
 
     expect(parsed.latitude).toBe(47.0105);
@@ -48,5 +47,23 @@ describe("locationReviewSchema", () => {
     });
 
     expect(parsed.action).toBe("approve");
+  });
+
+  it("requires a reason when rejecting a location", () => {
+    expect(() =>
+      locationReviewSchema.parse({
+        locationId: "00000000-0000-0000-0000-000000000000",
+        action: "reject",
+        reason: "",
+      })
+    ).toThrow();
+
+    const parsed = locationReviewSchema.parse({
+      locationId: "00000000-0000-0000-0000-000000000000",
+      action: "reject",
+      reason: "Access details are incomplete.",
+    });
+
+    expect(parsed.reason).toBe("Access details are incomplete.");
   });
 });

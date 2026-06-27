@@ -2,6 +2,7 @@ import type { LocationWithMedia } from "@/server/models/location.model";
 import { ClusteredMap } from "@/features/maps/components/clustered-map";
 import type { MapMarker } from "@/features/maps/types";
 import { formatCoordinate } from "@/features/maps/utils";
+import { LocationImageGallery } from "@/features/locations/components/location-image-gallery";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -78,14 +79,7 @@ export function PublicLocationList({ locations, dictionary }: PublicLocationList
                 </div>
               </CardHeader>
               <CardContent className="grid gap-3 text-sm">
-                {location.media[0]?.publicUrl ? (
-                  <div
-                    aria-label={location.media[0].altText ?? location.name}
-                    role="img"
-                    className="aspect-video w-full rounded-md bg-cover bg-center"
-                    style={{ backgroundImage: `url(${location.media[0].publicUrl})` }}
-                  />
-                ) : null}
+                <LocationImageGallery media={location.media} label={location.name} />
                 {location.description ? <p>{location.description}</p> : null}
                 {location.accessInfo ? (
                   <p className="text-muted-foreground">

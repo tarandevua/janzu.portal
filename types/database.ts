@@ -441,6 +441,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      location_review_logs: {
+        Row: {
+          id: string;
+          location_id: string;
+          reviewer_id: string;
+          action: "approve" | "reject";
+          reason: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          location_id: string;
+          reviewer_id: string;
+          action: "approve" | "reject";
+          reason?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          location_id?: string;
+          reviewer_id?: string;
+          action?: "approve" | "reject";
+          reason?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       events: {
         Row: {
           id: string;

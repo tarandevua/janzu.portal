@@ -12,7 +12,9 @@ export type Location = {
   accessInfo: string | null;
   status: ApprovalStatus;
   approvedBy: string | null;
+  approvedByName?: string | null;
   approvedAt: string | null;
+  latestReview?: LocationReviewLog | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -24,7 +26,13 @@ export type LocationInput = {
   latitude: number;
   longitude: number;
   accessInfo?: string | null;
-  photoUrl?: string | null;
+};
+
+export type LocationMediaInput = {
+  storageKey: string;
+  publicUrl?: string | null;
+  altText?: string | null;
+  sortOrder: number;
 };
 
 export type LocationMedia = {
@@ -39,4 +47,16 @@ export type LocationMedia = {
 
 export type LocationWithMedia = Location & {
   media: LocationMedia[];
+};
+
+export type LocationReviewAction = "approve" | "reject";
+
+export type LocationReviewLog = {
+  id: string;
+  locationId: string;
+  reviewerId: string;
+  reviewerName?: string | null;
+  action: LocationReviewAction;
+  reason: string | null;
+  createdAt: string;
 };

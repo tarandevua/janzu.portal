@@ -1,12 +1,16 @@
 import { CheckCircle2Icon, XCircleIcon } from "lucide-react";
+import Image from "next/image";
 import type { Locale } from "@/lib/i18n/config";
 import type { LocationWithMedia } from "@/server/models/location.model";
 import { reviewLocationSubmission } from "@/features/locations/actions";
 import { formatCoordinate } from "@/features/maps/utils";
+import { getLocationMediaItems } from "@/features/locations/utils/location-media";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -28,6 +32,9 @@ type LocationReviewQueueProps = {
     type: string;
     coordinates: string;
     status: string;
+    reason: string;
+    reviewedBy: string;
+    latestReview: string;
     action: string;
     approve: string;
     reject: string;
@@ -130,37 +137,78 @@ export function LocationReviewQueue({
                   <TableHead>{dictionary.type}</TableHead>
                   <TableHead>{dictionary.coordinates}</TableHead>
                   <TableHead>{dictionary.status}</TableHead>
+                  <TableHead>{dictionary.latestReview}</TableHead>
                   <TableHead className="text-right">{dictionary.action}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {locations.map((location) => (
+                {locations.map((location) => {
+                  const [media] = getLocationMediaItems(location.media);
+
+                  return (
                   <TableRow key={location.id}>
-                    <TableCell className="font-medium">{location.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        {media ? (
+                          <Image
+                            src={media.url}
+                            alt={media.altText ?? location.name}
+                            width={96}
+                            height={72}
+                            className="h-12 w-16 rounded-md object-cover"
+                          />
+                        ) : null}
+                        <span>{location.name}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{getTypeLabel(location.locationType, dictionary)}</TableCell>
                     <TableCell>
                       {formatCoordinate(location.latitude)}, {formatCoordinate(location.longitude)}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={location.status === "approved" ? "default" : "secondary"}>
-                        {getStatusLabel(location.status, dictionary)}
-                      </Badge>
+                      <div className="grid gap-1">
+                        <Badge className="w-fit" variant={location.status === "approved" ? "default" : "secondary"}>
+                          {getStatusLabel(location.status, dictionary)}
+                        </Badge>
+                        {location.approvedByName ? (
+                          <span className="text-xs text-muted-foreground">
+                            {dictionary.reviewedBy}: {location.approvedByName}
+                          </span>
+                        ) : location.latestReview?.reviewerName ? (
+                          <span className="text-xs text-muted-foreground">
+                            {dictionary.reviewedBy}: {location.latestReview.reviewerName}
+                          </span>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-[260px] text-sm text-muted-foreground">
+                      {location.latestReview?.reason ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       {location.status === "pending" ? (
-                        <div className="flex justify-end gap-2">
+                        <div className="grid justify-end gap-2">
                           <form action={action}>
                             <input type="hidden" name="locationId" value={location.id} />
                             <input type="hidden" name="action" value="approve" />
-                            <Button type="submit" size="sm">
+                            <Button type="submit" size="sm" className="w-full">
                               <CheckCircle2Icon />
                               {dictionary.approve}
                             </Button>
                           </form>
-                          <form action={action}>
+                          <form action={action} className="grid min-w-56 gap-2">
                             <input type="hidden" name="locationId" value={location.id} />
                             <input type="hidden" name="action" value="reject" />
-                            <Button type="submit" size="sm" variant="outline">
+                            <Label className="sr-only" htmlFor={`reason-${location.id}`}>
+                              {dictionary.reason}
+                            </Label>
+                            <Textarea
+                              id={`reason-${location.id}`}
+                              name="reason"
+                              required
+                              rows={2}
+                              placeholder={dictionary.reason}
+                            />
+                            <Button type="submit" size="sm" variant="outline" className="w-full">
                               <XCircleIcon />
                               {dictionary.reject}
                             </Button>
@@ -173,7 +221,8 @@ export function LocationReviewQueue({
                       )}
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

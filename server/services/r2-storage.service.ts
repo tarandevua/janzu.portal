@@ -1,12 +1,18 @@
 import crypto from "node:crypto";
 import { getR2Env } from "@/lib/env";
+import { getR2MediaUrl } from "@/lib/r2-media";
 
 export const MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024;
-export const R2_MEDIA_ROUTE_PREFIX = "/api/media/r2";
+export const MAX_LOCATION_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+export const MAX_LOCATION_IMAGE_UPLOADS = 6;
 
 export type AvatarUploadValidationResult =
   | { ok: true }
   | { ok: false; code: "avatar-type" | "avatar-size" };
+
+export type LocationImageUploadValidationResult =
+  | { ok: true }
+  | { ok: false; code: "location-image-type" | "location-image-size" | "location-image-count" };
 
 export type AvatarUploadResult =
   | { ok: true; key: string; url: string }
@@ -19,6 +25,20 @@ export type AvatarUploadResult =
         | "avatar-auth"
         | "avatar-bucket"
         | "avatar-upload";
+    };
+
+export type LocationImageUploadResult =
+  | { ok: true; key: string; url: string }
+  | {
+      ok: false;
+      code:
+        | "location-image-type"
+        | "location-image-size"
+        | "location-image-count"
+        | "location-image-config"
+        | "location-image-auth"
+        | "location-image-bucket"
+        | "location-image-upload"
     };
 
 type R2UploadConfig = {
@@ -83,6 +103,20 @@ function getUploadErrorCode(status: number): Exclude<AvatarUploadResult, { ok: t
   return "avatar-upload";
 }
 
+function getLocationImageUploadErrorCode(
+  status: number
+): Exclude<LocationImageUploadResult, { ok: true }>["code"] {
+  if (status === 401 || status === 403) {
+    return "location-image-auth";
+  }
+
+  if (status === 404) {
+    return "location-image-bucket";
+  }
+
+  return "location-image-upload";
+}
+
 export function createR2AuthorizationHeader({
   accessKeyId,
   credentialScope,
@@ -105,15 +139,14 @@ function encodeKeyPath(key: string) {
   return key.split("/").map(encodeURIComponent).join("/");
 }
 
-export function getR2MediaUrl(key: string) {
-  return `${R2_MEDIA_ROUTE_PREFIX}/${encodeKeyPath(key)}`;
-}
-
 export function isAllowedR2ImageKey(key: string) {
+  const keyParts = key.split("/");
+
   return (
-    key.startsWith("avatars/") &&
+    (key.startsWith("avatars/") || key.startsWith("locations/")) &&
     !key.includes("..") &&
-    !key.split("/").some((part) => part.trim() === "") &&
+    keyParts.length >= 3 &&
+    !keyParts.some((part) => part.trim() === "") &&
     /\.jpe?g$/i.test(key)
   );
 }
@@ -148,6 +181,31 @@ export function validateAvatarUploadFile(file: File): AvatarUploadValidationResu
 
   if (file.size > MAX_AVATAR_UPLOAD_BYTES) {
     return { ok: false, code: "avatar-size" };
+  }
+
+  return { ok: true };
+}
+
+function hasJpegSignature(fileBytes: Uint8Array) {
+  return fileBytes.length >= 3 && fileBytes[0] === 0xff && fileBytes[1] === 0xd8 && fileBytes[2] === 0xff;
+}
+
+export function validateLocationImageUploadFiles(files: File[]): LocationImageUploadValidationResult {
+  if (files.length > MAX_LOCATION_IMAGE_UPLOADS) {
+    return { ok: false, code: "location-image-count" };
+  }
+
+  for (const file of files) {
+    const hasJpegType = file.type === "image/jpeg";
+    const hasJpegName = /\.jpe?g$/i.test(file.name);
+
+    if (!hasJpegType || !hasJpegName) {
+      return { ok: false, code: "location-image-type" };
+    }
+
+    if (file.size > MAX_LOCATION_IMAGE_UPLOAD_BYTES) {
+      return { ok: false, code: "location-image-size" };
+    }
   }
 
   return { ok: true };
@@ -262,6 +320,80 @@ export async function uploadPractitionerAvatar(userId: string, file: File): Prom
     console.error("Cloudflare R2 avatar upload threw an exception.", error);
 
     return { ok: false, code: "avatar-upload" };
+  }
+}
+
+export async function uploadLocationImage({
+  locationId,
+  file,
+  sortOrder,
+}: {
+  locationId: string;
+  file: File;
+  sortOrder: number;
+}): Promise<LocationImageUploadResult> {
+  const validation = validateLocationImageUploadFiles([file]);
+
+  if (!validation.ok) {
+    return validation;
+  }
+
+  try {
+    const config = getR2Config();
+
+    if (!config) {
+      return { ok: false, code: "location-image-config" };
+    }
+
+    const body = Buffer.from(await file.arrayBuffer());
+
+    if (!hasJpegSignature(body)) {
+      return { ok: false, code: "location-image-type" };
+    }
+
+    const payloadHash = sha256Hex(body);
+    const key = `locations/${locationId}/${sortOrder}-${Date.now()}-${crypto.randomUUID()}.jpg`;
+    const url = createR2ObjectUrl(config, key);
+    const signedHeaders = createSignedR2RequestHeaders({
+      config,
+      method: "PUT",
+      url,
+      payloadHash,
+    });
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        ...signedHeaders,
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Type": "image/jpeg",
+      },
+      body,
+    });
+
+    if (!response.ok) {
+      const responseBody = await response.text().catch(() => "");
+
+      console.error("Cloudflare R2 location image upload failed.", {
+        status: response.status,
+        statusText: response.statusText,
+        bucket: config.bucket,
+        key,
+        responseBody: responseBody.slice(0, 500),
+      });
+
+      return { ok: false, code: getLocationImageUploadErrorCode(response.status) };
+    }
+
+    return {
+      ok: true,
+      key,
+      url: getR2MediaUrl(key),
+    };
+  } catch (error) {
+    console.error("Cloudflare R2 location image upload threw an exception.", error);
+
+    return { ok: false, code: "location-image-upload" };
   }
 }
 

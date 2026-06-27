@@ -28,12 +28,20 @@ export const locationSchema = z.object({
   latitude: coordinate(-90, 90),
   longitude: coordinate(-180, 180),
   accessInfo: z.preprocess(emptyToNull, z.string().trim().max(3000).nullable().optional()),
-  photoUrl: z.preprocess(emptyToNull, z.string().trim().url().nullable().optional()),
 });
 
 export const locationReviewSchema = z.object({
   locationId: z.string().uuid(),
   action: z.enum(["approve", "reject"]),
+  reason: z.preprocess(emptyToNull, z.string().trim().max(1000).nullable().optional()),
+}).superRefine((value, context) => {
+  if (value.action === "reject" && !value.reason) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reason"],
+      message: "Rejection reason is required.",
+    });
+  }
 });
 
 export type LocationPayload = z.infer<typeof locationSchema>;

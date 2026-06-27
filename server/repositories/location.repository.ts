@@ -1,29 +1,66 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
-import type { Location, LocationInput, LocationMedia, LocationWithMedia } from "@/server/models/location.model";
+import type {
+  Location,
+  LocationInput,
+  LocationMedia,
+  LocationMediaInput,
+  LocationReviewLog,
+  LocationWithMedia,
+} from "@/server/models/location.model";
 
 type LocationRow = Database["public"]["Tables"]["locations"]["Row"];
 type LocationInsert = Database["public"]["Tables"]["locations"]["Insert"];
 type MediaRow = Database["public"]["Tables"]["location_media"]["Row"];
-type ApproveArgs = Database["public"]["Functions"]["approve_location"]["Args"];
-type RejectArgs = Database["public"]["Functions"]["reject_location"]["Args"];
+type ReviewLogRow = {
+  id: string;
+  location_id: string;
+  reviewer_id: string;
+  action: "approve" | "reject";
+  reason: string | null;
+  created_at: string;
+};
+type UserDisplayRow = {
+  id: string;
+  email: string;
+  full_name: string | null;
+};
+type LocationJoinRow = LocationRow & {
+  location_media: MediaRow[] | null;
+};
+type LocationWithReviewData = LocationJoinRow & {
+  approvedByName?: string | null;
+  latestReview?: LocationReviewLog | null;
+};
 
 type LocationRpcClient = {
   rpc(
     functionName: "approve_location",
-    args: ApproveArgs
+    args: { target_location_id: string; reviewer_user_id: string; review_reason?: string | null }
   ): Promise<{ data: LocationRow | null; error: { message: string } | null }>;
   rpc(
     functionName: "reject_location",
-    args: RejectArgs
+    args: { target_location_id: string; reviewer_user_id: string; review_reason: string }
+  ): Promise<{ data: LocationRow | null; error: { message: string } | null }>;
+  rpc(
+    functionName: "resubmit_rejected_location",
+    args: {
+      target_location_id: string;
+      actor_user_id: string;
+      target_name: string;
+      target_location_type: LocationInput["locationType"];
+      target_description: string | null;
+      target_latitude: number;
+      target_longitude: number;
+      target_access_info: string | null;
+    }
   ): Promise<{ data: LocationRow | null; error: { message: string } | null }>;
 };
 
-type LocationJoinRow = LocationRow & {
-  location_media: MediaRow[] | null;
-};
-
-function toLocation(row: LocationRow): Location {
+function toLocation(row: LocationRow & {
+  approvedByName?: string | null;
+  latestReview?: LocationReviewLog | null;
+}): Location {
   return {
     id: row.id,
     submittedBy: row.submitted_by,
@@ -35,7 +72,9 @@ function toLocation(row: LocationRow): Location {
     accessInfo: row.access_info,
     status: row.status,
     approvedBy: row.approved_by,
+    approvedByName: row.approvedByName,
     approvedAt: row.approved_at,
+    latestReview: row.latestReview,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -53,7 +92,92 @@ function toMedia(row: MediaRow): LocationMedia {
   };
 }
 
-function toLocationWithMedia(row: LocationJoinRow): LocationWithMedia {
+function toReviewLog(
+  row: ReviewLogRow,
+  reviewerNames: Map<string, string> = new Map()
+): LocationReviewLog {
+  return {
+    id: row.id,
+    locationId: row.location_id,
+    reviewerId: row.reviewer_id,
+    reviewerName: reviewerNames.get(row.reviewer_id) ?? null,
+    action: row.action,
+    reason: row.reason,
+    createdAt: row.created_at,
+  };
+}
+
+function getDisplayName(user: UserDisplayRow) {
+  return user.full_name ?? user.email;
+}
+
+async function attachReviewData(
+  supabase: SupabaseServerClient,
+  rows: LocationJoinRow[],
+  options: { includeLogs: boolean; includeReviewerNames: boolean }
+): Promise<LocationWithReviewData[]> {
+  if (rows.length === 0) {
+    return [];
+  }
+
+  if (!options.includeLogs) {
+    return rows;
+  }
+
+  const locationIds = rows.map((row) => row.id);
+  const { data: logsData, error: logsError } = await supabase
+    .from("location_review_logs")
+    .select("*")
+    .in("location_id", locationIds)
+    .order("created_at", { ascending: false });
+
+  if (logsError) {
+    throw new Error(logsError.message);
+  }
+
+  const logRows = (logsData ?? []) as ReviewLogRow[];
+  const reviewerNames = new Map<string, string>();
+
+  if (options.includeReviewerNames) {
+    const userIds = [
+      ...new Set([
+        ...rows.map((row) => row.approved_by).filter(Boolean),
+        ...logRows.map((row) => row.reviewer_id),
+      ] as string[]),
+    ];
+
+    if (userIds.length > 0) {
+      const { data: usersData, error: usersError } = await supabase
+        .from("users")
+        .select("id, email, full_name")
+        .in("id", userIds);
+
+      if (usersError) {
+        throw new Error(usersError.message);
+      }
+
+      ((usersData ?? []) as UserDisplayRow[]).forEach((user) => {
+        reviewerNames.set(user.id, getDisplayName(user));
+      });
+    }
+  }
+
+  const latestLogByLocationId = new Map<string, LocationReviewLog>();
+
+  logRows.forEach((log) => {
+    if (!latestLogByLocationId.has(log.location_id)) {
+      latestLogByLocationId.set(log.location_id, toReviewLog(log, reviewerNames));
+    }
+  });
+
+  return rows.map((row) => ({
+    ...row,
+    approvedByName: row.approved_by ? reviewerNames.get(row.approved_by) ?? null : null,
+    latestReview: latestLogByLocationId.get(row.id) ?? null,
+  }));
+}
+
+function toLocationWithMedia(row: LocationWithReviewData): LocationWithMedia {
   return {
     ...toLocation(row),
     media: (row.location_media ?? []).map(toMedia),
@@ -71,7 +195,12 @@ export async function listApprovedLocations(supabase: SupabaseServerClient) {
     throw new Error(error.message);
   }
 
-  return ((data ?? []) as LocationJoinRow[]).map(toLocationWithMedia);
+  const rows = await attachReviewData(supabase, (data ?? []) as LocationJoinRow[], {
+    includeLogs: false,
+    includeReviewerNames: false,
+  });
+
+  return rows.map(toLocationWithMedia);
 }
 
 export async function listLocationsByPractitionerId(
@@ -88,7 +217,12 @@ export async function listLocationsByPractitionerId(
     throw new Error(error.message);
   }
 
-  return ((data ?? []) as LocationJoinRow[]).map(toLocationWithMedia);
+  const rows = await attachReviewData(supabase, (data ?? []) as LocationJoinRow[], {
+    includeLogs: true,
+    includeReviewerNames: false,
+  });
+
+  return rows.map(toLocationWithMedia);
 }
 
 export async function listLocationsForReview(supabase: SupabaseServerClient) {
@@ -102,7 +236,12 @@ export async function listLocationsForReview(supabase: SupabaseServerClient) {
     throw new Error(error.message);
   }
 
-  return ((data ?? []) as LocationJoinRow[]).map(toLocationWithMedia);
+  const rows = await attachReviewData(supabase, (data ?? []) as LocationJoinRow[], {
+    includeLogs: true,
+    includeReviewerNames: true,
+  });
+
+  return rows.map(toLocationWithMedia);
 }
 
 export async function createLocationForPractitioner(
@@ -132,30 +271,78 @@ export async function createLocationForPractitioner(
 
   const location = data as LocationRow;
 
-  if (input.photoUrl) {
-    const { error: mediaError } = await supabase.from("location_media").insert({
-      location_id: location.id,
-      public_url: input.photoUrl,
-      alt_text: input.name,
-    } as never);
+  return toLocation(location);
+}
 
-    if (mediaError) {
-      throw new Error(mediaError.message);
-    }
+export async function addLocationMedia(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  media: LocationMediaInput[]
+) {
+  if (media.length === 0) {
+    return [];
   }
 
-  return toLocation(location);
+  const { data, error } = await supabase
+    .from("location_media")
+    .insert(
+      media.map((item) => ({
+        location_id: locationId,
+        storage_key: item.storageKey,
+        public_url: item.publicUrl ?? null,
+        alt_text: item.altText ?? null,
+        sort_order: item.sortOrder,
+      })) as never
+    )
+    .select("*");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as MediaRow[]).map(toMedia);
+}
+
+export async function resubmitRejectedLocationById(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  actorUserId: string,
+  input: LocationInput
+) {
+  const rpcClient = supabase as unknown as LocationRpcClient;
+  const { data, error } = await rpcClient.rpc("resubmit_rejected_location", {
+    target_location_id: locationId,
+    actor_user_id: actorUserId,
+    target_name: input.name,
+    target_location_type: input.locationType,
+    target_description: input.description ?? null,
+    target_latitude: input.latitude,
+    target_longitude: input.longitude,
+    target_access_info: input.accessInfo ?? null,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Location update failed.");
+  }
+
+  return toLocation(data);
 }
 
 export async function approveLocationById(
   supabase: SupabaseServerClient,
   locationId: string,
-  reviewerUserId: string
+  reviewerUserId: string,
+  reason?: string | null
 ) {
   const rpcClient = supabase as unknown as LocationRpcClient;
   const { data, error } = await rpcClient.rpc("approve_location", {
     target_location_id: locationId,
     reviewer_user_id: reviewerUserId,
+    review_reason: reason ?? null,
   });
 
   if (error) {
@@ -172,12 +359,14 @@ export async function approveLocationById(
 export async function rejectLocationById(
   supabase: SupabaseServerClient,
   locationId: string,
-  reviewerUserId: string
+  reviewerUserId: string,
+  reason: string
 ) {
   const rpcClient = supabase as unknown as LocationRpcClient;
   const { data, error } = await rpcClient.rpc("reject_location", {
     target_location_id: locationId,
     reviewer_user_id: reviewerUserId,
+    review_reason: reason,
   });
 
   if (error) {
