@@ -15,5 +15,10 @@ export const userInviteSchema = z.object({
   role: z.enum(roles),
 });
 
+export const authSettingsSchema = z.object({
+  allowUnknownMagicLinkLogin: z.enum(["true", "false"]).transform((value) => value === "true"),
+});
+
 export type UserRoleMutationPayload = z.infer<typeof userRoleMutationSchema>;
 export type UserInvitePayload = z.infer<typeof userInviteSchema>;
+export type AuthSettingsPayload = z.infer<typeof authSettingsSchema>;

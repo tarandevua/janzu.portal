@@ -9,7 +9,9 @@ import {
   inviteManagedUser,
   removeManagedUserRole,
 } from "@/server/services/user-management.service";
+import { updateAdminAuthSettings } from "@/server/services/platform-settings.service";
 import {
+  authSettingsSchema,
   userInviteSchema,
   userRoleMutationSchema,
 } from "@/server/validators/user-management.schema";
@@ -92,4 +94,28 @@ export async function inviteUser(locale: Locale, formData: FormData) {
 
   revalidatePath(`/${locale}/dashboard/users`);
   redirect(`/${locale}/dashboard/users?status=invited`);
+}
+
+export async function updateAuthSettings(locale: Locale, formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+
+  const parsed = authSettingsSchema.safeParse({
+    allowUnknownMagicLinkLogin: formData.get("allowUnknownMagicLinkLogin"),
+  });
+
+  if (!parsed.success) {
+    redirect(`/${locale}/dashboard/users?status=auth-settings-invalid`);
+  }
+
+  await updateAdminAuthSettings(supabase, user.id, parsed.data);
+
+  revalidatePath(`/${locale}/dashboard/users`);
+  redirect(`/${locale}/dashboard/users?status=auth-settings-saved`);
 }

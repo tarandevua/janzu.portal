@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  authSettingsSchema,
   userInviteSchema,
   userRoleMutationSchema,
 } from "@/server/validators/user-management.schema";
@@ -43,5 +44,15 @@ describe("userInviteSchema", () => {
         role: "practitioner",
       })
     ).toThrow();
+  });
+});
+
+describe("authSettingsSchema", () => {
+  it("parses the unknown magic-link login toggle", () => {
+    const parsed = authSettingsSchema.parse({
+      allowUnknownMagicLinkLogin: "false",
+    });
+
+    expect(parsed.allowUnknownMagicLinkLogin).toBe(false);
   });
 });

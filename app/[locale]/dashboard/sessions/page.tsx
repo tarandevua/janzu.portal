@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { SessionRequestList } from "@/features/session-requests/components/session-request-list";
+import { SessionAvailabilityManager } from "@/features/sessions/components/session-availability-manager";
 import { SessionForm } from "@/features/sessions/components/session-form";
 import { SessionList } from "@/features/sessions/components/session-list";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -10,6 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listClientsByPractitionerId } from "@/server/repositories/client.repository";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
+import { listUpcomingAvailabilitySlotsByPractitionerId } from "@/server/repositories/session-availability.repository";
 import { listSessionRequestsByPractitionerIdPage } from "@/server/repositories/session-request.repository";
 import { listSessionsByPractitionerIdPage } from "@/server/repositories/session.repository";
 import { findFeedbackForSessions } from "@/server/services/feedback.service";
@@ -98,7 +100,7 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
     redirect(`/${locale}/dashboard/profile`);
   }
 
-  const [clients, sessionsPageData, sessionRequestsPageData] = await Promise.all([
+  const [clients, sessionsPageData, sessionRequestsPageData, availabilitySlots] = await Promise.all([
     listClientsByPractitionerId(supabase, practitioner.id),
     listSessionsByPractitionerIdPage(supabase, practitioner.id, sessionsPage, PAGE_SIZE),
     listSessionRequestsByPractitionerIdPage(
@@ -107,6 +109,7 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
       requestsPage,
       PAGE_SIZE
     ),
+    listUpcomingAvailabilitySlotsByPractitionerId(supabase, practitioner.id),
   ]);
   const sessions = sessionsPageData.items;
   const sessionRequests = sessionRequestsPageData.items;
@@ -147,6 +150,12 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
               />
             </DashboardActionDrawer>
           </div>
+          <SessionAvailabilityManager
+            locale={locale}
+            slots={availabilitySlots}
+            status={status}
+            dictionary={dictionary.sessions}
+          />
           <SessionList
             locale={locale}
             sessions={sessions}

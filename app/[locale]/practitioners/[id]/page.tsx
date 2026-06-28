@@ -12,6 +12,7 @@ import { SessionRequestForm } from "@/features/session-requests/components/sessi
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { listPublicAvailableSlotsByPractitionerId } from "@/server/repositories/session-availability.repository";
 import { findPublicPractitionerProfile } from "@/server/services/practitioner.service";
 
 type PractitionerPublicProfilePageProps = {
@@ -65,6 +66,7 @@ export default async function PractitionerPublicProfilePage({
         },
       ]
     : [];
+  const availableSlots = await listPublicAvailableSlotsByPractitionerId(supabase, profile.id);
 
   return (
     <main className="min-h-screen bg-muted/40 p-6">
@@ -122,6 +124,7 @@ export default async function PractitionerPublicProfilePage({
         <SessionRequestForm
           locale={locale}
           practitionerId={profile.id}
+          availableSlots={availableSlots}
           status={status}
           dictionary={dictionary.sessionRequests}
         />

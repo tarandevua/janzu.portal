@@ -14,7 +14,8 @@
       "genericError": "We could not send the magic link. Try again.",
       "authRequired": "Please sign in to continue.",
       "invalidLink": "That sign-in link is invalid or expired.",
-      "signedOut": "You have been signed out."
+      "signedOut": "You have been signed out.",
+      "unknownUserDisabled": "This email is not registered. Ask an admin to invite you before signing in."
     }
   },
   "dashboard": {
@@ -245,7 +246,20 @@
     "next": "Next",
     "page": "Page",
     "feedbackCreated": "Feedback link created.",
-    "feedbackInvalid": "Could not create feedback link."
+    "feedbackInvalid": "Could not create feedback link.",
+    "availabilityTitle": "Calendar availability",
+    "availabilityDescription": "Create public booking slots that visitors can request from your practitioner profile.",
+    "addAvailability": "Add slot",
+    "startsAt": "Start date and time",
+    "availableSlots": "Upcoming slots",
+    "emptyAvailability": "No upcoming availability slots.",
+    "booked": "Booked",
+    "available": "Available",
+    "cancelled": "Cancelled",
+    "cancelSlot": "Cancel slot",
+    "availabilityCreated": "Availability slot created.",
+    "availabilityCancelled": "Availability slot cancelled.",
+    "availabilityInvalid": "Check the availability fields and try again."
   },
   "feedback": {
     "title": "Session feedback",
@@ -298,6 +312,9 @@
     "email": "Email",
     "phone": "Phone",
     "preferredDate": "Preferred date",
+    "availabilitySlot": "Available date and time",
+    "noAvailability": "This practitioner has no available booking slots right now.",
+    "bookedSlot": "Booked slot",
     "message": "Message",
     "status": "Status",
     "action": "Action",
@@ -473,6 +490,13 @@
     "description": "Manage portal users and role assignments. Managers can assign practitioner and facilitator roles; admins can manage all roles.",
     "inviteTitle": "Invite user",
     "inviteDescription": "Create or find a user, assign an initial role, and send a Brevo invite email.",
+    "authSettingsTitle": "Authentication settings",
+    "authSettingsDescription": "Control who can request public magic-link login emails.",
+    "allowUnknownMagicLinkLogin": "Allow magic-link login for emails not yet in the portal database",
+    "allowUnknownMagicLinkLoginHelp": "When disabled, only invited or existing users can request a magic link. Admin invites can still create new users.",
+    "saveAuthSettings": "Save authentication settings",
+    "authSettingsSaved": "Authentication settings saved.",
+    "authSettingsInvalid": "Authentication settings could not be saved.",
     "user": "User",
     "fullName": "Full name",
     "email": "Email",

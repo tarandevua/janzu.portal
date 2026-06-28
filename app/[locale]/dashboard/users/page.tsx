@@ -1,13 +1,15 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
+import { AuthSettingsForm } from "@/features/user-management/components/auth-settings-form";
 import { UserInviteForm } from "@/features/user-management/components/user-invite-form";
 import { UserRoleManagementTable } from "@/features/user-management/components/user-role-management-table";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
-import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/services/rbac.service";
+import { getPrimaryRole, getRoleAccessList, hasPermission, hasRole } from "@/server/services/rbac.service";
+import { getAdminAuthSettings } from "@/server/services/platform-settings.service";
 import { listUsersForManagement } from "@/server/services/user-management.service";
 
 type UsersPageProps = {
@@ -39,7 +41,12 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
     redirect(`/${locale}/dashboard`);
   }
 
-  const users = await listUsersForManagement(supabase, data.user.id);
+  const [users, authSettings] = await Promise.all([
+    listUsersForManagement(supabase, data.user.id),
+    hasRole(roles, "admin")
+      ? getAdminAuthSettings(supabase, data.user.id)
+      : Promise.resolve(null),
+  ]);
 
   return (
     <JanzuDashboardFrame
@@ -55,6 +62,14 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+          {authSettings ? (
+            <AuthSettingsForm
+              locale={locale}
+              allowUnknownMagicLinkLogin={authSettings.allowUnknownMagicLinkLogin}
+              status={status}
+              dictionary={dictionary.userManagement}
+            />
+          ) : null}
           <div className="flex justify-end">
             <DashboardActionDrawer
               title={dictionary.userManagement.inviteTitle}

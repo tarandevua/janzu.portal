@@ -6,7 +6,10 @@ export type SessionRequest = {
   requesterName: string;
   requesterEmail: string;
   requesterPhone: string | null;
+  availabilitySlotId: string | null;
   preferredDate: string | null;
+  requestedStartAt: string | null;
+  requestedEndAt: string | null;
   message: string | null;
   status: SessionRequestStatus;
   reviewedAt: string | null;
@@ -19,6 +22,6 @@ export type SessionRequestInput = {
   requesterName: string;
   requesterEmail: string;
   requesterPhone?: string | null;
-  preferredDate?: string | null;
+  availabilitySlotId: string;
   message?: string | null;
 };

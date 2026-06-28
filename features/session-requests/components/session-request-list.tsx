@@ -32,6 +32,7 @@ type SessionRequestListProps = {
     email: string;
     phone: string;
     preferredDate: string;
+    bookedSlot: string;
     message: string;
     status: string;
     pending: string;
@@ -119,7 +120,14 @@ export function SessionRequestList({
                       </div>
                     </TableCell>
                     <TableCell>{request.requesterEmail}</TableCell>
-                    <TableCell>{request.preferredDate ?? ""}</TableCell>
+                    <TableCell>
+                      {request.requestedStartAt
+                        ? new Intl.DateTimeFormat(locale, {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          }).format(new Date(request.requestedStartAt))
+                        : request.preferredDate ?? ""}
+                    </TableCell>
                     <TableCell className="max-w-[20rem] text-sm text-muted-foreground">
                       {request.message ?? ""}
                     </TableCell>

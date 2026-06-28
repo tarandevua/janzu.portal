@@ -72,6 +72,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      platform_settings: {
+        Row: {
+          key: string;
+          value: Json;
+          description: string | null;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value: Json;
+          description?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          value?: Json;
+          description?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       practitioners: {
         Row: {
           id: string;
@@ -255,6 +282,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      session_availability_slots: {
+        Row: {
+          id: string;
+          practitioner_id: string;
+          starts_at: string;
+          ends_at: string;
+          status: "available" | "booked" | "cancelled";
+          session_request_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          practitioner_id: string;
+          starts_at: string;
+          ends_at: string;
+          status?: "available" | "booked" | "cancelled";
+          session_request_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          practitioner_id?: string;
+          starts_at?: string;
+          ends_at?: string;
+          status?: "available" | "booked" | "cancelled";
+          session_request_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       session_requests: {
         Row: {
           id: string;
@@ -262,7 +322,10 @@ export type Database = {
           requester_name: string;
           requester_email: string;
           requester_phone: string | null;
+          availability_slot_id: string | null;
           preferred_date: string | null;
+          requested_start_at: string | null;
+          requested_end_at: string | null;
           message: string | null;
           status: "pending" | "accepted" | "declined";
           reviewed_at: string | null;
@@ -275,7 +338,10 @@ export type Database = {
           requester_name: string;
           requester_email: string;
           requester_phone?: string | null;
+          availability_slot_id?: string | null;
           preferred_date?: string | null;
+          requested_start_at?: string | null;
+          requested_end_at?: string | null;
           message?: string | null;
           status?: "pending" | "accepted" | "declined";
           reviewed_at?: string | null;
@@ -288,7 +354,10 @@ export type Database = {
           requester_name?: string;
           requester_email?: string;
           requester_phone?: string | null;
+          availability_slot_id?: string | null;
           preferred_date?: string | null;
+          requested_start_at?: string | null;
+          requested_end_at?: string | null;
           message?: string | null;
           status?: "pending" | "accepted" | "declined";
           reviewed_at?: string | null;
@@ -668,6 +737,16 @@ export type Database = {
           target_role: "admin" | "manager" | "facilitator" | "practitioner";
         };
         Returns: undefined;
+      };
+      book_public_session_request: {
+        Args: {
+          target_slot_id: string;
+          target_requester_name: string;
+          target_requester_email: string;
+          target_requester_phone: string;
+          target_message: string;
+        };
+        Returns: Database["public"]["Tables"]["session_requests"]["Row"];
       };
       update_current_user_full_name: {
         Args: {

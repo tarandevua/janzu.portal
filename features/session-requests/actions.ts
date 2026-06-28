@@ -17,10 +17,10 @@ export async function requestPractitionerSession(locale: Locale, formData: FormD
   const practitionerId = formData.get("practitionerId");
   const parsed = sessionRequestSchema.safeParse({
     practitionerId,
+    availabilitySlotId: formData.get("availabilitySlotId"),
     requesterName: formData.get("requesterName"),
     requesterEmail: formData.get("requesterEmail"),
     requesterPhone: formData.get("requesterPhone"),
-    preferredDate: formData.get("preferredDate"),
     message: formData.get("message"),
   });
 

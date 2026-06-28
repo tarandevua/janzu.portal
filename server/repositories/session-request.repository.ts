@@ -7,8 +7,16 @@ import type {
 import type { Database } from "@/types/database";
 
 type SessionRequestRow = Database["public"]["Tables"]["session_requests"]["Row"];
-type SessionRequestInsert = Database["public"]["Tables"]["session_requests"]["Insert"];
 type SessionRequestUpdate = Database["public"]["Tables"]["session_requests"]["Update"];
+type BookPublicSessionRequestArgs =
+  Database["public"]["Functions"]["book_public_session_request"]["Args"];
+
+type SessionRequestRpcClient = {
+  rpc(
+    functionName: "book_public_session_request",
+    args: BookPublicSessionRequestArgs
+  ): Promise<{ data: SessionRequestRow | null; error: { message: string } | null }>;
+};
 
 function toSessionRequest(row: SessionRequestRow): SessionRequest {
   return {
@@ -17,7 +25,10 @@ function toSessionRequest(row: SessionRequestRow): SessionRequest {
     requesterName: row.requester_name,
     requesterEmail: row.requester_email,
     requesterPhone: row.requester_phone,
+    availabilitySlotId: row.availability_slot_id,
     preferredDate: row.preferred_date,
+    requestedStartAt: row.requested_start_at,
+    requestedEndAt: row.requested_end_at,
     message: row.message,
     status: row.status,
     reviewedAt: row.reviewed_at,
@@ -30,23 +41,21 @@ export async function createSessionRequest(
   supabase: SupabaseServerClient,
   input: SessionRequestInput
 ) {
-  const payload = {
-    practitioner_id: input.practitionerId,
-    requester_name: input.requesterName,
-    requester_email: input.requesterEmail,
-    requester_phone: input.requesterPhone ?? null,
-    preferred_date: input.preferredDate ?? null,
-    message: input.message ?? null,
-  } satisfies SessionRequestInsert;
-
-  const { data, error } = await supabase
-    .from("session_requests")
-    .insert(payload as never)
-    .select("*")
-    .single();
+  const rpcClient = supabase as unknown as SessionRequestRpcClient;
+  const { data, error } = await rpcClient.rpc("book_public_session_request", {
+    target_slot_id: input.availabilitySlotId,
+    target_requester_name: input.requesterName,
+    target_requester_email: input.requesterEmail,
+    target_requester_phone: input.requesterPhone ?? "",
+    target_message: input.message ?? "",
+  });
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Session request could not be created.");
   }
 
   return toSessionRequest(data as SessionRequestRow);
