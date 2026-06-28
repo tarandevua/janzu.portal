@@ -9,7 +9,9 @@ import {
   reviewLocation,
   resubmitRejectedLocation,
   saveLocationMedia,
+  saveLocationCommunityReview,
   submitMyLocation,
+  toggleLocationReviewHelpful,
 } from "@/server/services/location.service";
 import { hasPermission } from "@/server/services/rbac.service";
 import {
@@ -17,7 +19,12 @@ import {
   uploadLocationImage,
   validateLocationImageUploadFiles,
 } from "@/server/services/r2-storage.service";
-import { locationReviewSchema, locationSchema } from "@/server/validators/location.schema";
+import {
+  locationCommunityReviewSchema,
+  locationReviewHelpfulSchema,
+  locationReviewSchema,
+  locationSchema,
+} from "@/server/validators/location.schema";
 
 export async function submitLocation(locale: Locale, formData: FormData) {
   const supabase = await createSupabaseServerClient();
@@ -184,4 +191,60 @@ export async function reviewLocationSubmission(locale: Locale, formData: FormDat
       parsed.data.action === "approve" ? "approved" : "rejected"
     }`
   );
+}
+
+export async function submitLocationCommunityReview(locale: Locale, formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+
+  const parsed = locationCommunityReviewSchema.safeParse({
+    locationId: formData.get("locationId"),
+    rating: formData.get("rating"),
+    reviewText: formData.get("reviewText"),
+  });
+
+  if (!parsed.success) {
+    redirect(`/${locale}/locations?status=review-invalid`);
+  }
+
+  await saveLocationCommunityReview(
+    supabase,
+    parsed.data.locationId,
+    user.id,
+    parsed.data.rating,
+    parsed.data.reviewText ?? null
+  );
+
+  revalidatePath(`/${locale}/locations`);
+  redirect(`/${locale}/locations?status=review-saved`);
+}
+
+export async function toggleHelpfulLocationReview(locale: Locale, formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+
+  const parsed = locationReviewHelpfulSchema.safeParse({
+    reviewId: formData.get("reviewId"),
+  });
+
+  if (!parsed.success) {
+    redirect(`/${locale}/locations?status=helpful-invalid`);
+  }
+
+  await toggleLocationReviewHelpful(supabase, parsed.data.reviewId, user.id);
+
+  revalidatePath(`/${locale}/locations`);
+  redirect(`/${locale}/locations?status=helpful-updated`);
 }

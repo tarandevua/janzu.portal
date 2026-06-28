@@ -47,6 +47,9 @@ export type LocationMedia = {
 
 export type LocationWithMedia = Location & {
   media: LocationMedia[];
+  communityReviews?: LocationCommunityReview[];
+  averageRating?: number | null;
+  reviewsCount?: number;
 };
 
 export type LocationReviewAction = "approve" | "reject";
@@ -59,4 +62,16 @@ export type LocationReviewLog = {
   action: LocationReviewAction;
   reason: string | null;
   createdAt: string;
+};
+
+export type LocationCommunityReview = {
+  id: string;
+  locationId: string;
+  reviewerId: string;
+  rating: number;
+  reviewText: string | null;
+  helpfulCount: number;
+  viewerMarkedHelpful: boolean;
+  createdAt: string;
+  updatedAt: string;
 };

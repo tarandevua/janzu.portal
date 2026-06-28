@@ -78,7 +78,7 @@ export function LocationForm({
   const isError = status !== "created";
 
   const form = (
-    <form action={formAction} encType="multipart/form-data" className="grid gap-4">
+    <form action={formAction} className="grid gap-4">
           {message ? (
             <Alert variant={isError ? "destructive" : "default"}>
               <AlertDescription>{message}</AlertDescription>

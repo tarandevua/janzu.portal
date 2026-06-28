@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { MapPinIcon } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { LocationWithMedia } from "@/server/models/location.model";
 import { updateRejectedLocation } from "@/features/locations/actions";
@@ -135,7 +136,15 @@ export function LocationList({ locale, locations, dictionary }: LocationListProp
                     </TableCell>
                     <TableCell>{getTypeLabel(location.locationType, dictionary)}</TableCell>
                     <TableCell>
-                      {formatCoordinate(location.latitude)}, {formatCoordinate(location.longitude)}
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
+                      >
+                        <MapPinIcon className="size-4" />
+                        {formatCoordinate(location.latitude)}, {formatCoordinate(location.longitude)}
+                      </a>
                     </TableCell>
                     <TableCell>
                       <Badge variant={location.status === "approved" ? "default" : "secondary"}>

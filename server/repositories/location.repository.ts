@@ -2,6 +2,7 @@ import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 import type {
   Location,
+  LocationCommunityReview,
   LocationInput,
   LocationMedia,
   LocationMediaInput,
@@ -12,6 +13,9 @@ import type {
 type LocationRow = Database["public"]["Tables"]["locations"]["Row"];
 type LocationInsert = Database["public"]["Tables"]["locations"]["Insert"];
 type MediaRow = Database["public"]["Tables"]["location_media"]["Row"];
+type HelpfulVoteRow = Database["public"]["Tables"]["location_review_helpful_votes"]["Row"];
+type CommunityReviewRow =
+  Database["public"]["Functions"]["list_location_community_reviews"]["Returns"][number];
 type ReviewLogRow = {
   id: string;
   location_id: string;
@@ -55,6 +59,10 @@ type LocationRpcClient = {
       target_access_info: string | null;
     }
   ): Promise<{ data: LocationRow | null; error: { message: string } | null }>;
+  rpc(
+    functionName: "list_location_community_reviews",
+    args: Database["public"]["Functions"]["list_location_community_reviews"]["Args"]
+  ): Promise<{ data: CommunityReviewRow[] | null; error: { message: string } | null }>;
 };
 
 function toLocation(row: LocationRow & {
@@ -184,7 +192,53 @@ function toLocationWithMedia(row: LocationWithReviewData): LocationWithMedia {
   };
 }
 
-export async function listApprovedLocations(supabase: SupabaseServerClient) {
+function toCommunityReview(row: CommunityReviewRow): LocationCommunityReview {
+  return {
+    id: row.review_id,
+    locationId: row.location_id,
+    reviewerId: row.reviewer_id,
+    rating: row.rating,
+    reviewText: row.review_text,
+    helpfulCount: Number(row.helpful_count),
+    viewerMarkedHelpful: row.viewer_marked_helpful,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function withCommunityReviews(
+  locations: LocationWithMedia[],
+  reviews: LocationCommunityReview[]
+) {
+  const reviewsByLocationId = new Map<string, LocationCommunityReview[]>();
+
+  reviews.forEach((review) => {
+    const existing = reviewsByLocationId.get(review.locationId) ?? [];
+    existing.push(review);
+    reviewsByLocationId.set(review.locationId, existing);
+  });
+
+  return locations.map((location) => {
+    const communityReviews = reviewsByLocationId.get(location.id) ?? [];
+    const reviewsCount = communityReviews.length;
+    const averageRating =
+      reviewsCount > 0
+        ? communityReviews.reduce((total, review) => total + review.rating, 0) / reviewsCount
+        : null;
+
+    return {
+      ...location,
+      communityReviews,
+      reviewsCount,
+      averageRating,
+    };
+  });
+}
+
+export async function listApprovedLocations(
+  supabase: SupabaseServerClient,
+  options: { communityReviewerUserId?: string | null } = {}
+) {
   const { data, error } = await supabase
     .from("locations")
     .select("*, location_media(*)")
@@ -200,7 +254,23 @@ export async function listApprovedLocations(supabase: SupabaseServerClient) {
     includeReviewerNames: false,
   });
 
-  return rows.map(toLocationWithMedia);
+  const locations = rows.map(toLocationWithMedia);
+
+  if (!options.communityReviewerUserId) {
+    return locations;
+  }
+
+  const rpcClient = supabase as unknown as LocationRpcClient;
+  const { data: reviewsData, error: reviewsError } = await rpcClient.rpc(
+    "list_location_community_reviews",
+    { actor_user_id: options.communityReviewerUserId }
+  );
+
+  if (reviewsError) {
+    throw new Error(reviewsError.message);
+  }
+
+  return withCommunityReviews(locations, (reviewsData ?? []).map(toCommunityReview));
 }
 
 export async function listLocationsByPractitionerId(
@@ -378,4 +448,75 @@ export async function rejectLocationById(
   }
 
   return toLocation(data);
+}
+
+export async function upsertLocationCommunityReview(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  reviewerUserId: string,
+  rating: number,
+  reviewText: string | null
+) {
+  const { data, error } = await supabase
+    .from("location_reviews")
+    .upsert(
+      {
+        location_id: locationId,
+        reviewer_id: reviewerUserId,
+        rating,
+        review_text: reviewText,
+      } as never,
+      { onConflict: "location_id,reviewer_id" }
+    )
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function toggleLocationReviewHelpfulVote(
+  supabase: SupabaseServerClient,
+  reviewId: string,
+  userId: string
+) {
+  const { data: existingVoteData, error: existingError } = await supabase
+    .from("location_review_helpful_votes")
+    .select("id")
+    .eq("review_id", reviewId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existingError) {
+    throw new Error(existingError.message);
+  }
+
+  const existingVote = existingVoteData as Pick<HelpfulVoteRow, "id"> | null;
+
+  if (existingVote) {
+    const { error } = await supabase
+      .from("location_review_helpful_votes")
+      .delete()
+      .eq("id", existingVote.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return false;
+  }
+
+  const { error } = await supabase.from("location_review_helpful_votes").insert({
+    review_id: reviewId,
+    user_id: userId,
+  } as never);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return true;
 }

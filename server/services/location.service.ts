@@ -10,6 +10,8 @@ import {
   listLocationsForReview,
   rejectLocationById,
   resubmitRejectedLocationById,
+  toggleLocationReviewHelpfulVote,
+  upsertLocationCommunityReview,
 } from "@/server/repositories/location.repository";
 
 export async function requireLocationPractitionerId(
@@ -25,8 +27,11 @@ export async function requireLocationPractitionerId(
   return profile.id;
 }
 
-export function listPublicLocations(supabase: SupabaseServerClient) {
-  return listApprovedLocations(supabase);
+export function listPublicLocations(
+  supabase: SupabaseServerClient,
+  options: { communityReviewerUserId?: string | null } = {}
+) {
+  return listApprovedLocations(supabase, options);
 }
 
 export async function listMyLocations(supabase: SupabaseServerClient, userId: string) {
@@ -76,4 +81,22 @@ export async function reviewLocation(
   }
 
   return rejectLocationById(supabase, locationId, reviewerUserId, reason ?? "");
+}
+
+export function saveLocationCommunityReview(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  reviewerUserId: string,
+  rating: number,
+  reviewText: string | null
+) {
+  return upsertLocationCommunityReview(supabase, locationId, reviewerUserId, rating, reviewText);
+}
+
+export function toggleLocationReviewHelpful(
+  supabase: SupabaseServerClient,
+  reviewId: string,
+  userId: string
+) {
+  return toggleLocationReviewHelpfulVote(supabase, reviewId, userId);
 }

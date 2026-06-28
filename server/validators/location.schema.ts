@@ -44,5 +44,16 @@ export const locationReviewSchema = z.object({
   }
 });
 
+export const locationCommunityReviewSchema = z.object({
+  locationId: z.string().uuid(),
+  rating: z.coerce.number().int().min(1).max(5),
+  reviewText: z.preprocess(emptyToNull, z.string().trim().max(2000).nullable().optional()),
+});
+
+export const locationReviewHelpfulSchema = z.object({
+  reviewId: z.string().uuid(),
+});
+
 export type LocationPayload = z.infer<typeof locationSchema>;
 export type LocationReviewPayload = z.infer<typeof locationReviewSchema>;
+export type LocationCommunityReviewPayload = z.infer<typeof locationCommunityReviewSchema>;

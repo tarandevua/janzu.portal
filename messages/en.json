@@ -197,7 +197,8 @@
       "description": "Explore public practitioner profiles by location, language, and practice focus.",
       "unknownCity": "Janzu practitioner",
       "profileTitle": "Practitioner profile",
-      "emptyMap": "No public practitioner coordinates are available yet."
+      "emptyMap": "No public practitioner coordinates are available yet.",
+      "backToList": "Back to practitioners"
     }
   },
   "clients": {
@@ -393,6 +394,16 @@
     "emptyReview": "No locations are waiting for review.",
     "emptyPublic": "No approved locations are public yet.",
     "emptyMap": "No approved location coordinates are available yet.",
+    "rating": "Rating",
+    "reviews": "reviews",
+    "reviewText": "Review",
+    "submitReview": "Submit review",
+    "updateReview": "Update review",
+    "communityReviews": "Community reviews",
+    "noCommunityReviews": "No community reviews yet.",
+    "helpful": "Helpful",
+    "markedHelpful": "Helpful",
+    "yourReview": "Your review",
     "reviewApproved": "Location approved.",
     "reviewRejected": "Location rejected.",
     "reviewInvalid": "Location review could not be processed.",

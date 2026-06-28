@@ -11,10 +11,21 @@ type PublicLocationsPageProps = {
 export default async function PublicLocationsPage({ params }: PublicLocationsPageProps) {
   const { locale } = await params;
   const supabase = await createSupabaseServerClient();
-  const [dictionary, locations] = await Promise.all([
+  const [{ data }, dictionary] = await Promise.all([
+    supabase.auth.getUser(),
     getDictionary(locale),
-    listPublicLocations(supabase),
   ]);
+  const locations = await listPublicLocations(supabase, {
+    communityReviewerUserId: data.user?.id ?? null,
+  });
 
-  return <PublicLocationList locations={locations} dictionary={dictionary.locations} />;
+  return (
+    <PublicLocationList
+      locale={locale}
+      locations={locations}
+      canReview={Boolean(data.user)}
+      currentUserId={data.user?.id ?? null}
+      dictionary={dictionary.locations}
+    />
+  );
 }

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { locationReviewSchema, locationSchema } from "@/server/validators/location.schema";
+import {
+  locationCommunityReviewSchema,
+  locationReviewHelpfulSchema,
+  locationReviewSchema,
+  locationSchema,
+} from "@/server/validators/location.schema";
 
 describe("locationSchema", () => {
   it("accepts a valid location submission", () => {
@@ -36,6 +41,29 @@ describe("locationSchema", () => {
         longitude: "",
       })
     ).toThrow();
+  });
+});
+
+describe("locationCommunityReviewSchema", () => {
+  it("accepts location community reviews", () => {
+    const parsed = locationCommunityReviewSchema.parse({
+      locationId: "00000000-0000-0000-0000-000000000000",
+      rating: "5",
+      reviewText: "Beautiful and easy to access.",
+    });
+
+    expect(parsed.rating).toBe(5);
+  });
+
+  it("rejects invalid community ratings and helpful ids", () => {
+    expect(() =>
+      locationCommunityReviewSchema.parse({
+        locationId: "00000000-0000-0000-0000-000000000000",
+        rating: "8",
+      })
+    ).toThrow();
+
+    expect(() => locationReviewHelpfulSchema.parse({ reviewId: "bad-id" })).toThrow();
   });
 });
 

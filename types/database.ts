@@ -468,6 +468,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      location_review_helpful_votes: {
+        Row: {
+          id: string;
+          review_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          review_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          review_id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       events: {
         Row: {
           id: string;
@@ -648,6 +669,22 @@ export type Database = {
           target_full_name: string | null;
         };
         Returns: Database["public"]["Tables"]["users"]["Row"];
+      };
+      list_location_community_reviews: {
+        Args: {
+          actor_user_id: string;
+        };
+        Returns: {
+          review_id: string;
+          location_id: string;
+          reviewer_id: string;
+          rating: number;
+          review_text: string | null;
+          created_at: string;
+          updated_at: string;
+          helpful_count: number;
+          viewer_marked_helpful: boolean;
+        }[];
       };
       list_feedback_participants: {
         Args: {

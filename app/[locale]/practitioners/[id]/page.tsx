@@ -1,9 +1,12 @@
+import Link from "next/link";
+import { ArrowLeftIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ClusteredMap } from "@/features/maps/components/clustered-map";
 import type { MapMarker } from "@/features/maps/types";
 import { hasValidCoordinates } from "@/features/maps/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SessionRequestForm } from "@/features/session-requests/components/session-request-form";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -65,6 +68,14 @@ export default async function PractitionerPublicProfilePage({
 
   return (
     <main className="min-h-screen bg-muted/40 p-6">
+      <div className="mx-auto grid max-w-5xl gap-4">
+        <Button asChild variant="ghost" className="w-fit">
+          <Link href={`/${locale}/practitioners`}>
+            <ArrowLeftIcon className="size-4" />
+            {dictionary.practitioners.public.backToList}
+          </Link>
+        </Button>
+      </div>
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_360px]">
         <Card>
           <CardHeader>
