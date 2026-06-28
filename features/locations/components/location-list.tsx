@@ -32,6 +32,10 @@ type LocationListProps = {
     description: string;
     latitude: string;
     longitude: string;
+    temperature: string;
+    temperatureUnit: string;
+    celsius: string;
+    fahrenheit: string;
     mapPickerTitle: string;
     mapPickerDescription: string;
     selectedCoordinates: string;
@@ -109,6 +113,7 @@ export function LocationList({ locale, locations, dictionary }: LocationListProp
                   <TableHead>{dictionary.name}</TableHead>
                   <TableHead>{dictionary.type}</TableHead>
                   <TableHead>{dictionary.coordinates}</TableHead>
+                  <TableHead>{dictionary.temperature}</TableHead>
                   <TableHead>{dictionary.status}</TableHead>
                   <TableHead>{dictionary.latestReview}</TableHead>
                   <TableHead className="text-right">{dictionary.action}</TableHead>
@@ -147,6 +152,11 @@ export function LocationList({ locale, locations, dictionary }: LocationListProp
                       </a>
                     </TableCell>
                     <TableCell>
+                      {location.temperatureValue !== null && location.temperatureUnit
+                        ? `${location.temperatureValue}°${location.temperatureUnit === "celsius" ? "C" : "F"}`
+                        : "—"}
+                    </TableCell>
+                    <TableCell>
                       <Badge variant={location.status === "approved" ? "default" : "secondary"}>
                         {getStatusLabel(location.status, dictionary)}
                       </Badge>
@@ -171,6 +181,8 @@ export function LocationList({ locale, locations, dictionary }: LocationListProp
                               description: location.description,
                               latitude: location.latitude,
                               longitude: location.longitude,
+                              temperatureValue: location.temperatureValue,
+                              temperatureUnit: location.temperatureUnit,
                               accessInfo: location.accessInfo,
                             }}
                             submitLabel={dictionary.update}

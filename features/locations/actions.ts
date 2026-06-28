@@ -51,6 +51,8 @@ export async function submitLocation(locale: Locale, formData: FormData) {
     description: formData.get("description"),
     latitude: formData.get("latitude"),
     longitude: formData.get("longitude"),
+    temperatureValue: formData.get("temperatureValue"),
+    temperatureUnit: formData.get("temperatureUnit"),
     accessInfo: formData.get("accessInfo"),
   });
 
@@ -115,6 +117,8 @@ export async function updateRejectedLocation(
     description: formData.get("description"),
     latitude: formData.get("latitude"),
     longitude: formData.get("longitude"),
+    temperatureValue: formData.get("temperatureValue"),
+    temperatureUnit: formData.get("temperatureUnit"),
     accessInfo: formData.get("accessInfo"),
   });
 

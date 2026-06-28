@@ -28,6 +28,10 @@ type LocationFormProps = {
     description: string;
     latitude: string;
     longitude: string;
+    temperature: string;
+    temperatureUnit: string;
+    celsius: string;
+    fahrenheit: string;
     mapPickerTitle: string;
     mapPickerDescription: string;
     selectedCoordinates: string;
@@ -109,6 +113,34 @@ export function LocationForm({
             defaultLongitude={initialValues?.longitude}
             dictionary={dictionary}
           />
+
+          <div className="grid gap-4 md:grid-cols-[1fr_12rem]">
+            <div className="grid gap-2">
+              <Label htmlFor="temperatureValue">{dictionary.temperature}</Label>
+              <Input
+                id="temperatureValue"
+                name="temperatureValue"
+                type="number"
+                step="0.1"
+                defaultValue={initialValues?.temperatureValue ?? ""}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="temperatureUnit">{dictionary.temperatureUnit}</Label>
+              <Select
+                name="temperatureUnit"
+                defaultValue={initialValues?.temperatureUnit ?? "celsius"}
+              >
+                <SelectTrigger id="temperatureUnit">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="celsius">{dictionary.celsius}</SelectItem>
+                  <SelectItem value="fahrenheit">{dictionary.fahrenheit}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <div className="grid gap-2">
             <Label htmlFor="description">{dictionary.description}</Label>

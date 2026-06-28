@@ -20,6 +20,7 @@ const coordinate = (min: number, max: number) =>
   z.preprocess(emptyToUndefined, z.coerce.number().min(min).max(max));
 
 export const locationTypes = ["pool", "spa", "natural_water"] as const;
+export const temperatureUnits = ["celsius", "fahrenheit"] as const;
 
 export const locationSchema = z.object({
   name: z.string().trim().min(1).max(180),
@@ -27,7 +28,20 @@ export const locationSchema = z.object({
   description: z.preprocess(emptyToNull, z.string().trim().max(5000).nullable().optional()),
   latitude: coordinate(-90, 90),
   longitude: coordinate(-180, 180),
+  temperatureValue: z.preprocess(
+    emptyToNull,
+    z.coerce.number().min(-20).max(140).nullable().optional()
+  ),
+  temperatureUnit: z.preprocess(emptyToNull, z.enum(temperatureUnits).nullable().optional()),
   accessInfo: z.preprocess(emptyToNull, z.string().trim().max(3000).nullable().optional()),
+}).superRefine((value, context) => {
+  if (value.temperatureValue !== null && value.temperatureValue !== undefined && !value.temperatureUnit) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["temperatureUnit"],
+      message: "Temperature unit is required when temperature is provided.",
+    });
+  }
 });
 
 export const locationReviewSchema = z.object({

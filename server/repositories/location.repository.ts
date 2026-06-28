@@ -56,6 +56,8 @@ type LocationRpcClient = {
       target_description: string | null;
       target_latitude: number;
       target_longitude: number;
+      target_temperature_value: number | null;
+      target_temperature_unit: LocationInput["temperatureUnit"];
       target_access_info: string | null;
     }
   ): Promise<{ data: LocationRow | null; error: { message: string } | null }>;
@@ -77,6 +79,8 @@ function toLocation(row: LocationRow & {
     description: row.description,
     latitude: row.latitude,
     longitude: row.longitude,
+    temperatureValue: row.temperature_value,
+    temperatureUnit: row.temperature_unit,
     accessInfo: row.access_info,
     status: row.status,
     approvedBy: row.approved_by,
@@ -326,6 +330,8 @@ export async function createLocationForPractitioner(
     description: input.description ?? null,
     latitude: input.latitude,
     longitude: input.longitude,
+    temperature_value: input.temperatureValue ?? null,
+    temperature_unit: input.temperatureUnit ?? null,
     access_info: input.accessInfo ?? null,
   } satisfies LocationInsert;
 
@@ -388,6 +394,8 @@ export async function resubmitRejectedLocationById(
     target_description: input.description ?? null,
     target_latitude: input.latitude,
     target_longitude: input.longitude,
+    target_temperature_value: input.temperatureValue ?? null,
+    target_temperature_unit: input.temperatureUnit ?? null,
     target_access_info: input.accessInfo ?? null,
   });
 

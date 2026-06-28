@@ -342,6 +342,8 @@ export type Database = {
           description: string | null;
           latitude: number;
           longitude: number;
+          temperature_value: number | null;
+          temperature_unit: "celsius" | "fahrenheit" | null;
           access_info: string | null;
           status: "pending" | "approved" | "rejected";
           approved_by: string | null;
@@ -357,6 +359,8 @@ export type Database = {
           description?: string | null;
           latitude: number;
           longitude: number;
+          temperature_value?: number | null;
+          temperature_unit?: "celsius" | "fahrenheit" | null;
           access_info?: string | null;
           status?: "pending" | "approved" | "rejected";
           approved_by?: string | null;
@@ -372,6 +376,8 @@ export type Database = {
           description?: string | null;
           latitude?: number;
           longitude?: number;
+          temperature_value?: number | null;
+          temperature_unit?: "celsius" | "fahrenheit" | null;
           access_info?: string | null;
           status?: "pending" | "approved" | "rejected";
           approved_by?: string | null;

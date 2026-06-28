@@ -14,11 +14,27 @@ describe("locationSchema", () => {
       description: "Quiet private pool.",
       latitude: "47.0105",
       longitude: "28.8638",
+      temperatureValue: "34.5",
+      temperatureUnit: "celsius",
       accessInfo: "Booking required.",
     });
 
     expect(parsed.latitude).toBe(47.0105);
     expect(parsed.locationType).toBe("pool");
+    expect(parsed.temperatureValue).toBe(34.5);
+  });
+
+  it("requires a temperature unit when temperature is provided", () => {
+    const parsed = locationSchema.safeParse({
+      name: "Warm Water Pool",
+      locationType: "pool",
+      latitude: "47.0105",
+      longitude: "28.8638",
+      temperatureValue: "90",
+      temperatureUnit: "",
+    });
+
+    expect(parsed.success).toBe(false);
   });
 
   it("rejects invalid coordinates", () => {

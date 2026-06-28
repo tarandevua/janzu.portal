@@ -31,6 +31,7 @@ type LocationReviewQueueProps = {
     name: string;
     type: string;
     coordinates: string;
+    temperature: string;
     status: string;
     reason: string;
     reviewedBy: string;
@@ -136,6 +137,7 @@ export function LocationReviewQueue({
                   <TableHead>{dictionary.name}</TableHead>
                   <TableHead>{dictionary.type}</TableHead>
                   <TableHead>{dictionary.coordinates}</TableHead>
+                  <TableHead>{dictionary.temperature}</TableHead>
                   <TableHead>{dictionary.status}</TableHead>
                   <TableHead>{dictionary.latestReview}</TableHead>
                   <TableHead className="text-right">{dictionary.action}</TableHead>
@@ -164,6 +166,11 @@ export function LocationReviewQueue({
                     <TableCell>{getTypeLabel(location.locationType, dictionary)}</TableCell>
                     <TableCell>
                       {formatCoordinate(location.latitude)}, {formatCoordinate(location.longitude)}
+                    </TableCell>
+                    <TableCell>
+                      {location.temperatureValue !== null && location.temperatureUnit
+                        ? `${location.temperatureValue}°${location.temperatureUnit === "celsius" ? "C" : "F"}`
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       <div className="grid gap-1">

@@ -1,5 +1,6 @@
 export type LocationType = "pool" | "spa" | "natural_water";
 export type ApprovalStatus = "pending" | "approved" | "rejected";
+export type TemperatureUnit = "celsius" | "fahrenheit";
 
 export type Location = {
   id: string;
@@ -9,6 +10,8 @@ export type Location = {
   description: string | null;
   latitude: number;
   longitude: number;
+  temperatureValue: number | null;
+  temperatureUnit: TemperatureUnit | null;
   accessInfo: string | null;
   status: ApprovalStatus;
   approvedBy: string | null;
@@ -25,6 +28,8 @@ export type LocationInput = {
   description?: string | null;
   latitude: number;
   longitude: number;
+  temperatureValue?: number | null;
+  temperatureUnit?: TemperatureUnit | null;
   accessInfo?: string | null;
 };
 

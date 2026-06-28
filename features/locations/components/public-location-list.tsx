@@ -9,6 +9,7 @@ import { ClusteredMap } from "@/features/maps/components/clustered-map";
 import type { MapMarker } from "@/features/maps/types";
 import { formatCoordinate } from "@/features/maps/utils";
 import { LocationImageGallery } from "@/features/locations/components/location-image-gallery";
+import { LocationTemperatureDisplay } from "@/features/locations/components/location-temperature-display";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +32,9 @@ type PublicLocationListProps = {
     naturalWater: string;
     coordinates: string;
     accessInfo: string;
+    temperature: string;
+    celsius: string;
+    fahrenheit: string;
     emptyMap: string;
     rating: string;
     reviews: string;
@@ -162,6 +166,11 @@ export function PublicLocationList({
                     {dictionary.accessInfo}: {location.accessInfo}
                   </p>
                 ) : null}
+                <LocationTemperatureDisplay
+                  value={location.temperatureValue}
+                  unit={location.temperatureUnit}
+                  dictionary={dictionary}
+                />
                 {canReview ? (
                   <div className="grid gap-3 border-t pt-3">
                     <div className="flex items-center justify-between gap-3">
