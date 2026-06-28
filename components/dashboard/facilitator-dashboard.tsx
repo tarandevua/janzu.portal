@@ -124,7 +124,7 @@ export function FacilitatorDashboard({
     <JanzuDashboardFrame locale={locale} access={access} user={user} title={title}>
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          <div className="grid grid-cols-4 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
             <StatCard
               title={dictionary.practitioners}
               value={data.counts.practitioners}
