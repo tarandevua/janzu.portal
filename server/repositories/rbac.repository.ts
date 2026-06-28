@@ -1,6 +1,6 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeRoles } from "@/server/services/rbac.service";
-import type { ManagedUser, Role } from "@/server/models/rbac.model";
+import type { ManagedUser, ManagedUsersPage, Role } from "@/server/models/rbac.model";
 import type { Database } from "@/types/database";
 
 type RoleJoinRow = {
@@ -38,6 +38,18 @@ function toManagedUser(row: ManagedUserRow): ManagedUser {
     fullName: row.full_name,
     createdAt: row.created_at,
     roles: normalizeRoles(row.roles),
+    practitionerId: row.practitioner_id,
+    practitionerIsPublic: row.practitioner_is_public,
+    practitionerCountry: row.practitioner_country,
+    practitionerCity: row.practitioner_city,
+    practitionerLanguages: row.practitioner_languages ?? [],
+    clientsCount: row.clients_count,
+    sessionsCount: row.sessions_count,
+    validatedSessionsCount: row.validated_sessions_count,
+    sessionRequestsCount: row.session_requests_count,
+    submittedLocationsCount: row.submitted_locations_count,
+    approvedLocationsCount: row.approved_locations_count,
+    eventRsvpsCount: row.event_rsvps_count,
   };
 }
 
@@ -60,18 +72,27 @@ export async function listUserRoles(
 
 export async function listManagedUsers(
   supabase: SupabaseServerClient,
-  actorUserId: string
-) {
+  actorUserId: string,
+  page = 1,
+  pageSize = 10
+): Promise<ManagedUsersPage> {
   const rpcClient = supabase as unknown as RbacRpcClient;
   const { data, error } = await rpcClient.rpc("list_user_role_management", {
     actor_user_id: actorUserId,
+    page_number: page,
+    page_size: pageSize,
   });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map(toManagedUser);
+  const rows = data ?? [];
+
+  return {
+    items: rows.map(toManagedUser),
+    totalCount: rows[0]?.total_count ?? 0,
+  };
 }
 
 export async function assignRoleToUser(

@@ -12,13 +12,32 @@ import { getPrimaryRole, getRoleAccessList, hasPermission, hasRole } from "@/ser
 import { getAdminAuthSettings } from "@/server/services/platform-settings.service";
 import { listUsersForManagement } from "@/server/services/user-management.service";
 
+const PAGE_SIZE = 10;
+
 type UsersPageProps = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; usersPage?: string }>;
 };
 
+function parsePage(value: string | undefined) {
+  const page = Number.parseInt(value ?? "1", 10);
+  return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
+function buildUsersHref(locale: Locale, page: number) {
+  const params = new URLSearchParams();
+
+  if (page > 1) {
+    params.set("usersPage", String(page));
+  }
+
+  const query = params.toString();
+  return `/${locale}/dashboard/users${query ? `?${query}` : ""}`;
+}
+
 export default async function UsersPage({ params, searchParams }: UsersPageProps) {
-  const [{ locale }, { status }] = await Promise.all([params, searchParams]);
+  const [{ locale }, { status, usersPage }] = await Promise.all([params, searchParams]);
+  const currentUsersPage = parsePage(usersPage);
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
     supabase.auth.getUser(),
@@ -41,8 +60,8 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
     redirect(`/${locale}/dashboard`);
   }
 
-  const [users, authSettings] = await Promise.all([
-    listUsersForManagement(supabase, data.user.id),
+  const [usersPageData, authSettings] = await Promise.all([
+    listUsersForManagement(supabase, data.user.id, currentUsersPage, PAGE_SIZE),
     hasRole(roles, "admin")
       ? getAdminAuthSettings(supabase, data.user.id)
       : Promise.resolve(null),
@@ -87,9 +106,14 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
           </div>
           <UserRoleManagementTable
             locale={locale}
-            users={users}
+            users={usersPageData.items}
             actorRoles={roles}
             status={status}
+            page={currentUsersPage}
+            pageSize={PAGE_SIZE}
+            totalCount={usersPageData.totalCount}
+            previousHref={buildUsersHref(locale, currentUsersPage - 1)}
+            nextHref={buildUsersHref(locale, currentUsersPage + 1)}
             dictionary={dictionary.userManagement}
           />
         </div>

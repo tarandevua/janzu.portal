@@ -713,6 +713,8 @@ export type Database = {
       list_user_role_management: {
         Args: {
           actor_user_id: string;
+          page_number?: number;
+          page_size?: number;
         };
         Returns: {
           user_id: string;
@@ -720,6 +722,19 @@ export type Database = {
           full_name: string | null;
           created_at: string;
           roles: ("admin" | "manager" | "facilitator" | "practitioner")[];
+          practitioner_id: string | null;
+          practitioner_is_public: boolean | null;
+          practitioner_country: string | null;
+          practitioner_city: string | null;
+          practitioner_languages: string[];
+          clients_count: number;
+          sessions_count: number;
+          validated_sessions_count: number;
+          session_requests_count: number;
+          submitted_locations_count: number;
+          approved_locations_count: number;
+          event_rsvps_count: number;
+          total_count: number;
         }[];
       };
       assign_user_role: {

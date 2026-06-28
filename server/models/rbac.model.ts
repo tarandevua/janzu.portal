@@ -13,6 +13,23 @@ export type ManagedUser = {
   fullName: string | null;
   createdAt: string;
   roles: Role[];
+  practitionerId: string | null;
+  practitionerIsPublic: boolean | null;
+  practitionerCountry: string | null;
+  practitionerCity: string | null;
+  practitionerLanguages: string[];
+  clientsCount: number;
+  sessionsCount: number;
+  validatedSessionsCount: number;
+  sessionRequestsCount: number;
+  submittedLocationsCount: number;
+  approvedLocationsCount: number;
+  eventRsvpsCount: number;
+};
+
+export type ManagedUsersPage = {
+  items: ManagedUser[];
+  totalCount: number;
 };
 
 export type RolePermission =

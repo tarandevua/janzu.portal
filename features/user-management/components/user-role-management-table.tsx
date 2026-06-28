@@ -1,7 +1,16 @@
-import { PlusIcon, XIcon } from "lucide-react";
+import Link from "next/link";
+import type { Route } from "next";
+import { EyeIcon, PlusIcon, XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -9,6 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   Table,
   TableBody,
@@ -26,11 +43,35 @@ type UserManagementDictionary = {
   title: string;
   description: string;
   user: string;
+  fullName: string;
   email: string;
   roles: string;
   created: string;
   assignRole: string;
   removeRole: string;
+  viewDetails: string;
+  detailsTitle: string;
+  detailsDescription: string;
+  userId: string;
+  practitionerProfile: string;
+  profileStatus: string;
+  publicProfile: string;
+  privateProfile: string;
+  noProfile: string;
+  notAvailable: string;
+  location: string;
+  languages: string;
+  activitySummary: string;
+  clientsCount: string;
+  sessionsCount: string;
+  validatedSessionsCount: string;
+  sessionRequestsCount: string;
+  submittedLocationsCount: string;
+  approvedLocationsCount: string;
+  eventRsvpsCount: string;
+  previous: string;
+  next: string;
+  page: string;
   action: string;
   empty: string;
   assigned: string;
@@ -45,6 +86,11 @@ type UserRoleManagementTableProps = {
   users: ManagedUser[];
   actorRoles: Role[];
   status?: string;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  previousHref: string;
+  nextHref: string;
   dictionary: UserManagementDictionary;
 };
 
@@ -54,16 +100,132 @@ function formatCreatedAt(locale: Locale, value: string) {
   }).format(new Date(value));
 }
 
+function formatList(values: string[], fallback: string) {
+  return values.length > 0 ? values.join(", ") : fallback;
+}
+
+function DetailItem({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="grid gap-1 rounded-md border p-3">
+      <dt className="text-xs font-medium uppercase text-muted-foreground">{label}</dt>
+      <dd className="break-words text-sm font-medium">{value}</dd>
+    </div>
+  );
+}
+
+function UserDetailsSheet({
+  locale,
+  managedUser,
+  dictionary,
+}: {
+  locale: Locale;
+  managedUser: ManagedUser;
+  dictionary: UserManagementDictionary;
+}) {
+  const displayName = managedUser.fullName ?? managedUser.email;
+  const profileStatus = managedUser.practitionerId
+    ? managedUser.practitionerIsPublic
+      ? dictionary.publicProfile
+      : dictionary.privateProfile
+    : dictionary.noProfile;
+  const location = [managedUser.practitionerCountry, managedUser.practitionerCity]
+    .filter(Boolean)
+    .join(", ");
+
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button type="button" size="sm" variant="outline">
+          <EyeIcon className="h-4 w-4" />
+          {dictionary.viewDetails}
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="flex h-full w-full max-w-[100vw] flex-col overflow-hidden sm:max-w-xl">
+        <SheetHeader className="shrink-0 pr-8">
+          <SheetTitle>{dictionary.detailsTitle}</SheetTitle>
+          <SheetDescription>{dictionary.detailsDescription}</SheetDescription>
+        </SheetHeader>
+        <div className="min-h-0 flex-1 overflow-y-auto py-4">
+          <div className="grid gap-6">
+            <section className="grid gap-3">
+              <h3 className="text-sm font-semibold">{dictionary.user}</h3>
+              <dl className="grid gap-3 sm:grid-cols-2">
+                <DetailItem label={dictionary.fullName} value={displayName} />
+                <DetailItem label={dictionary.email} value={managedUser.email} />
+                <DetailItem label={dictionary.userId} value={managedUser.userId} />
+                <DetailItem
+                  label={dictionary.created}
+                  value={formatCreatedAt(locale, managedUser.createdAt)}
+                />
+              </dl>
+              <div className="flex flex-wrap gap-2">
+                {managedUser.roles.map((role) => (
+                  <Badge key={role} variant="secondary">
+                    {dictionary.roleLabels[role]}
+                  </Badge>
+                ))}
+              </div>
+            </section>
+
+            <section className="grid gap-3">
+              <h3 className="text-sm font-semibold">{dictionary.practitionerProfile}</h3>
+              <dl className="grid gap-3 sm:grid-cols-2">
+                <DetailItem label={dictionary.profileStatus} value={profileStatus} />
+                <DetailItem label={dictionary.location} value={location || dictionary.notAvailable} />
+                <DetailItem
+                  label={dictionary.languages}
+                  value={formatList(managedUser.practitionerLanguages, dictionary.notAvailable)}
+                />
+                <DetailItem
+                  label={dictionary.approvedLocationsCount}
+                  value={managedUser.approvedLocationsCount}
+                />
+              </dl>
+            </section>
+
+            <section className="grid gap-3">
+              <h3 className="text-sm font-semibold">{dictionary.activitySummary}</h3>
+              <dl className="grid gap-3 sm:grid-cols-2">
+                <DetailItem label={dictionary.clientsCount} value={managedUser.clientsCount} />
+                <DetailItem label={dictionary.sessionsCount} value={managedUser.sessionsCount} />
+                <DetailItem
+                  label={dictionary.validatedSessionsCount}
+                  value={managedUser.validatedSessionsCount}
+                />
+                <DetailItem
+                  label={dictionary.sessionRequestsCount}
+                  value={managedUser.sessionRequestsCount}
+                />
+                <DetailItem
+                  label={dictionary.submittedLocationsCount}
+                  value={managedUser.submittedLocationsCount}
+                />
+                <DetailItem label={dictionary.eventRsvpsCount} value={managedUser.eventRsvpsCount} />
+              </dl>
+            </section>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 export function UserRoleManagementTable({
   locale,
   users,
   actorRoles,
   status,
+  page,
+  pageSize,
+  totalCount,
+  previousHref,
+  nextHref,
   dictionary,
 }: UserRoleManagementTableProps) {
   const assignAction = assignUserRole.bind(null, locale);
   const removeAction = removeUserRole.bind(null, locale);
   const assignableRoles = roles.filter((role) => canManageUserRole(actorRoles, role));
+  const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1);
 
   return (
     <Card>
@@ -134,29 +296,75 @@ export function UserRoleManagementTable({
                       {formatCreatedAt(locale, managedUser.createdAt)}
                     </TableCell>
                     <TableCell>
-                      <form action={assignAction} className="flex min-w-48 gap-2">
-                        <input type="hidden" name="userId" value={managedUser.userId} />
-                        <Select name="role">
-                          <SelectTrigger aria-label={dictionary.assignRole}>
-                            <SelectValue placeholder={dictionary.assignRole} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {assignableRoles.map((role) => (
-                              <SelectItem key={role} value={role}>
-                                {dictionary.roleLabels[role]}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button type="submit" size="icon" variant="outline" aria-label={dictionary.assignRole}>
-                          <PlusIcon className="h-4 w-4" />
-                        </Button>
-                      </form>
+                      <div className="flex flex-wrap gap-2">
+                        <UserDetailsSheet
+                          locale={locale}
+                          managedUser={managedUser}
+                          dictionary={dictionary}
+                        />
+                        <form action={assignAction} className="flex min-w-48 gap-2">
+                          <input type="hidden" name="userId" value={managedUser.userId} />
+                          <Select name="role">
+                            <SelectTrigger aria-label={dictionary.assignRole}>
+                              <SelectValue placeholder={dictionary.assignRole} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {assignableRoles.map((role) => (
+                                <SelectItem key={role} value={role}>
+                                  {dictionary.roleLabels[role]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button type="submit" size="icon" variant="outline" aria-label={dictionary.assignRole}>
+                            <PlusIcon className="h-4 w-4" />
+                          </Button>
+                        </form>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            {totalPages > 1 ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-sm">
+                <span className="text-muted-foreground">
+                  {dictionary.page} {page} / {totalPages}
+                </span>
+                <Pagination className="mx-0 w-auto">
+                  <PaginationContent>
+                    <PaginationItem>
+                      {page <= 1 ? (
+                        <PaginationPrevious
+                          aria-disabled="true"
+                          className="pointer-events-none opacity-50"
+                        >
+                          {dictionary.previous}
+                        </PaginationPrevious>
+                      ) : (
+                        <PaginationPrevious asChild>
+                          <Link href={previousHref as Route}>{dictionary.previous}</Link>
+                        </PaginationPrevious>
+                      )}
+                    </PaginationItem>
+                    <PaginationItem>
+                      {page >= totalPages ? (
+                        <PaginationNext
+                          aria-disabled="true"
+                          className="pointer-events-none opacity-50"
+                        >
+                          {dictionary.next}
+                        </PaginationNext>
+                      ) : (
+                        <PaginationNext asChild>
+                          <Link href={nextHref as Route}>{dictionary.next}</Link>
+                        </PaginationNext>
+                      )}
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            ) : null}
           </div>
         )}
       </CardContent>

@@ -13,7 +13,9 @@ import { sendInviteEmail } from "@/server/services/email.service";
 
 export async function listUsersForManagement(
   supabase: SupabaseServerClient,
-  actorUserId: string
+  actorUserId: string,
+  page = 1,
+  pageSize = 10
 ) {
   const roles = await listUserRoles(supabase, actorUserId);
 
@@ -21,7 +23,7 @@ export async function listUsersForManagement(
     throw new Error("User management access is required.");
   }
 
-  return listManagedUsers(supabase, actorUserId);
+  return listManagedUsers(supabase, actorUserId, page, pageSize);
 }
 
 export async function assignManagedUserRole(

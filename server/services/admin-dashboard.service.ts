@@ -255,7 +255,7 @@ export async function getAdminDashboardData(
 
   return {
     counts: {
-      users: users.length,
+      users: users.totalCount,
       practitioners: getCount(practitionersCount),
       publicPractitioners: getCount(publicPractitionersCount),
       sessions: getCount(sessionsCount),
