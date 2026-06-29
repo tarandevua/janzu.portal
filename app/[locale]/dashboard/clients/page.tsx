@@ -12,11 +12,11 @@ import { getPrimaryRole, getRoleAccessList } from "@/server/services/rbac.servic
 
 type ClientsPageProps = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; clientId?: string }>;
 };
 
 export default async function ClientsPage({ params, searchParams }: ClientsPageProps) {
-  const [{ locale }, { status }] = await Promise.all([params, searchParams]);
+  const [{ locale }, { status, clientId }] = await Promise.all([params, searchParams]);
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
     supabase.auth.getUser(),
@@ -69,7 +69,17 @@ export default async function ClientsPage({ params, searchParams }: ClientsPageP
               />
             </DashboardActionDrawer>
           </div>
-          <ClientList clients={clients} dictionary={dictionary.clients} />
+          <ClientList
+            clients={clients}
+            locale={locale}
+            status={status}
+            editingClientId={clientId}
+            dictionary={{
+              ...dictionary.clients,
+              cancel: dictionary.common.cancel,
+              close: dictionary.common.close,
+            }}
+          />
         </div>
       </div>
     </JanzuDashboardFrame>

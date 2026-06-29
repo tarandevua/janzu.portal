@@ -210,7 +210,9 @@
   "clients": {
     "title": "Client CRM",
     "formTitle": "Add client",
+    "editFormTitle": "Edit client",
     "formDescription": "Create a private client record for your own practice.",
+    "editFormDescription": "Update this private client record.",
     "listTitle": "Private clients",
     "listDescription": "Only you and authorized admins can access these records.",
     "name": "Name",
@@ -218,10 +220,15 @@
     "phone": "Phone",
     "notes": "Notes",
     "create": "Create client",
+    "update": "Update client",
+    "edit": "Edit client",
     "created": "Client created.",
+    "updated": "Client updated.",
     "invalid": "Check the client fields and try again.",
+    "editInvalid": "Check the client fields and try again.",
     "empty": "No clients yet.",
-    "private": "Private"
+    "private": "Private",
+    "actions": "Actions"
   },
   "sessions": {
     "title": "Sessions",

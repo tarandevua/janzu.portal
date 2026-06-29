@@ -210,7 +210,9 @@
   "clients": {
     "title": "CRM de clientes",
     "formTitle": "Agregar cliente",
+    "editFormTitle": "Editar cliente",
     "formDescription": "Crea un registro privado de cliente para tu propia practica.",
+    "editFormDescription": "Actualiza este registro privado de cliente.",
     "listTitle": "Clientes privados",
     "listDescription": "Solo tu y administradores autorizados pueden acceder a estos registros.",
     "name": "Nombre",
@@ -218,10 +220,15 @@
     "phone": "Telefono",
     "notes": "Notas",
     "create": "Crear cliente",
+    "update": "Actualizar cliente",
+    "edit": "Editar cliente",
     "created": "Cliente creado.",
+    "updated": "Cliente actualizado.",
     "invalid": "Revisa los campos del cliente e intentalo nuevamente.",
+    "editInvalid": "Revisa los campos del cliente e intentalo nuevamente.",
     "empty": "Aun no hay clientes.",
-    "private": "Privado"
+    "private": "Privado",
+    "actions": "Acciones"
   },
   "sessions": {
     "title": "Sesiones",

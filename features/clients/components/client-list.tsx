@@ -1,6 +1,8 @@
+import type { Locale } from "@/lib/i18n/config";
 import type { Client } from "@/server/models/client.model";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClientEditDrawer } from "@/features/clients/components/client-edit-drawer";
 import {
   Table,
   TableBody,
@@ -12,6 +14,9 @@ import {
 
 type ClientListProps = {
   clients: Client[];
+  locale: Locale;
+  status?: string;
+  editingClientId?: string;
   dictionary: {
     listTitle: string;
     listDescription: string;
@@ -21,10 +26,30 @@ type ClientListProps = {
     phone: string;
     notes: string;
     private: string;
+    actions: string;
+    edit: string;
+    editFormTitle: string;
+    editFormDescription: string;
+    formTitle: string;
+    formDescription: string;
+    create: string;
+    update: string;
+    created: string;
+    updated: string;
+    invalid: string;
+    editInvalid: string;
+    cancel: string;
+    close: string;
   };
 };
 
-export function ClientList({ clients, dictionary }: ClientListProps) {
+export function ClientList({
+  clients,
+  locale,
+  status,
+  editingClientId,
+  dictionary,
+}: ClientListProps) {
   return (
     <Card>
       <CardHeader>
@@ -48,6 +73,9 @@ export function ClientList({ clients, dictionary }: ClientListProps) {
                   <TableHead>{dictionary.email}</TableHead>
                   <TableHead>{dictionary.phone}</TableHead>
                   <TableHead>{dictionary.notes}</TableHead>
+                  <TableHead className="w-12">
+                    <span className="sr-only">{dictionary.actions}</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -57,6 +85,15 @@ export function ClientList({ clients, dictionary }: ClientListProps) {
                     <TableCell>{client.email ?? ""}</TableCell>
                     <TableCell>{client.phone ?? ""}</TableCell>
                     <TableCell className="max-w-xs truncate">{client.notes ?? ""}</TableCell>
+                    <TableCell className="text-right">
+                      <ClientEditDrawer
+                        client={client}
+                        locale={locale}
+                        status={editingClientId === client.id ? status : undefined}
+                        shouldOpen={editingClientId === client.id && status === "edit-invalid"}
+                        dictionary={dictionary}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
