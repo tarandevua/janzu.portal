@@ -5,6 +5,8 @@ import { getR2MediaUrl } from "@/lib/r2-media";
 export const MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024;
 export const MAX_LOCATION_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
 export const MAX_LOCATION_IMAGE_UPLOADS = 6;
+export const MAX_EVENT_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+export const MAX_EVENT_IMAGE_UPLOADS = 6;
 
 export type AvatarUploadValidationResult =
   | { ok: true }
@@ -13,6 +15,10 @@ export type AvatarUploadValidationResult =
 export type LocationImageUploadValidationResult =
   | { ok: true }
   | { ok: false; code: "location-image-type" | "location-image-size" | "location-image-count" };
+
+export type EventImageUploadValidationResult =
+  | { ok: true }
+  | { ok: false; code: "event-image-type" | "event-image-size" | "event-image-count" };
 
 export type AvatarUploadResult =
   | { ok: true; key: string; url: string }
@@ -39,6 +45,20 @@ export type LocationImageUploadResult =
         | "location-image-auth"
         | "location-image-bucket"
         | "location-image-upload"
+    };
+
+export type EventImageUploadResult =
+  | { ok: true; key: string; url: string }
+  | {
+      ok: false;
+      code:
+        | "event-image-type"
+        | "event-image-size"
+        | "event-image-count"
+        | "event-image-config"
+        | "event-image-auth"
+        | "event-image-bucket"
+        | "event-image-upload"
     };
 
 type R2UploadConfig = {
@@ -117,6 +137,20 @@ function getLocationImageUploadErrorCode(
   return "location-image-upload";
 }
 
+function getEventImageUploadErrorCode(
+  status: number
+): Exclude<EventImageUploadResult, { ok: true }>["code"] {
+  if (status === 401 || status === 403) {
+    return "event-image-auth";
+  }
+
+  if (status === 404) {
+    return "event-image-bucket";
+  }
+
+  return "event-image-upload";
+}
+
 export function createR2AuthorizationHeader({
   accessKeyId,
   credentialScope,
@@ -143,7 +177,7 @@ export function isAllowedR2ImageKey(key: string) {
   const keyParts = key.split("/");
 
   return (
-    (key.startsWith("avatars/") || key.startsWith("locations/")) &&
+    (key.startsWith("avatars/") || key.startsWith("locations/") || key.startsWith("events/")) &&
     !key.includes("..") &&
     keyParts.length >= 3 &&
     !keyParts.some((part) => part.trim() === "") &&
@@ -205,6 +239,27 @@ export function validateLocationImageUploadFiles(files: File[]): LocationImageUp
 
     if (file.size > MAX_LOCATION_IMAGE_UPLOAD_BYTES) {
       return { ok: false, code: "location-image-size" };
+    }
+  }
+
+  return { ok: true };
+}
+
+export function validateEventImageUploadFiles(files: File[]): EventImageUploadValidationResult {
+  if (files.length > MAX_EVENT_IMAGE_UPLOADS) {
+    return { ok: false, code: "event-image-count" };
+  }
+
+  for (const file of files) {
+    const hasJpegType = file.type === "image/jpeg";
+    const hasJpegName = /\.jpe?g$/i.test(file.name);
+
+    if (!hasJpegType || !hasJpegName) {
+      return { ok: false, code: "event-image-type" };
+    }
+
+    if (file.size > MAX_EVENT_IMAGE_UPLOAD_BYTES) {
+      return { ok: false, code: "event-image-size" };
     }
   }
 
@@ -394,6 +449,80 @@ export async function uploadLocationImage({
     console.error("Cloudflare R2 location image upload threw an exception.", error);
 
     return { ok: false, code: "location-image-upload" };
+  }
+}
+
+export async function uploadEventImage({
+  eventId,
+  file,
+  sortOrder,
+}: {
+  eventId: string;
+  file: File;
+  sortOrder: number;
+}): Promise<EventImageUploadResult> {
+  const validation = validateEventImageUploadFiles([file]);
+
+  if (!validation.ok) {
+    return validation;
+  }
+
+  try {
+    const config = getR2Config();
+
+    if (!config) {
+      return { ok: false, code: "event-image-config" };
+    }
+
+    const body = Buffer.from(await file.arrayBuffer());
+
+    if (!hasJpegSignature(body)) {
+      return { ok: false, code: "event-image-type" };
+    }
+
+    const payloadHash = sha256Hex(body);
+    const key = `events/${eventId}/${sortOrder}-${Date.now()}-${crypto.randomUUID()}.jpg`;
+    const url = createR2ObjectUrl(config, key);
+    const signedHeaders = createSignedR2RequestHeaders({
+      config,
+      method: "PUT",
+      url,
+      payloadHash,
+    });
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        ...signedHeaders,
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Type": "image/jpeg",
+      },
+      body,
+    });
+
+    if (!response.ok) {
+      const responseBody = await response.text().catch(() => "");
+
+      console.error("Cloudflare R2 event image upload failed.", {
+        status: response.status,
+        statusText: response.statusText,
+        bucket: config.bucket,
+        key,
+        responseBody: responseBody.slice(0, 500),
+      });
+
+      return { ok: false, code: getEventImageUploadErrorCode(response.status) };
+    }
+
+    return {
+      ok: true,
+      key,
+      url: getR2MediaUrl(key),
+    };
+  } catch (error) {
+    console.error("Cloudflare R2 event image upload threw an exception.", error);
+
+    return { ok: false, code: "event-image-upload" };
   }
 }
 

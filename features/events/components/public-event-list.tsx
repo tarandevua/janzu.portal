@@ -1,6 +1,7 @@
 import type { Locale } from "@/lib/i18n/config";
 import type { CommunityEvent } from "@/server/models/event.model";
 import { rsvpToEvent } from "@/features/events/actions";
+import { EventImageCarousel } from "@/features/events/components/event-image-carousel";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ type PublicEventListProps = {
     endsAt: string;
     capacity: string;
     rsvp: string;
+    rsvpConfirmed: string;
     full: string;
     rsvpCreated: string;
     rsvpInvalid: string;
@@ -51,6 +53,15 @@ function getMessage(status: string | undefined, dictionary: PublicEventListProps
   return null;
 }
 
+function EventDescription({ html }: { html: string }) {
+  return (
+    <div
+      className="prose prose-sm max-w-none text-sm [&_a]:font-medium [&_a]:text-primary [&_a]:underline [&_u]:underline"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
 export function PublicEventList({ locale, events, status, dictionary }: PublicEventListProps) {
   const action = rsvpToEvent.bind(null, locale);
   const message = getMessage(status, dictionary);
@@ -78,9 +89,11 @@ export function PublicEventList({ locale, events, status, dictionary }: PublicEv
         <div className="grid gap-4 md:grid-cols-2">
           {events.map((event) => {
             const isFull = event.rsvpCount >= event.capacity;
+            const canRsvp = !isFull && !event.hasCurrentUserRsvp;
 
             return (
               <Card key={event.id}>
+                <EventImageCarousel media={event.media} title={event.title} />
                 <CardHeader>
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -91,7 +104,7 @@ export function PublicEventList({ locale, events, status, dictionary }: PublicEv
                   </div>
                 </CardHeader>
                 <CardContent className="grid gap-4 text-sm">
-                  {event.description ? <p>{event.description}</p> : null}
+                  {event.description ? <EventDescription html={event.description} /> : null}
                   <div className="grid gap-1 text-muted-foreground">
                     <span>
                       {dictionary.startsAt}: {new Date(event.startsAt).toLocaleString()}
@@ -103,12 +116,16 @@ export function PublicEventList({ locale, events, status, dictionary }: PublicEv
                       {dictionary.capacity}: {event.rsvpCount}/{event.capacity}
                     </span>
                   </div>
-                  <form action={action}>
-                    <input name="eventId" type="hidden" value={event.id} readOnly />
-                    <Button type="submit" disabled={isFull}>
-                      {isFull ? dictionary.full : dictionary.rsvp}
-                    </Button>
-                  </form>
+                  {canRsvp ? (
+                    <form action={action}>
+                      <input name="eventId" type="hidden" value={event.id} readOnly />
+                      <Button type="submit">{dictionary.rsvp}</Button>
+                    </form>
+                  ) : (
+                    <Badge variant="outline">
+                      {event.hasCurrentUserRsvp ? dictionary.rsvpConfirmed : dictionary.full}
+                    </Badge>
+                  )}
                 </CardContent>
               </Card>
             );

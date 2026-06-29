@@ -63,7 +63,7 @@ export default async function EventsPage({ params, searchParams }: EventsPagePro
               <EventForm locale={locale} status={status} dictionary={dictionary.events} />
             </EventCreateDrawer>
           </div>
-          <EventList events={events} dictionary={dictionary.events} />
+          <EventList locale={locale} events={events} status={status} dictionary={dictionary.events} />
         </div>
       </div>
     </JanzuDashboardFrame>

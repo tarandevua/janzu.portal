@@ -5,6 +5,8 @@ import { addDays, format, isBefore, isSameDay } from "date-fns";
 import { EventDateTimePicker } from "@/features/events/components/event-date-time-picker";
 
 type EventDateRangePickerProps = {
+  initialStartsAt?: string;
+  initialEndsAt?: string;
   dictionary: {
     startsAt: string;
     endsAt: string;
@@ -12,6 +14,18 @@ type EventDateRangePickerProps = {
     time: string;
   };
 };
+
+function getInitialDate(value: string | undefined) {
+  return value ? new Date(value) : undefined;
+}
+
+function getInitialTime(value: string | undefined, fallback: string) {
+  if (!value) {
+    return fallback;
+  }
+
+  return format(new Date(value), "HH:mm");
+}
 
 function getDateTime(date: Date | undefined, time: string) {
   if (!date || !time) {
@@ -32,11 +46,15 @@ function addOneHour(time: string) {
   return `${String(nextHours).padStart(2, "0")}:${minutes.padStart(2, "0")}`;
 }
 
-export function EventDateRangePicker({ dictionary }: EventDateRangePickerProps) {
-  const [startDate, setStartDate] = useState<Date>();
-  const [startTime, setStartTime] = useState("09:00");
-  const [endDate, setEndDate] = useState<Date>();
-  const [endTime, setEndTime] = useState("10:00");
+export function EventDateRangePicker({
+  initialStartsAt,
+  initialEndsAt,
+  dictionary,
+}: EventDateRangePickerProps) {
+  const [startDate, setStartDate] = useState<Date | undefined>(() => getInitialDate(initialStartsAt));
+  const [startTime, setStartTime] = useState(() => getInitialTime(initialStartsAt, "09:00"));
+  const [endDate, setEndDate] = useState<Date | undefined>(() => getInitialDate(initialEndsAt));
+  const [endTime, setEndTime] = useState(() => getInitialTime(initialEndsAt, "10:00"));
 
   useEffect(() => {
     const start = getDateTime(startDate, startTime);

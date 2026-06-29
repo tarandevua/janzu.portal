@@ -20,6 +20,26 @@ describe("eventSchema", () => {
     expect(parsed.eventType).toBe("retreat");
   });
 
+  it("sanitizes rich text event descriptions", () => {
+    const parsed = eventSchema.parse({
+      title: "Janzu Retreat",
+      description: '<p onclick="bad()">Welcome <strong>home</strong> <script>alert(1)</script><a href="javascript:bad()">bad</a><a href="https://example.com">ok</a></p>',
+      eventType: "retreat",
+      locationName: "Warm Water Center",
+      latitude: "47.0105000",
+      longitude: "28.8638000",
+      startsAt: "2026-07-01T10:00:00.000Z",
+      endsAt: "2026-07-03T17:00:00.000Z",
+      capacity: "24",
+      status: "published",
+    });
+
+    expect(parsed.description).not.toContain("onclick");
+    expect(parsed.description).not.toContain("script");
+    expect(parsed.description).not.toContain("javascript:");
+    expect(parsed.description).toContain('href="https://example.com"');
+  });
+
   it("rejects events where the end date is before the start date", () => {
     expect(() =>
       eventSchema.parse({

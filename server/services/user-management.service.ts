@@ -10,6 +10,17 @@ import {
 } from "@/server/repositories/rbac.repository";
 import { canManageUserRole, hasPermission } from "@/server/services/rbac.service";
 import { sendInviteEmail } from "@/server/services/email.service";
+import type { Database } from "@/types/database";
+
+type UpdatePractitionerPublicVisibilityArgs =
+  Database["public"]["Functions"]["update_practitioner_public_visibility"]["Args"];
+
+type PractitionerVisibilityRpcClient = {
+  rpc(
+    functionName: "update_practitioner_public_visibility",
+    args: UpdatePractitionerPublicVisibilityArgs
+  ): Promise<{ error: { message: string } | null }>;
+};
 
 export async function listUsersForManagement(
   supabase: SupabaseServerClient,
@@ -54,6 +65,30 @@ export async function removeManagedUserRole(
   }
 
   await removeRoleFromUser(supabase, actorUserId, targetUserId, role);
+}
+
+export async function updateManagedUserPublicProfileVisibility(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  targetUserId: string,
+  isPublic: boolean
+) {
+  const actorRoles = await listUserRoles(supabase, actorUserId);
+
+  if (!hasPermission(actorRoles, "users:manage")) {
+    throw new Error("User management access is required.");
+  }
+
+  const rpcClient = supabase as unknown as PractitionerVisibilityRpcClient;
+  const { error } = await rpcClient.rpc("update_practitioner_public_visibility", {
+    actor_user_id: actorUserId,
+    target_user_id: targetUserId,
+    target_is_public: isPublic,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 export async function inviteManagedUser(

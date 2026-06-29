@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   authSettingsSchema,
+  userPublicProfileSchema,
   userInviteSchema,
   userRoleMutationSchema,
 } from "@/server/validators/user-management.schema";
@@ -54,5 +55,16 @@ describe("authSettingsSchema", () => {
     });
 
     expect(parsed.allowUnknownMagicLinkLogin).toBe(false);
+  });
+});
+
+describe("userPublicProfileSchema", () => {
+  it("parses public profile visibility updates", () => {
+    const parsed = userPublicProfileSchema.parse({
+      userId: "38ec640a-d72b-4c27-944e-3ff5e63d4b9c",
+      isPublic: "true",
+    });
+
+    expect(parsed.isPublic).toBe(true);
   });
 });

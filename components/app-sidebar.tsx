@@ -13,6 +13,7 @@ import {
   MapIcon,
   MapPinnedIcon,
   UserCogIcon,
+  SettingsIcon,
 } from "lucide-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -35,6 +36,7 @@ type SidebarDictionary = {
   roles: Record<Role, string>
   dashboard: string
   users: string
+  settings: string
   clients: string
   sessions: string
   locations: string
@@ -52,6 +54,7 @@ type SidebarDictionary = {
 
 function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictionary) {
   const canManageUsers = access.some((item) => item.permissions.includes("users:manage"))
+  const isAdmin = access.some((item) => item.role === "admin")
 
   return {
     roleLinks: access.map((item) => ({
@@ -71,6 +74,15 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
             title: dictionary.users,
             url: `/${locale}/dashboard/users`,
             icon: UserCogIcon,
+          },
+        ]
+      : []),
+    ...(isAdmin
+      ? [
+          {
+            title: dictionary.settings,
+            url: `/${locale}/dashboard/settings`,
+            icon: SettingsIcon,
           },
         ]
       : []),

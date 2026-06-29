@@ -636,6 +636,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      event_media: {
+        Row: {
+          id: string;
+          event_id: string;
+          storage_key: string;
+          alt_text: string | null;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          storage_key: string;
+          alt_text?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          storage_key?: string;
+          alt_text?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       notifications: {
         Row: {
           id: string;
@@ -769,6 +796,14 @@ export type Database = {
           target_full_name: string | null;
         };
         Returns: Database["public"]["Tables"]["users"]["Row"];
+      };
+      update_practitioner_public_visibility: {
+        Args: {
+          actor_user_id: string;
+          target_user_id: string;
+          target_is_public: boolean;
+        };
+        Returns: Database["public"]["Tables"]["practitioners"]["Row"];
       };
       list_location_community_reviews: {
         Args: {

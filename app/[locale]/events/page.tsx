@@ -12,10 +12,11 @@ type PublicEventsPageProps = {
 export default async function PublicEventsPage({ params, searchParams }: PublicEventsPageProps) {
   const [{ locale }, { status }] = await Promise.all([params, searchParams]);
   const supabase = await createSupabaseServerClient();
-  const [dictionary, events] = await Promise.all([
+  const [{ data }, dictionary] = await Promise.all([
+    supabase.auth.getUser(),
     getDictionary(locale),
-    listPublicEvents(supabase),
   ]);
+  const events = await listPublicEvents(supabase, data.user?.id);
 
   return (
     <PublicEventList

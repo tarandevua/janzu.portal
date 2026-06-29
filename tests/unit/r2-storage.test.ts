@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   MAX_AVATAR_UPLOAD_BYTES,
+  MAX_EVENT_IMAGE_UPLOAD_BYTES,
+  MAX_EVENT_IMAGE_UPLOADS,
   MAX_LOCATION_IMAGE_UPLOAD_BYTES,
   MAX_LOCATION_IMAGE_UPLOADS,
   createR2AuthorizationHeader,
   isAllowedR2ImageKey,
   validateLocationImageUploadFiles,
+  validateEventImageUploadFiles,
   validateAvatarUploadFile,
 } from "@/server/services/r2-storage.service";
 import { getR2MediaUrl } from "@/lib/r2-media";
@@ -53,9 +56,32 @@ describe("avatar upload validation", () => {
   it("only allows jpg avatar image keys to be served", () => {
     expect(isAllowedR2ImageKey("avatars/user-id/profile.jpg")).toBe(true);
     expect(isAllowedR2ImageKey("locations/location-id/photo.jpg")).toBe(true);
+    expect(isAllowedR2ImageKey("events/event-id/cover.jpg")).toBe(true);
     expect(isAllowedR2ImageKey("locations/photo.jpg")).toBe(false);
     expect(isAllowedR2ImageKey("avatars/user-id/profile.png")).toBe(false);
     expect(isAllowedR2ImageKey("avatars/../profile.jpg")).toBe(false);
+  });
+
+  it("validates jpg event image upload batches", () => {
+    const file = new File(["event"], "cover.jpg", { type: "image/jpeg" });
+    const tooManyFiles = Array.from({ length: MAX_EVENT_IMAGE_UPLOADS + 1 }, (_, index) => {
+      return new File(["event"], `event-${index}.jpg`, { type: "image/jpeg" });
+    });
+    const oversizedFile = new File(
+      [new Uint8Array(MAX_EVENT_IMAGE_UPLOAD_BYTES + 1)],
+      "cover.jpg",
+      { type: "image/jpeg" }
+    );
+
+    expect(validateEventImageUploadFiles([file])).toEqual({ ok: true });
+    expect(validateEventImageUploadFiles(tooManyFiles)).toEqual({
+      ok: false,
+      code: "event-image-count",
+    });
+    expect(validateEventImageUploadFiles([oversizedFile])).toEqual({
+      ok: false,
+      code: "event-image-size",
+    });
   });
 
   it("accepts jpg location image uploads", () => {

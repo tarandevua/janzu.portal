@@ -8,10 +8,12 @@ import {
   assignManagedUserRole,
   inviteManagedUser,
   removeManagedUserRole,
+  updateManagedUserPublicProfileVisibility,
 } from "@/server/services/user-management.service";
 import { updateAdminAuthSettings } from "@/server/services/platform-settings.service";
 import {
   authSettingsSchema,
+  userPublicProfileSchema,
   userInviteSchema,
   userRoleMutationSchema,
 } from "@/server/validators/user-management.schema";
@@ -66,6 +68,37 @@ export async function removeUserRole(locale: Locale, formData: FormData) {
   redirect(`/${locale}/dashboard/users?status=removed`);
 }
 
+export async function updateUserPublicProfile(locale: Locale, formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+
+  const parsed = userPublicProfileSchema.safeParse({
+    userId: formData.get("userId"),
+    isPublic: formData.get("isPublic"),
+  });
+
+  if (!parsed.success) {
+    redirect(`/${locale}/dashboard/users?status=public-profile-invalid`);
+  }
+
+  await updateManagedUserPublicProfileVisibility(
+    supabase,
+    user.id,
+    parsed.data.userId,
+    parsed.data.isPublic
+  );
+
+  revalidatePath(`/${locale}/dashboard/users`);
+  revalidatePath(`/${locale}/practitioners`);
+  redirect(`/${locale}/dashboard/users?status=public-profile-updated`);
+}
+
 export async function inviteUser(locale: Locale, formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const {
@@ -111,11 +144,11 @@ export async function updateAuthSettings(locale: Locale, formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/users?status=auth-settings-invalid`);
+    redirect(`/${locale}/dashboard/settings?status=auth-settings-invalid`);
   }
 
   await updateAdminAuthSettings(supabase, user.id, parsed.data);
 
-  revalidatePath(`/${locale}/dashboard/users`);
-  redirect(`/${locale}/dashboard/users?status=auth-settings-saved`);
+  revalidatePath(`/${locale}/dashboard/settings`);
+  redirect(`/${locale}/dashboard/settings?status=auth-settings-saved`);
 }

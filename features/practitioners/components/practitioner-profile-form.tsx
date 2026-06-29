@@ -2,7 +2,6 @@ import type { Locale } from "@/lib/i18n/config";
 import type { PractitionerProfile } from "@/server/models/practitioner.model";
 import { savePractitionerProfile } from "@/features/practitioners/actions";
 import { CoordinatePicker } from "@/features/maps/components/coordinate-picker";
-import { PublicProfileCheckbox } from "@/features/practitioners/components/public-profile-checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,6 @@ type PractitionerProfileFormProps = {
   locale: Locale;
   profile: PractitionerProfile | null;
   fullName: string;
-  canPublishPublicProfile: boolean;
   dictionary: {
     title: string;
     description: string;
@@ -34,7 +32,6 @@ type PractitionerProfileFormProps = {
     profileImageUrl: string;
     profileImageUpload: string;
     profileImageUploadHelp: string;
-    isPublic: string;
     save: string;
     saved: string;
     invalid: string;
@@ -73,7 +70,6 @@ export function PractitionerProfileForm({
   locale,
   profile,
   fullName,
-  canPublishPublicProfile,
   dictionary,
   status,
 }: PractitionerProfileFormProps) {
@@ -163,12 +159,6 @@ export function PractitionerProfileForm({
               </Label>
             </div>
           </div>
-
-          <PublicProfileCheckbox
-            label={dictionary.isPublic}
-            defaultChecked={canPublishPublicProfile ? profile?.isPublic ?? false : false}
-            disabled={!canPublishPublicProfile}
-          />
 
           <Button type="submit" className="w-fit">
             {dictionary.save}

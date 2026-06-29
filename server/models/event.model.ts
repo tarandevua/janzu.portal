@@ -17,6 +17,8 @@ export type CommunityEvent = {
   createdAt: string;
   updatedAt: string;
   rsvpCount: number;
+  hasCurrentUserRsvp: boolean;
+  media: EventMedia[];
 };
 
 export type EventInput = {
@@ -30,6 +32,16 @@ export type EventInput = {
   endsAt: string;
   capacity: number;
   status: EventStatus;
+};
+
+export type EventMedia = {
+  id: string;
+  eventId: string;
+  storageKey: string;
+  url: string;
+  altText: string | null;
+  sortOrder: number;
+  createdAt: string;
 };
 
 export type EventRsvp = {

@@ -34,7 +34,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { assignUserRole, removeUserRole } from "@/features/user-management/actions";
+import {
+  assignUserRole,
+  removeUserRole,
+  updateUserPublicProfile,
+} from "@/features/user-management/actions";
 import type { Locale } from "@/lib/i18n/config";
 import { roles, type ManagedUser, type Role } from "@/server/models/rbac.model";
 import { canManageUserRole } from "@/server/services/rbac.service";
@@ -55,6 +59,8 @@ type UserManagementDictionary = {
   userId: string;
   practitionerProfile: string;
   profileStatus: string;
+  managePublicProfile: string;
+  savePublicProfile: string;
   publicProfile: string;
   privateProfile: string;
   noProfile: string;
@@ -76,6 +82,8 @@ type UserManagementDictionary = {
   empty: string;
   assigned: string;
   removed: string;
+  publicProfileUpdated: string;
+  publicProfileInvalid: string;
   invalid: string;
   forbidden: string;
   roleLabels: Record<Role, string>;
@@ -116,12 +124,19 @@ function DetailItem({ label, value }: { label: string; value: string | number })
 function UserDetailsSheet({
   locale,
   managedUser,
+  actorRoles,
+  assignableRoles,
   dictionary,
 }: {
   locale: Locale;
   managedUser: ManagedUser;
+  actorRoles: Role[];
+  assignableRoles: Role[];
   dictionary: UserManagementDictionary;
 }) {
+  const assignAction = assignUserRole.bind(null, locale);
+  const removeAction = removeUserRole.bind(null, locale);
+  const publicProfileAction = updateUserPublicProfile.bind(null, locale);
   const displayName = managedUser.fullName ?? managedUser.email;
   const profileStatus = managedUser.practitionerId
     ? managedUser.practitionerIsPublic
@@ -160,15 +175,75 @@ function UserDetailsSheet({
               </dl>
               <div className="flex flex-wrap gap-2">
                 {managedUser.roles.map((role) => (
-                  <Badge key={role} variant="secondary">
+                  <form key={role} action={removeAction}>
+                    <input type="hidden" name="userId" value={managedUser.userId} />
+                    <input type="hidden" name="role" value={role} />
+                    <Badge
+                      variant={canManageUserRole(actorRoles, role) ? "secondary" : "outline"}
+                      className="gap-1"
+                    >
                     {dictionary.roleLabels[role]}
-                  </Badge>
+                      {canManageUserRole(actorRoles, role) ? (
+                        <button
+                          type="submit"
+                          className="ml-1 inline-flex rounded-sm opacity-80 hover:opacity-100"
+                          aria-label={`${dictionary.removeRole} ${dictionary.roleLabels[role]}`}
+                        >
+                          <XIcon className="h-3 w-3" />
+                        </button>
+                      ) : null}
+                    </Badge>
+                  </form>
                 ))}
               </div>
+              <form action={assignAction} className="flex flex-col gap-2 sm:flex-row">
+                <input type="hidden" name="userId" value={managedUser.userId} />
+                <Select name="role">
+                  <SelectTrigger aria-label={dictionary.assignRole}>
+                    <SelectValue placeholder={dictionary.assignRole} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assignableRoles.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {dictionary.roleLabels[role]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="submit" variant="outline">
+                  <PlusIcon className="h-4 w-4" />
+                  {dictionary.assignRole}
+                </Button>
+              </form>
             </section>
 
             <section className="grid gap-3">
               <h3 className="text-sm font-semibold">{dictionary.practitionerProfile}</h3>
+              {managedUser.practitionerId ? (
+                <form action={publicProfileAction} className="grid gap-3 rounded-md border p-3">
+                  <input type="hidden" name="userId" value={managedUser.userId} />
+                  <div className="grid gap-2">
+                    <label htmlFor={`isPublic-${managedUser.userId}`} className="text-sm font-medium">
+                      {dictionary.managePublicProfile}
+                    </label>
+                    <Select
+                      name="isPublic"
+                      defaultValue={managedUser.practitionerIsPublic ? "true" : "false"}
+                    >
+                      <SelectTrigger id={`isPublic-${managedUser.userId}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">{dictionary.publicProfile}</SelectItem>
+                        <SelectItem value="false">{dictionary.privateProfile}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button type="submit" size="sm" className="w-fit">
+                    {dictionary.savePublicProfile}
+                  </Button>
+                </form>
+              ) : null}
               <dl className="grid gap-3 sm:grid-cols-2">
                 <DetailItem label={dictionary.profileStatus} value={profileStatus} />
                 <DetailItem label={dictionary.location} value={location || dictionary.notAvailable} />
@@ -222,8 +297,6 @@ export function UserRoleManagementTable({
   nextHref,
   dictionary,
 }: UserRoleManagementTableProps) {
-  const assignAction = assignUserRole.bind(null, locale);
-  const removeAction = removeUserRole.bind(null, locale);
   const assignableRoles = roles.filter((role) => canManageUserRole(actorRoles, role));
   const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1);
 
@@ -239,6 +312,12 @@ export function UserRoleManagementTable({
         ) : null}
         {status === "removed" ? (
           <p className="mb-4 text-sm font-medium text-emerald-700">{dictionary.removed}</p>
+        ) : null}
+        {status === "public-profile-updated" ? (
+          <p className="mb-4 text-sm font-medium text-emerald-700">{dictionary.publicProfileUpdated}</p>
+        ) : null}
+        {status === "public-profile-invalid" ? (
+          <p className="mb-4 text-sm font-medium text-destructive">{dictionary.publicProfileInvalid}</p>
         ) : null}
         {status === "invalid" ? (
           <p className="mb-4 text-sm font-medium text-destructive">{dictionary.invalid}</p>
@@ -270,25 +349,9 @@ export function UserRoleManagementTable({
                     <TableCell>
                       <div className="flex flex-wrap gap-2">
                         {managedUser.roles.map((role) => (
-                          <form key={role} action={removeAction}>
-                            <input type="hidden" name="userId" value={managedUser.userId} />
-                            <input type="hidden" name="role" value={role} />
-                            <Badge
-                              variant={canManageUserRole(actorRoles, role) ? "secondary" : "outline"}
-                              className="gap-1"
-                            >
-                              {dictionary.roleLabels[role]}
-                              {canManageUserRole(actorRoles, role) ? (
-                                <button
-                                  type="submit"
-                                  className="ml-1 inline-flex rounded-sm opacity-80 hover:opacity-100"
-                                  aria-label={`${dictionary.removeRole} ${dictionary.roleLabels[role]}`}
-                                >
-                                  <XIcon className="h-3 w-3" />
-                                </button>
-                              ) : null}
-                            </Badge>
-                          </form>
+                          <Badge key={role} variant="outline">
+                            {dictionary.roleLabels[role]}
+                          </Badge>
                         ))}
                       </div>
                     </TableCell>
@@ -300,26 +363,10 @@ export function UserRoleManagementTable({
                         <UserDetailsSheet
                           locale={locale}
                           managedUser={managedUser}
+                          actorRoles={actorRoles}
+                          assignableRoles={assignableRoles}
                           dictionary={dictionary}
                         />
-                        <form action={assignAction} className="flex min-w-48 gap-2">
-                          <input type="hidden" name="userId" value={managedUser.userId} />
-                          <Select name="role">
-                            <SelectTrigger aria-label={dictionary.assignRole}>
-                              <SelectValue placeholder={dictionary.assignRole} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {assignableRoles.map((role) => (
-                                <SelectItem key={role} value={role}>
-                                  {dictionary.roleLabels[role]}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Button type="submit" size="icon" variant="outline" aria-label={dictionary.assignRole}>
-                            <PlusIcon className="h-4 w-4" />
-                          </Button>
-                        </form>
                       </div>
                     </TableCell>
                   </TableRow>
