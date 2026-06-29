@@ -28,6 +28,7 @@ export async function createSession(locale: Locale, formData: FormData) {
 
   const parsed = sessionSchema.safeParse({
     clientId: formData.get("clientId"),
+    newClientName: formData.get("newClientName"),
     sessionDate: formData.get("sessionDate"),
     durationMinutes: formData.get("durationMinutes"),
     location: formData.get("location"),

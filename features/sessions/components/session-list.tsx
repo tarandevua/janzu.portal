@@ -3,10 +3,8 @@ import type { SessionFeedback } from "@/server/models/feedback.model";
 import type { Session } from "@/server/models/session.model";
 import type { Locale } from "@/lib/i18n/config";
 import { PaginationControls } from "@/components/dashboard/pagination-controls";
-import { createFeedbackLink } from "@/features/feedback/actions";
 import { CopyFeedbackLinkButton } from "@/features/feedback/components/copy-feedback-link-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -40,7 +38,7 @@ type SessionListProps = {
     pending: string;
     validated: string;
     feedback: string;
-    createFeedback: string;
+    feedbackUnavailable: string;
     copyFeedback: string;
     copiedFeedback: string;
     previous: string;
@@ -64,7 +62,6 @@ export function SessionList({
 }: SessionListProps) {
   const clientNames = new Map(clients.map((client) => [client.id, client.name]));
   const feedbackBySessionId = new Map(feedbackLinks.map((feedback) => [feedback.sessionId, feedback]));
-  const action = createFeedbackLink.bind(null, locale);
 
   return (
     <Card>
@@ -108,12 +105,7 @@ export function SessionList({
                           copiedLabel={dictionary.copiedFeedback}
                         />
                       ) : (
-                        <form action={action}>
-                          <input type="hidden" name="sessionId" value={session.id} />
-                          <Button type="submit" variant="outline" size="sm">
-                            {dictionary.createFeedback}
-                          </Button>
-                        </form>
+                        <Badge variant="secondary">{dictionary.feedbackUnavailable}</Badge>
                       )}
                     </TableCell>
                   </TableRow>

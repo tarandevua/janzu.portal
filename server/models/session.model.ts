@@ -13,6 +13,7 @@ export type Session = {
 
 export type SessionInput = {
   clientId?: string | null;
+  newClientName?: string | null;
   sessionDate: string;
   durationMinutes: number;
   location?: string | null;

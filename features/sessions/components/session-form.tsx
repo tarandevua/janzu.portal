@@ -1,19 +1,13 @@
 import type { Locale } from "@/lib/i18n/config";
 import type { Client } from "@/server/models/client.model";
 import { createSession } from "@/features/sessions/actions";
+import { SessionClientPicker } from "@/features/sessions/components/session-client-picker";
 import { SessionDatePicker } from "@/features/sessions/components/session-date-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 type SessionFormProps = {
@@ -26,6 +20,8 @@ type SessionFormProps = {
     formDescription: string;
     client: string;
     noClient: string;
+    newClientName: string;
+    newClientNamePlaceholder: string;
     date: string;
     pickDate: string;
     duration: string;
@@ -56,22 +52,7 @@ export function SessionForm({
             </Alert>
           ) : null}
 
-          <div className="grid gap-2">
-            <Label htmlFor="clientId">{dictionary.client}</Label>
-            <Select name="clientId">
-              <SelectTrigger id="clientId">
-                <SelectValue placeholder={dictionary.noClient} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{dictionary.noClient}</SelectItem>
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    {client.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SessionClientPicker clients={clients} dictionary={dictionary} />
 
           <div className="grid gap-4 md:grid-cols-2">
             <SessionDatePicker label={dictionary.date} placeholder={dictionary.pickDate} />

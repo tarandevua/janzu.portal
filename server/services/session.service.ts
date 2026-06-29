@@ -1,10 +1,12 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { SessionInput } from "@/server/models/session.model";
+import { createClientForPractitioner } from "@/server/repositories/client.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 import {
   createSessionForPractitioner,
   listSessionsByPractitionerId,
 } from "@/server/repositories/session.repository";
+import { createFeedbackLinkForSession } from "@/server/repositories/feedback.repository";
 
 export async function requireSessionPractitionerId(
   supabase: SupabaseServerClient,
@@ -30,5 +32,18 @@ export async function createMySession(
   input: SessionInput
 ) {
   const practitionerId = await requireSessionPractitionerId(supabase, userId);
-  return createSessionForPractitioner(supabase, practitionerId, input);
+  const client =
+    input.clientId || !input.newClientName
+      ? null
+      : await createClientForPractitioner(supabase, practitionerId, {
+          name: input.newClientName,
+        });
+  const session = await createSessionForPractitioner(supabase, practitionerId, {
+    ...input,
+    clientId: input.clientId ?? client?.id ?? null,
+  });
+
+  await createFeedbackLinkForSession(supabase, session.id);
+
+  return session;
 }
