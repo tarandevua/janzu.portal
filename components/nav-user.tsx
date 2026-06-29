@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useTransition } from "react"
+import type { Route } from "next"
 import {
   BellIcon,
   LogOutIcon,
@@ -29,6 +30,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useDashboardNavigationLoading } from "@/components/dashboard/dashboard-navigation-loading"
 import { signOut } from "@/features/auth/actions"
 import type { Locale } from "@/lib/i18n/config"
 
@@ -73,8 +75,11 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const navigationLoading = useDashboardNavigationLoading()
   const [isLoggingOut, startLogoutTransition] = useTransition()
   const avatarFallback = getAvatarFallback(user.name, user.email)
+  const profileHref = `/${locale}/dashboard/profile`
+  const notificationsHref = `/${locale}/dashboard/notifications`
 
   return (
     <SidebarMenu>
@@ -121,13 +126,19 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href={`/${locale}/dashboard/profile`}>
+                <Link
+                  href={profileHref as Route}
+                  onClick={() => navigationLoading?.startNavigation(profileHref)}
+                >
                   <UserCircleIcon />
                   {dictionary.profile}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/${locale}/dashboard/notifications`}>
+                <Link
+                  href={notificationsHref as Route}
+                  onClick={() => navigationLoading?.startNavigation(notificationsHref)}
+                >
                   <BellIcon />
                   {dictionary.notifications}
                 </Link>

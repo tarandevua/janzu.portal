@@ -47,7 +47,6 @@ type FacilitatorDashboardDictionary = {
   recentFeedbackDescription: string;
   practitioner: string;
   date: string;
-  duration: string;
   location: string;
   validation: string;
   rating: string;
@@ -177,7 +176,6 @@ export function FacilitatorDashboard({
                       <TableRow>
                         <TableHead>{dictionary.practitioner}</TableHead>
                         <TableHead>{dictionary.date}</TableHead>
-                        <TableHead>{dictionary.duration}</TableHead>
                         <TableHead>{dictionary.validation}</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -189,7 +187,6 @@ export function FacilitatorDashboard({
                             <div className="text-xs text-muted-foreground">{session.practitionerEmail}</div>
                           </TableCell>
                           <TableCell>{formatDate(locale, session.sessionDate)}</TableCell>
-                          <TableCell>{session.durationMinutes}</TableCell>
                           <TableCell>
                             <Badge variant={session.isValidated ? "default" : "secondary"}>
                               {session.isValidated ? dictionary.validated : dictionary.pending}

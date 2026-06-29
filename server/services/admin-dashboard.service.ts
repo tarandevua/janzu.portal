@@ -157,9 +157,9 @@ export async function getAdminDashboardData(
   const now = today.toISOString();
 
   const usersPromise = listManagedUsers(supabase, actorUserId);
-  const practitionersCountQuery = supabase
-    .from("practitioners")
-    .select("id", { count: "exact", head: true });
+  const practitionerRoleUsersPromise = listManagedUsers(supabase, actorUserId, 1, 1, {
+    role: "practitioner",
+  });
   const publicPractitionersCountQuery = supabase
     .from("practitioners")
     .select("id", { count: "exact", head: true })
@@ -207,7 +207,7 @@ export async function getAdminDashboardData(
 
   const [
     users,
-    practitionersCount,
+    practitionerRoleUsers,
     publicPractitionersCount,
     sessionsCount,
     validatedSessionsCount,
@@ -222,7 +222,7 @@ export async function getAdminDashboardData(
     certificationCandidates,
   ] = await Promise.all([
     usersPromise,
-    practitionersCountQuery,
+    practitionerRoleUsersPromise,
     publicPractitionersCountQuery,
     sessionsCountQuery,
     validatedSessionsCountQuery,
@@ -256,7 +256,7 @@ export async function getAdminDashboardData(
   return {
     counts: {
       users: users.totalCount,
-      practitioners: getCount(practitionersCount),
+      practitioners: practitionerRoleUsers.totalCount,
       publicPractitioners: getCount(publicPractitionersCount),
       sessions: getCount(sessionsCount),
       validatedSessions: getCount(validatedSessionsCount),

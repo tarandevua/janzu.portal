@@ -7,6 +7,7 @@ import { BellIcon, LanguagesIcon } from "lucide-react";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useDashboardNavigationLoading } from "@/components/dashboard/dashboard-navigation-loading";
 import type { Locale } from "@/lib/i18n/config";
 
 type HeaderActionsProps = {
@@ -29,13 +30,18 @@ function getLocalizedHref(pathname: string, nextLocale: Locale) {
 
 export function HeaderActions({ locale, unreadCount }: HeaderActionsProps) {
   const pathname = usePathname();
+  const navigationLoading = useDashboardNavigationLoading();
   const nextLocale: Locale = locale === "en" ? "es" : "en";
   const languageHref = getLocalizedHref(pathname, nextLocale);
+  const notificationsHref = `/${locale}/dashboard/notifications`;
 
   return (
     <div className="ml-auto flex items-center gap-2">
       <Button asChild variant="ghost" size="icon" className="relative">
-        <Link href={`/${locale}/dashboard/notifications`}>
+        <Link
+          href={notificationsHref as Route}
+          onClick={() => navigationLoading?.startNavigation(notificationsHref)}
+        >
           <BellIcon className="h-4 w-4" />
           <span className="sr-only">Notifications</span>
           {unreadCount > 0 ? (
@@ -47,7 +53,10 @@ export function HeaderActions({ locale, unreadCount }: HeaderActionsProps) {
       </Button>
       <ThemeModeToggle />
       <Button asChild variant="ghost" size="sm" className="gap-2">
-        <Link href={languageHref as Route}>
+        <Link
+          href={languageHref as Route}
+          onClick={() => navigationLoading?.startNavigation(languageHref)}
+        >
           <LanguagesIcon className="h-4 w-4" />
           <span className="uppercase">{nextLocale}</span>
         </Link>

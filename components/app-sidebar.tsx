@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import type { Route } from "next"
 import {
   Shell,
   CalendarDaysIcon,
@@ -20,6 +21,7 @@ import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { useDashboardNavigationLoading } from "@/components/dashboard/dashboard-navigation-loading"
 import {
   Sidebar,
   SidebarContent,
@@ -77,15 +79,7 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
           },
         ]
       : []),
-    ...(isAdmin
-      ? [
-          {
-            title: dictionary.settings,
-            url: `/${locale}/dashboard/settings`,
-            icon: SettingsIcon,
-          },
-        ]
-      : []),
+    
     {
       title: dictionary.clients,
       url: `/${locale}/dashboard/clients`,
@@ -111,7 +105,15 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
         ]
       : []),
   ],
-  navSecondary: [],
+  navSecondary: [...(isAdmin
+      ? [
+          {
+            title: dictionary.settings,
+            url: `/${locale}/dashboard/settings`,
+            icon: SettingsIcon,
+          },
+        ]
+      : []),],
   documents: [
     {
       name: dictionary.practitionerMap,
@@ -161,6 +163,8 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
   const data = getData(locale, access, dictionary)
+  const navigationLoading = useDashboardNavigationLoading()
+  const dashboardHref = `/${locale}/dashboard`
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -171,7 +175,10 @@ export function AppSidebar({
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <Link href={`/${locale}/dashboard`}>
+              <Link
+                href={dashboardHref as Route}
+                onClick={() => navigationLoading?.startNavigation(dashboardHref)}
+              >
                 <Shell className="h-5 w-5" />
                 <span className="text-base font-semibold">Janzu Portal</span>
               </Link>

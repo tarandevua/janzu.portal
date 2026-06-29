@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import type { Route } from "next";
+import { useEffect, useState, useTransition, type FormEvent, type MouseEvent } from "react";
+import { useRouter } from "next/navigation";
 import { EyeIcon, PlusIcon, XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   assignUserRole,
   removeUserRole,
@@ -132,6 +137,47 @@ function DetailItem({ label, value }: { label: string; value: string | number })
     <div className="grid gap-1 rounded-md border p-3">
       <dt className="text-xs font-medium uppercase text-muted-foreground">{label}</dt>
       <dd className="break-words text-sm font-medium">{value}</dd>
+    </div>
+  );
+}
+
+function UserManagementSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>
+              <Skeleton className="h-4 w-20" />
+            </TableHead>
+            <TableHead className="w-40">
+              <Skeleton className="h-4 w-16" />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 6 }).map((_, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <div className="grid gap-2">
+                  <Skeleton className="h-4 w-48" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                    <Skeleton className="h-5 w-24 rounded-full" />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="w-40">
+                <Skeleton className="h-9 w-28" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="flex items-center justify-between border-t px-4 py-3">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-9 w-44" />
+      </div>
     </div>
   );
 }
@@ -314,8 +360,55 @@ export function UserRoleManagementTable({
   nextHref,
   dictionary,
 }: UserRoleManagementTableProps) {
+  const router = useRouter();
   const assignableRoles = roles.filter((role) => canManageUserRole(actorRoles, role));
   const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1);
+  const [isPending, startTransition] = useTransition();
+  const [isShowingSkeleton, setIsShowingSkeleton] = useState(false);
+  const isLoading = isPending || isShowingSkeleton;
+
+  useEffect(() => {
+    setIsShowingSkeleton(false);
+  }, [users, page, filters.search, filters.role, filters.profile]);
+
+  function navigateWithSkeleton(href: string) {
+    setIsShowingSkeleton(true);
+    startTransition(() => {
+      router.push(href as Route);
+    });
+  }
+
+  function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const params = new URLSearchParams();
+    const search = formData.get("q");
+    const role = formData.get("role");
+    const profile = formData.get("profile");
+
+    if (typeof search === "string" && search.trim()) {
+      params.set("q", search.trim());
+    }
+
+    if (typeof role === "string" && role !== "all") {
+      params.set("role", role);
+    }
+
+    if (typeof profile === "string" && profile !== "all") {
+      params.set("profile", profile);
+    }
+
+    const query = params.toString();
+    navigateWithSkeleton(`/${locale}/dashboard/users${query ? `?${query}` : ""}`);
+  }
+
+  function handleNavigationClick(href: string) {
+    return (event: MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+      navigateWithSkeleton(href);
+    };
+  }
 
   return (
     <Card>
@@ -324,7 +417,7 @@ export function UserRoleManagementTable({
         <CardDescription>{dictionary.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form method="get" className="mb-4 grid gap-3 rounded-md border p-3 md:grid-cols-[1fr_12rem_13rem_auto_auto] md:items-end">
+        <form onSubmit={handleFilterSubmit} className="mb-4 grid gap-3 rounded-md border p-3 md:grid-cols-[1fr_12rem_13rem_auto_auto] md:items-end">
           <input type="hidden" name="usersPage" value="1" />
           <div className="grid gap-2">
             <Label htmlFor="user-search">{dictionary.search}</Label>
@@ -368,7 +461,9 @@ export function UserRoleManagementTable({
           </div>
           <Button type="submit">{dictionary.applyFilters}</Button>
           <Button type="button" variant="outline" asChild>
-            <Link href={resetHref as Route}>{dictionary.clearFilters}</Link>
+            <Link href={resetHref as Route} onClick={handleNavigationClick(resetHref)}>
+              {dictionary.clearFilters}
+            </Link>
           </Button>
         </form>
         {status === "assigned" ? (
@@ -389,7 +484,9 @@ export function UserRoleManagementTable({
         {status === "forbidden" ? (
           <p className="mb-4 text-sm font-medium text-destructive">{dictionary.forbidden}</p>
         ) : null}
-        {users.length === 0 ? (
+        {isLoading ? (
+          <UserManagementSkeleton />
+        ) : users.length === 0 ? (
           <p className="text-sm text-muted-foreground">{dictionary.empty}</p>
         ) : (
           <div className="overflow-hidden rounded-md border">
@@ -397,32 +494,25 @@ export function UserRoleManagementTable({
               <TableHeader>
                 <TableRow>
                   <TableHead>{dictionary.user}</TableHead>
-                  <TableHead>{dictionary.email}</TableHead>
-                  <TableHead>{dictionary.roles}</TableHead>
-                  <TableHead>{dictionary.created}</TableHead>
                   <TableHead>{dictionary.action}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((managedUser) => (
                   <TableRow key={managedUser.userId}>
-                    <TableCell className="font-medium">
-                      {managedUser.fullName ?? managedUser.email}
-                    </TableCell>
-                    <TableCell>{managedUser.email}</TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="grid gap-2">
+                        <div className="font-medium">{managedUser.fullName ?? managedUser.email}</div>
+                        <div className="flex flex-wrap gap-2">
                         {managedUser.roles.map((role) => (
                           <Badge key={role} variant="outline">
                             {dictionary.roleLabels[role]}
                           </Badge>
                         ))}
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                      {formatCreatedAt(locale, managedUser.createdAt)}
-                    </TableCell>
-                    <TableCell>
+                    <TableCell className="w-40">
                       <div className="flex flex-wrap gap-2">
                         <UserDetailsSheet
                           locale={locale}
@@ -454,7 +544,12 @@ export function UserRoleManagementTable({
                         </PaginationPrevious>
                       ) : (
                         <PaginationPrevious asChild>
-                          <Link href={previousHref as Route}>{dictionary.previous}</Link>
+                          <Link
+                            href={previousHref as Route}
+                            onClick={handleNavigationClick(previousHref)}
+                          >
+                            {dictionary.previous}
+                          </Link>
                         </PaginationPrevious>
                       )}
                     </PaginationItem>
@@ -468,7 +563,9 @@ export function UserRoleManagementTable({
                         </PaginationNext>
                       ) : (
                         <PaginationNext asChild>
-                          <Link href={nextHref as Route}>{dictionary.next}</Link>
+                          <Link href={nextHref as Route} onClick={handleNavigationClick(nextHref)}>
+                            {dictionary.next}
+                          </Link>
                         </PaginationNext>
                       )}
                     </PaginationItem>

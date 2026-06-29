@@ -1,5 +1,9 @@
 import type { ReactNode } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
+import {
+  DashboardNavigationContent,
+  DashboardNavigationLoadingProvider,
+} from "@/components/dashboard/dashboard-navigation-loading"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import type { Locale } from "@/lib/i18n/config"
@@ -38,18 +42,20 @@ export async function JanzuDashboardFrame({
   ])
 
   return (
-    <SidebarProvider>
-      <AppSidebar
-        variant="inset"
-        locale={locale}
-        access={access}
-        user={user}
-        dictionary={dictionary.dashboard.sidebar}
-      />
-      <SidebarInset>
-        <SiteHeader title={title} locale={locale} unreadCount={unreadCount} />
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <DashboardNavigationLoadingProvider>
+      <SidebarProvider>
+        <AppSidebar
+          variant="inset"
+          locale={locale}
+          access={access}
+          user={user}
+          dictionary={dictionary.dashboard.sidebar}
+        />
+        <SidebarInset>
+          <SiteHeader title={title} locale={locale} unreadCount={unreadCount} />
+          <DashboardNavigationContent>{children}</DashboardNavigationContent>
+        </SidebarInset>
+      </SidebarProvider>
+    </DashboardNavigationLoadingProvider>
   )
 }

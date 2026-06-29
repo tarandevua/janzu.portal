@@ -52,7 +52,6 @@ type PractitionerDashboardDictionary = {
   emptyRequests: string;
   emptyFeedback: string;
   date: string;
-  duration: string;
   location: string;
   requestFrom: string;
   rating: string;
@@ -196,7 +195,6 @@ export function PractitionerDashboard({
                         <TableHeader>
                           <TableRow>
                             <TableHead>{dictionary.date}</TableHead>
-                            <TableHead>{dictionary.duration}</TableHead>
                             <TableHead>{dictionary.location}</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -204,7 +202,6 @@ export function PractitionerDashboard({
                           {data.recentSessions.map((session) => (
                             <TableRow key={session.id}>
                               <TableCell>{formatDate(locale, session.sessionDate)}</TableCell>
-                              <TableCell>{session.durationMinutes}</TableCell>
                               <TableCell>{session.location ?? ""}</TableCell>
                             </TableRow>
                           ))}
