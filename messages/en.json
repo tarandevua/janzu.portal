@@ -18,6 +18,10 @@
       "unknownUserDisabled": "This email is not registered. Ask an admin to invite you before signing in."
     }
   },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close"
+  },
   "dashboard": {
     "title": "Dashboard foundation ready",
     "description": "Authentication is wired first. Role-specific dashboards will be introduced after RBAC is implemented.",
@@ -464,13 +468,23 @@
     "createButton": "Create",
     "create": "Create event",
     "edit": "Edit",
+    "delete": "Delete",
     "update": "Update event",
     "created": "Event created.",
     "updated": "Event updated.",
+    "deleted": "Event deleted.",
+    "deleteConfirm": "Delete this event and all related RSVPs and media?",
+    "deleteFailed": "Event could not be deleted. Check R2 settings and try again.",
+    "deleteForbidden": "Admin access is required to delete events.",
+    "deleteInvalid": "That event could not be deleted.",
     "invalid": "Check the event fields and try again.",
     "forbidden": "Admin or manager access is required to manage events.",
     "images": "Event images",
     "imageHelp": "Upload JPG images only. The first image is used as the cover. Maximum 6 images.",
+    "existingImages": "Uploaded images",
+    "newImages": "Selected images",
+    "removeImage": "Remove image",
+    "reorderImage": "Drag to reorder image",
     "imageType": "Upload JPG images only.",
     "imageSize": "Each event image must be 5 MB or smaller.",
     "imageCount": "Events can have up to 6 images.",

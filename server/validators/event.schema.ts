@@ -66,5 +66,11 @@ export const eventRsvpSchema = z.object({
   eventId: z.preprocess(emptyToUndefined, z.string().uuid()),
 });
 
+export const eventDeleteSchema = z.object({
+  eventId: z.preprocess(emptyToUndefined, z.string().uuid()),
+});
+
+export const eventMediaIdsSchema = z.array(z.string().uuid()).max(6);
+
 export type EventPayload = z.infer<typeof eventSchema>;
 export type EventRsvpPayload = z.infer<typeof eventRsvpSchema>;

@@ -139,6 +139,8 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
               title={dictionary.sessions.formTitle}
               description={dictionary.sessions.formDescription}
               triggerLabel={dictionary.sessions.formTitle}
+              cancelLabel={dictionary.common.cancel}
+              closeLabel={dictionary.common.close}
               defaultOpen={shouldOpenCreateDrawer}
             >
               <SessionForm

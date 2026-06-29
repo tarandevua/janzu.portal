@@ -7,13 +7,20 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import {
   createManagedEvent,
+  deleteManagedEvent,
   rsvpCurrentUserToEvent,
   updateManagedEvent,
+  updateManagedEventMedia,
   uploadManagedEventImages,
 } from "@/server/services/event.service";
 import { isUploadedFile, MAX_EVENT_IMAGE_UPLOADS } from "@/server/services/r2-storage.service";
-import { hasPermission } from "@/server/services/rbac.service";
-import { eventRsvpSchema, eventSchema } from "@/server/validators/event.schema";
+import { hasPermission, hasRole } from "@/server/services/rbac.service";
+import {
+  eventDeleteSchema,
+  eventMediaIdsSchema,
+  eventRsvpSchema,
+  eventSchema,
+} from "@/server/validators/event.schema";
 
 function toDateTimeIso(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || !value) {
@@ -44,6 +51,20 @@ function getEventPayload(formData: FormData) {
     capacity: formData.get("capacity"),
     status: formData.get("status"),
   };
+}
+
+function getMediaIds(value: FormDataEntryValue | null) {
+  if (typeof value !== "string" || !value) {
+    return [];
+  }
+
+  try {
+    const parsed = eventMediaIdsSchema.safeParse(JSON.parse(value));
+
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function createEvent(locale: Locale, formData: FormData) {
@@ -104,12 +125,60 @@ export async function updateEvent(locale: Locale, formData: FormData) {
     redirect(`/${locale}/dashboard/events?status=forbidden`);
   }
 
+  const orderedMediaIds = getMediaIds(formData.get("eventMediaOrder"));
+  const removedMediaIds = getMediaIds(formData.get("removedEventMediaIds"));
+
+  if (!orderedMediaIds || !removedMediaIds) {
+    redirect(`/${locale}/dashboard/events?status=invalid`);
+  }
+
   await updateManagedEvent(supabase, roles, eventId, parsed.data);
-  await uploadManagedEventImages(supabase, roles, eventId, getEventImageFiles(formData));
+  await updateManagedEventMedia(supabase, roles, eventId, {
+    orderedMediaIds,
+    removedMediaIds,
+  });
+  await uploadManagedEventImages(supabase, roles, eventId, getEventImageFiles(formData), {
+    startSortOrder: orderedMediaIds.length,
+  });
 
   revalidatePath(`/${locale}/dashboard/events`);
   revalidatePath(`/${locale}/events`);
   redirect(`/${locale}/dashboard/events?status=updated`);
+}
+
+export async function deleteEvent(locale: Locale, formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+
+  const parsed = eventDeleteSchema.safeParse({
+    eventId: formData.get("eventId"),
+  });
+
+  if (!parsed.success) {
+    redirect(`/${locale}/dashboard/events?status=delete-invalid`);
+  }
+
+  const roles = await listUserRoles(supabase, user.id);
+
+  if (!hasRole(roles, "admin")) {
+    redirect(`/${locale}/dashboard/events?status=delete-forbidden`);
+  }
+
+  try {
+    await deleteManagedEvent(supabase, roles, parsed.data.eventId);
+  } catch {
+    redirect(`/${locale}/dashboard/events?status=delete-failed`);
+  }
+
+  revalidatePath(`/${locale}/dashboard/events`);
+  revalidatePath(`/${locale}/events`);
+  redirect(`/${locale}/dashboard/events?status=deleted`);
 }
 
 export async function rsvpToEvent(locale: Locale, formData: FormData) {

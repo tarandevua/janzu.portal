@@ -32,6 +32,16 @@ function getRsvpCount(row: EventWithCountRow) {
   return row.event_rsvps?.[0]?.count ?? 0;
 }
 
+function sortEventMedia(media: EventMedia[]) {
+  return media.toSorted((first, second) => {
+    if (first.sortOrder !== second.sortOrder) {
+      return first.sortOrder - second.sortOrder;
+    }
+
+    return first.createdAt.localeCompare(second.createdAt);
+  });
+}
+
 function toEvent(row: EventWithCountRow, options: EventMapperOptions = {}): CommunityEvent {
   return {
     id: row.id,
@@ -50,7 +60,7 @@ function toEvent(row: EventWithCountRow, options: EventMapperOptions = {}): Comm
     updatedAt: row.updated_at,
     rsvpCount: getRsvpCount(row),
     hasCurrentUserRsvp: options.currentUserRsvpEventIds?.has(row.id) ?? false,
-    media: (row.event_media ?? []).map(toEventMedia),
+    media: sortEventMedia((row.event_media ?? []).map(toEventMedia)),
   };
 }
 
@@ -237,6 +247,90 @@ export async function countEventMediaItems(
   }
 
   return count ?? 0;
+}
+
+export async function listEventMediaStorageKeys(supabase: SupabaseServerClient, eventId: string) {
+  const { data, error } = await supabase
+    .from("event_media")
+    .select("storage_key")
+    .eq("event_id", eventId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as Pick<EventMediaRow, "storage_key">[]).map((item) => item.storage_key);
+}
+
+export async function listEventMediaByIds(
+  supabase: SupabaseServerClient,
+  eventId: string,
+  mediaIds: string[]
+) {
+  if (mediaIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("event_media")
+    .select("*")
+    .eq("event_id", eventId)
+    .in("id", mediaIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as EventMediaRow[]).map(toEventMedia);
+}
+
+export async function deleteEventMediaByIds(
+  supabase: SupabaseServerClient,
+  eventId: string,
+  mediaIds: string[]
+) {
+  if (mediaIds.length === 0) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("event_media")
+    .delete()
+    .eq("event_id", eventId)
+    .in("id", mediaIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function updateEventMediaSortOrders(
+  supabase: SupabaseServerClient,
+  eventId: string,
+  mediaIds: string[]
+) {
+  for (const [sortOrder, mediaId] of mediaIds.entries()) {
+    const { error } = await supabase
+      .from("event_media")
+      .update({ sort_order: sortOrder } as never)
+      .eq("event_id", eventId)
+      .eq("id", mediaId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+}
+
+export async function deleteEventById(supabase: SupabaseServerClient, eventId: string) {
+  const { error } = await supabase
+    .from("events")
+    .delete()
+    .eq("id", eventId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 export async function rsvpToEvent(

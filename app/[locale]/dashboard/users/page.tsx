@@ -84,6 +84,8 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
               title={dictionary.userManagement.inviteTitle}
               description={dictionary.userManagement.inviteDescription}
               triggerLabel={dictionary.userManagement.invite}
+              cancelLabel={dictionary.common.cancel}
+              closeLabel={dictionary.common.close}
               defaultOpen={shouldOpenCreateDrawer}
             >
               <UserInviteForm

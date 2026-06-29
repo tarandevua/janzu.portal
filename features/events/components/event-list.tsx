@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/i18n/config";
 import type { CommunityEvent } from "@/server/models/event.model";
+import { EventDeleteButton } from "@/features/events/components/event-delete-button";
 import { EventForm } from "@/features/events/components/event-form";
 import { PencilIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ import {
 type EventListProps = {
   locale: Locale;
   events: CommunityEvent[];
+  canDeleteEvents: boolean;
   status?: string;
   dictionary: {
     listTitle: string;
@@ -50,6 +52,12 @@ type EventListProps = {
     status: string;
     images: string;
     edit: string;
+    delete: string;
+    deleted: string;
+    deleteConfirm: string;
+    deleteFailed: string;
+    deleteForbidden: string;
+    deleteInvalid: string;
     update: string;
     updated: string;
     retreat: string;
@@ -63,6 +71,10 @@ type EventListProps = {
     invalid: string;
     forbidden: string;
     imageHelp: string;
+    existingImages: string;
+    newImages: string;
+    removeImage: string;
+    reorderImage: string;
     bold: string;
     underline: string;
     link: string;
@@ -94,7 +106,24 @@ function getStatusLabel(status: CommunityEvent["status"], dictionary: EventListP
   return dictionary.published;
 }
 
-export function EventList({ locale, events, status, dictionary }: EventListProps) {
+export function EventList({
+  locale,
+  events,
+  canDeleteEvents,
+  status,
+  dictionary,
+}: EventListProps) {
+  const statusMessage =
+    status === "deleted"
+      ? dictionary.deleted
+      : status === "delete-invalid"
+        ? dictionary.deleteInvalid
+        : status === "delete-forbidden"
+          ? dictionary.deleteForbidden
+          : status === "delete-failed"
+            ? dictionary.deleteFailed
+            : null;
+
   return (
     <Card>
       <CardHeader>
@@ -102,6 +131,9 @@ export function EventList({ locale, events, status, dictionary }: EventListProps
         <CardDescription>{dictionary.listDescription}</CardDescription>
       </CardHeader>
       <CardContent>
+        {statusMessage ? (
+          <p className="mb-4 text-sm font-medium text-muted-foreground">{statusMessage}</p>
+        ) : null}
         {events.length === 0 ? (
           <p className="text-sm text-muted-foreground">{dictionary.empty}</p>
         ) : (
@@ -135,29 +167,39 @@ export function EventList({ locale, events, status, dictionary }: EventListProps
                         {getStatusLabel(event.status, dictionary)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Sheet>
-                        <SheetTrigger asChild>
-                          <Button type="button" size="sm" variant="outline">
-                            <PencilIcon className="h-4 w-4" />
-                            {dictionary.edit}
-                          </Button>
-                        </SheetTrigger>
-                        <SheetContent className="flex h-full w-full max-w-[100vw] flex-col overflow-hidden sm:max-w-xl">
-                          <SheetHeader className="shrink-0 pr-8">
-                            <SheetTitle>{dictionary.edit}</SheetTitle>
-                            <SheetDescription>{dictionary.formDescription}</SheetDescription>
-                          </SheetHeader>
-                          <div className="min-h-0 flex-1 overflow-y-auto py-4">
-                            <EventForm
-                              locale={locale}
-                              status={status}
-                              event={event}
-                              dictionary={dictionary}
-                            />
-                          </div>
-                        </SheetContent>
-                      </Sheet>
+                    <TableCell>
+                      <div className="flex justify-end gap-2">
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button type="button" size="sm" variant="outline">
+                              <PencilIcon className="h-4 w-4" />
+                              {dictionary.edit}
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent className="flex h-full w-full max-w-[100vw] flex-col overflow-hidden sm:max-w-xl">
+                            <SheetHeader className="shrink-0 pr-8">
+                              <SheetTitle>{dictionary.edit}</SheetTitle>
+                              <SheetDescription>{dictionary.formDescription}</SheetDescription>
+                            </SheetHeader>
+                            <div className="min-h-0 flex-1 overflow-y-auto py-4">
+                              <EventForm
+                                locale={locale}
+                                status={status}
+                                event={event}
+                                dictionary={dictionary}
+                              />
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+                        {canDeleteEvents ? (
+                          <EventDeleteButton
+                            locale={locale}
+                            eventId={event.id}
+                            label={dictionary.delete}
+                            confirmMessage={dictionary.deleteConfirm}
+                          />
+                        ) : null}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

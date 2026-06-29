@@ -57,6 +57,8 @@ export default async function ClientsPage({ params, searchParams }: ClientsPageP
               title={dictionary.clients.formTitle}
               description={dictionary.clients.formDescription}
               triggerLabel={dictionary.clients.formTitle}
+              cancelLabel={dictionary.common.cancel}
+              closeLabel={dictionary.common.close}
               defaultOpen={shouldOpenCreateDrawer}
             >
               <ClientForm

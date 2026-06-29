@@ -73,6 +73,8 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
                 title={dictionary.locations.formTitle}
                 description={dictionary.locations.formDescription}
                 triggerLabel={dictionary.locations.formTitle}
+                cancelLabel={dictionary.common.cancel}
+                closeLabel={dictionary.common.close}
                 defaultOpen={shouldOpenCreateDrawer}
               >
                 <LocationForm

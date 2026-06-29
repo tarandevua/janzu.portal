@@ -2,6 +2,7 @@ import type { Locale } from "@/lib/i18n/config";
 import type { CommunityEvent } from "@/server/models/event.model";
 import { createEvent, updateEvent } from "@/features/events/actions";
 import { EventDateRangePicker } from "@/features/events/components/event-date-range-picker";
+import { EventImageManager } from "@/features/events/components/event-image-manager";
 import { LocationCoordinatePicker } from "@/features/locations/components/location-coordinate-picker";
 import { RichTextEditor } from "@/features/events/components/rich-text-editor";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -47,6 +48,10 @@ type EventFormProps = {
     forbidden: string;
     images: string;
     imageHelp: string;
+    existingImages: string;
+    newImages: string;
+    removeImage: string;
+    reorderImage: string;
     bold: string;
     underline: string;
     link: string;
@@ -142,11 +147,7 @@ export function EventForm({ locale, status, event, dictionary }: EventFormProps)
         </Select>
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="eventImages">{dictionary.images}</Label>
-        <Input id="eventImages" name="eventImages" type="file" accept="image/jpeg,.jpg,.jpeg" multiple />
-        <p className="text-sm text-muted-foreground">{dictionary.imageHelp}</p>
-      </div>
+      <EventImageManager existingMedia={event?.media} dictionary={dictionary} />
 
       <RichTextEditor
         id="description"

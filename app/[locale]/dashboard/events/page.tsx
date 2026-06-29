@@ -8,7 +8,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { listEventsForManagement } from "@/server/services/event.service";
-import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/services/rbac.service";
+import { getPrimaryRole, getRoleAccessList, hasPermission, hasRole } from "@/server/services/rbac.service";
 
 type EventsPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -58,12 +58,22 @@ export default async function EventsPage({ params, searchParams }: EventsPagePro
           <div className="flex justify-end">
             <EventCreateDrawer
               defaultOpen={shouldOpenCreateDrawer}
-              dictionary={dictionary.events}
+              dictionary={{
+                ...dictionary.events,
+                cancel: dictionary.common.cancel,
+                close: dictionary.common.close,
+              }}
             >
               <EventForm locale={locale} status={status} dictionary={dictionary.events} />
             </EventCreateDrawer>
           </div>
-          <EventList locale={locale} events={events} status={status} dictionary={dictionary.events} />
+          <EventList
+            locale={locale}
+            events={events}
+            canDeleteEvents={hasRole(roles, "admin")}
+            status={status}
+            dictionary={dictionary.events}
+          />
         </div>
       </div>
     </JanzuDashboardFrame>

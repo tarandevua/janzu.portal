@@ -18,6 +18,10 @@
       "unknownUserDisabled": "Este correo no esta registrado. Pide a un administrador que te invite antes de iniciar sesion."
     }
   },
+  "common": {
+    "cancel": "Cancelar",
+    "close": "Cerrar"
+  },
   "dashboard": {
     "title": "Base del panel lista",
     "description": "Primero queda conectada la autenticacion. Los paneles por rol se agregaran despues de implementar RBAC.",
@@ -464,13 +468,23 @@
     "createButton": "Crear",
     "create": "Crear evento",
     "edit": "Editar",
+    "delete": "Eliminar",
     "update": "Actualizar evento",
     "created": "Evento creado.",
     "updated": "Evento actualizado.",
+    "deleted": "Evento eliminado.",
+    "deleteConfirm": "Eliminar este evento y todos sus RSVP y medios relacionados?",
+    "deleteFailed": "No se pudo eliminar el evento. Revisa la configuracion de R2 e intentalo nuevamente.",
+    "deleteForbidden": "Se requiere acceso de administracion para eliminar eventos.",
+    "deleteInvalid": "No se pudo eliminar ese evento.",
     "invalid": "Revisa los campos del evento e intentalo nuevamente.",
     "forbidden": "Se requiere acceso de administracion o gestion para administrar eventos.",
     "images": "Imagenes del evento",
     "imageHelp": "Sube solo imagenes JPG. La primera imagen se usa como portada. Maximo 6 imagenes.",
+    "existingImages": "Imagenes subidas",
+    "newImages": "Imagenes seleccionadas",
+    "removeImage": "Eliminar imagen",
+    "reorderImage": "Arrastra para reordenar la imagen",
     "imageType": "Sube solo imagenes JPG.",
     "imageSize": "Cada imagen del evento debe pesar 5 MB o menos.",
     "imageCount": "Los eventos pueden tener hasta 6 imagenes.",

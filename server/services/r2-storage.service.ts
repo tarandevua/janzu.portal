@@ -273,7 +273,7 @@ function createSignedR2RequestHeaders({
   payloadHash,
 }: {
   config: R2UploadConfig;
-  method: "GET" | "PUT";
+  method: "DELETE" | "GET" | "PUT";
   url: URL;
   payloadHash: string;
 }) {
@@ -523,6 +523,49 @@ export async function uploadEventImage({
     console.error("Cloudflare R2 event image upload threw an exception.", error);
 
     return { ok: false, code: "event-image-upload" };
+  }
+}
+
+export async function deletePrivateR2Object(key: string) {
+  if (!isAllowedR2ImageKey(key)) {
+    throw new Error("Invalid media key.");
+  }
+
+  const config = getR2Config();
+
+  if (!config) {
+    throw new Error("Media storage is not configured.");
+  }
+
+  try {
+    const payloadHash = sha256Hex("");
+    const url = createR2ObjectUrl(config, key);
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: createSignedR2RequestHeaders({
+        config,
+        method: "DELETE",
+        url,
+        payloadHash,
+      }),
+    });
+
+    if (!response.ok && response.status !== 404) {
+      const responseBody = await response.text().catch(() => "");
+
+      console.error("Cloudflare R2 object delete failed.", {
+        status: response.status,
+        statusText: response.statusText,
+        bucket: config.bucket,
+        key,
+        responseBody: responseBody.slice(0, 500),
+      });
+
+      throw new Error("Media object could not be deleted.");
+    }
+  } catch (error) {
+    console.error("Cloudflare R2 private object delete failed.", error);
+    throw error;
   }
 }
 
