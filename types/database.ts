@@ -742,6 +742,9 @@ export type Database = {
           actor_user_id: string;
           page_number?: number;
           page_size?: number;
+          search_query?: string | null;
+          role_filter?: "admin" | "manager" | "facilitator" | "practitioner" | null;
+          profile_filter?: string | null;
         };
         Returns: {
           user_id: string;

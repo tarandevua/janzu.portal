@@ -1,7 +1,7 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getClientEnv } from "@/lib/env";
-import type { Role } from "@/server/models/rbac.model";
+import type { ManagedUserFilters, Role } from "@/server/models/rbac.model";
 import {
   assignRoleToUser,
   listManagedUsers,
@@ -26,7 +26,8 @@ export async function listUsersForManagement(
   supabase: SupabaseServerClient,
   actorUserId: string,
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  filters: ManagedUserFilters = {}
 ) {
   const roles = await listUserRoles(supabase, actorUserId);
 
@@ -34,7 +35,7 @@ export async function listUsersForManagement(
     throw new Error("User management access is required.");
   }
 
-  return listManagedUsers(supabase, actorUserId, page, pageSize);
+  return listManagedUsers(supabase, actorUserId, page, pageSize, filters);
 }
 
 export async function assignManagedUserRole(

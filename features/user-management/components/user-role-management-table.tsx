@@ -4,6 +4,8 @@ import { EyeIcon, PlusIcon, XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Pagination,
   PaginationContent,
@@ -40,7 +42,7 @@ import {
   updateUserPublicProfile,
 } from "@/features/user-management/actions";
 import type { Locale } from "@/lib/i18n/config";
-import { roles, type ManagedUser, type Role } from "@/server/models/rbac.model";
+import { roles, type ManagedUser, type ManagedUserFilters, type Role } from "@/server/models/rbac.model";
 import { canManageUserRole } from "@/server/services/rbac.service";
 
 type UserManagementDictionary = {
@@ -75,6 +77,17 @@ type UserManagementDictionary = {
   submittedLocationsCount: string;
   approvedLocationsCount: string;
   eventRsvpsCount: string;
+  filters: string;
+  search: string;
+  searchPlaceholder: string;
+  filterRole: string;
+  allRoles: string;
+  filterProfile: string;
+  allProfiles: string;
+  withProfile: string;
+  withoutProfile: string;
+  applyFilters: string;
+  clearFilters: string;
   previous: string;
   next: string;
   page: string;
@@ -97,6 +110,8 @@ type UserRoleManagementTableProps = {
   page: number;
   pageSize: number;
   totalCount: number;
+  filters: ManagedUserFilters;
+  resetHref: string;
   previousHref: string;
   nextHref: string;
   dictionary: UserManagementDictionary;
@@ -293,6 +308,8 @@ export function UserRoleManagementTable({
   page,
   pageSize,
   totalCount,
+  filters,
+  resetHref,
   previousHref,
   nextHref,
   dictionary,
@@ -307,6 +324,53 @@ export function UserRoleManagementTable({
         <CardDescription>{dictionary.description}</CardDescription>
       </CardHeader>
       <CardContent>
+        <form method="get" className="mb-4 grid gap-3 rounded-md border p-3 md:grid-cols-[1fr_12rem_13rem_auto_auto] md:items-end">
+          <input type="hidden" name="usersPage" value="1" />
+          <div className="grid gap-2">
+            <Label htmlFor="user-search">{dictionary.search}</Label>
+            <Input
+              id="user-search"
+              name="q"
+              defaultValue={filters.search ?? ""}
+              placeholder={dictionary.searchPlaceholder}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="role-filter">{dictionary.filterRole}</Label>
+            <Select name="role" defaultValue={filters.role ?? "all"}>
+              <SelectTrigger id="role-filter">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{dictionary.allRoles}</SelectItem>
+                {roles.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {dictionary.roleLabels[role]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="profile-filter">{dictionary.filterProfile}</Label>
+            <Select name="profile" defaultValue={filters.profile ?? "all"}>
+              <SelectTrigger id="profile-filter">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{dictionary.allProfiles}</SelectItem>
+                <SelectItem value="with_profile">{dictionary.withProfile}</SelectItem>
+                <SelectItem value="without_profile">{dictionary.withoutProfile}</SelectItem>
+                <SelectItem value="public_profile">{dictionary.publicProfile}</SelectItem>
+                <SelectItem value="private_profile">{dictionary.privateProfile}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button type="submit">{dictionary.applyFilters}</Button>
+          <Button type="button" variant="outline" asChild>
+            <Link href={resetHref as Route}>{dictionary.clearFilters}</Link>
+          </Button>
+        </form>
         {status === "assigned" ? (
           <p className="mb-4 text-sm font-medium text-emerald-700">{dictionary.assigned}</p>
         ) : null}

@@ -9,12 +9,20 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/services/rbac.service";
 import { listUsersForManagement } from "@/server/services/user-management.service";
+import { roles, type ManagedUserFilters, type ManagedUserProfileFilter, type Role } from "@/server/models/rbac.model";
 
 const PAGE_SIZE = 10;
+const profileFilters = ["with_profile", "without_profile", "public_profile", "private_profile"] as const;
 
 type UsersPageProps = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ status?: string; usersPage?: string }>;
+  searchParams: Promise<{
+    status?: string;
+    usersPage?: string;
+    q?: string;
+    role?: string;
+    profile?: string;
+  }>;
 };
 
 function parsePage(value: string | undefined) {
@@ -22,11 +30,33 @@ function parsePage(value: string | undefined) {
   return Number.isFinite(page) && page > 0 ? page : 1;
 }
 
-function buildUsersHref(locale: Locale, page: number) {
+function parseRoleFilter(value: string | undefined): Role | undefined {
+  return roles.includes(value as Role) ? value as Role : undefined;
+}
+
+function parseProfileFilter(value: string | undefined): ManagedUserProfileFilter | undefined {
+  return profileFilters.includes(value as ManagedUserProfileFilter)
+    ? value as ManagedUserProfileFilter
+    : undefined;
+}
+
+function buildUsersHref(locale: Locale, page: number, filters: ManagedUserFilters) {
   const params = new URLSearchParams();
 
   if (page > 1) {
     params.set("usersPage", String(page));
+  }
+
+  if (filters.search) {
+    params.set("q", filters.search);
+  }
+
+  if (filters.role) {
+    params.set("role", filters.role);
+  }
+
+  if (filters.profile) {
+    params.set("profile", filters.profile);
   }
 
   const query = params.toString();
@@ -34,8 +64,13 @@ function buildUsersHref(locale: Locale, page: number) {
 }
 
 export default async function UsersPage({ params, searchParams }: UsersPageProps) {
-  const [{ locale }, { status, usersPage }] = await Promise.all([params, searchParams]);
+  const [{ locale }, { status, usersPage, q, role, profile }] = await Promise.all([params, searchParams]);
   const currentUsersPage = parsePage(usersPage);
+  const filters: ManagedUserFilters = {
+    search: q?.trim() || undefined,
+    role: parseRoleFilter(role),
+    profile: parseProfileFilter(profile),
+  };
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
     supabase.auth.getUser(),
@@ -62,7 +97,8 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
     supabase,
     data.user.id,
     currentUsersPage,
-    PAGE_SIZE
+    PAGE_SIZE,
+    filters
   );
 
   return (
@@ -104,8 +140,10 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
             page={currentUsersPage}
             pageSize={PAGE_SIZE}
             totalCount={usersPageData.totalCount}
-            previousHref={buildUsersHref(locale, currentUsersPage - 1)}
-            nextHref={buildUsersHref(locale, currentUsersPage + 1)}
+            filters={filters}
+            resetHref={buildUsersHref(locale, 1, {})}
+            previousHref={buildUsersHref(locale, currentUsersPage - 1, filters)}
+            nextHref={buildUsersHref(locale, currentUsersPage + 1, filters)}
             dictionary={dictionary.userManagement}
           />
         </div>

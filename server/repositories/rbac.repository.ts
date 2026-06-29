@@ -1,6 +1,6 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeRoles } from "@/server/services/rbac.service";
-import type { ManagedUser, ManagedUsersPage, Role } from "@/server/models/rbac.model";
+import type { ManagedUser, ManagedUserFilters, ManagedUsersPage, Role } from "@/server/models/rbac.model";
 import type { Database } from "@/types/database";
 
 type RoleJoinRow = {
@@ -74,13 +74,17 @@ export async function listManagedUsers(
   supabase: SupabaseServerClient,
   actorUserId: string,
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  filters: ManagedUserFilters = {}
 ): Promise<ManagedUsersPage> {
   const rpcClient = supabase as unknown as RbacRpcClient;
   const { data, error } = await rpcClient.rpc("list_user_role_management", {
     actor_user_id: actorUserId,
     page_number: page,
     page_size: pageSize,
+    search_query: filters.search || null,
+    role_filter: filters.role ?? null,
+    profile_filter: filters.profile ?? null,
   });
 
   if (error) {

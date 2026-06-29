@@ -32,6 +32,18 @@ export type ManagedUsersPage = {
   totalCount: number;
 };
 
+export type ManagedUserProfileFilter =
+  | "with_profile"
+  | "without_profile"
+  | "public_profile"
+  | "private_profile";
+
+export type ManagedUserFilters = {
+  search?: string;
+  role?: Role;
+  profile?: ManagedUserProfileFilter;
+};
+
 export type RolePermission =
   | "users:manage"
   | "locations:approve"

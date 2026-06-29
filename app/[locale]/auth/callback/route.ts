@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { CookieOptions } from "@supabase/ssr";
+import { getClientEnv } from "@/lib/env";
 import { defaultLocale, isLocale } from "@/lib/i18n/config";
 
 type CookieToSet = {
@@ -14,11 +15,12 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code");
   const localeParam = requestUrl.searchParams.get("locale");
   const locale = isLocale(localeParam) ? localeParam : defaultLocale;
-  const redirectTo = new URL(`/${locale}/dashboard`, request.url);
+  const siteUrl = getClientEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+  const redirectTo = new URL(`/${locale}/dashboard`, siteUrl);
   const response = NextResponse.redirect(redirectTo);
 
   if (!code) {
-    return NextResponse.redirect(new URL(`/${locale}/login?status=invalid-link`, request.url));
+    return NextResponse.redirect(new URL(`/${locale}/login?status=invalid-link`, siteUrl));
   }
 
   const supabase = createServerClient(
@@ -41,7 +43,7 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return NextResponse.redirect(new URL(`/${locale}/login?status=invalid-link`, request.url));
+    return NextResponse.redirect(new URL(`/${locale}/login?status=invalid-link`, siteUrl));
   }
 
   return response;

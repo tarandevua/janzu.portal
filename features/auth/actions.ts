@@ -1,9 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { magicLinkSchema } from "@/features/auth/schemas";
 import type { Locale } from "@/lib/i18n/config";
+import { getClientEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMagicLinkLoginPolicy } from "@/server/services/platform-settings.service";
 
@@ -16,8 +16,7 @@ export async function sendMagicLink(locale: Locale, formData: FormData) {
     redirect(`/${locale}/login?status=invalid-email`);
   }
 
-  const requestHeaders = await headers();
-  const origin = requestHeaders.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL;
+  const origin = getClientEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
   const supabase = await createSupabaseServerClient();
   const magicLinkPolicy = await getMagicLinkLoginPolicy(parsed.data.email);
 
