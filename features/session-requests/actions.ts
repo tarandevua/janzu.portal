@@ -55,7 +55,7 @@ export async function reviewSessionRequest(locale: Locale, formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/sessions?status=request-review-invalid`);
+    redirect(`/${locale}/dashboard/sessions?tab=requests&status=request-review-invalid`);
   }
 
   await reviewMySessionRequest(
@@ -66,5 +66,5 @@ export async function reviewSessionRequest(locale: Locale, formData: FormData) {
   );
 
   revalidatePath(`/${locale}/dashboard/sessions`);
-  redirect(`/${locale}/dashboard/sessions?status=request-${parsed.data.status}`);
+  redirect(`/${locale}/dashboard/sessions?tab=requests&status=request-${parsed.data.status}`);
 }

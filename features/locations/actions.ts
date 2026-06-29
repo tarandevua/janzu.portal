@@ -171,13 +171,13 @@ export async function reviewLocationSubmission(locale: Locale, formData: FormDat
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/locations?status=review-invalid`);
+    redirect(`/${locale}/dashboard/locations?tab=approvals&status=review-invalid`);
   }
 
   const roles = await listUserRoles(supabase, user.id);
 
   if (!hasPermission(roles, "locations:approve")) {
-    redirect(`/${locale}/dashboard/locations?status=review-forbidden`);
+    redirect(`/${locale}/dashboard/locations?tab=approvals&status=review-forbidden`);
   }
 
   await reviewLocation(
@@ -191,7 +191,7 @@ export async function reviewLocationSubmission(locale: Locale, formData: FormDat
   revalidatePath(`/${locale}/dashboard/locations`);
   revalidatePath(`/${locale}/locations`);
   redirect(
-    `/${locale}/dashboard/locations?status=${
+    `/${locale}/dashboard/locations?tab=approvals&status=${
       parsed.data.action === "approve" ? "approved" : "rejected"
     }`
   );

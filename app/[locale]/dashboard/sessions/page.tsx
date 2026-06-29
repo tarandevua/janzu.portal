@@ -1,8 +1,10 @@
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { SessionRequestList } from "@/features/session-requests/components/session-request-list";
 import { SessionAvailabilityManager } from "@/features/sessions/components/session-availability-manager";
+import { SessionDashboardTabs, type SessionDashboardTab } from "@/features/sessions/components/session-dashboard-tabs";
 import { SessionForm } from "@/features/sessions/components/session-form";
 import { SessionList } from "@/features/sessions/components/session-list";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -18,6 +20,7 @@ import { findFeedbackForSessions } from "@/server/services/feedback.service";
 import { getPrimaryRole, getRoleAccessList } from "@/server/services/rbac.service";
 
 const PAGE_SIZE = 10;
+const sessionTabs = ["history", "requests", "availability"] as const;
 
 type SessionsPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -25,6 +28,7 @@ type SessionsPageProps = {
     status?: string;
     sessionsPage?: string;
     requestsPage?: string;
+    tab?: string;
   }>;
 };
 
@@ -33,12 +37,24 @@ function parsePage(value: string | undefined) {
   return Number.isFinite(page) && page > 0 ? page : 1;
 }
 
+function parseTab(value: string | undefined): SessionDashboardTab {
+  return sessionTabs.includes(value as SessionDashboardTab) ? value as SessionDashboardTab : "history";
+}
+
+function setTabParam(params: URLSearchParams, tab: SessionDashboardTab) {
+  if (tab !== "history") {
+    params.set("tab", tab);
+  }
+}
+
 function buildSessionsHref(
   locale: Locale,
   nextSessionsPage: number,
-  requestsPage: number
+  requestsPage: number,
+  tab: SessionDashboardTab
 ) {
   const params = new URLSearchParams();
+  setTabParam(params, tab);
 
   if (nextSessionsPage > 1) {
     params.set("sessionsPage", String(nextSessionsPage));
@@ -55,9 +71,11 @@ function buildSessionsHref(
 function buildRequestsHref(
   locale: Locale,
   sessionsPage: number,
-  nextRequestsPage: number
+  nextRequestsPage: number,
+  tab: SessionDashboardTab
 ) {
   const params = new URLSearchParams();
+  setTabParam(params, tab);
 
   if (sessionsPage > 1) {
     params.set("sessionsPage", String(sessionsPage));
@@ -71,11 +89,25 @@ function buildRequestsHref(
   return `/${locale}/dashboard/sessions${query ? `?${query}` : ""}`;
 }
 
+function buildTabHref(
+  locale: Locale,
+  tab: SessionDashboardTab,
+  sessionsPage: number,
+  requestsPage: number
+) {
+  if (tab === "history") {
+    return buildSessionsHref(locale, sessionsPage, requestsPage, tab);
+  }
+
+  return buildRequestsHref(locale, sessionsPage, requestsPage, tab);
+}
+
 export default async function SessionsPage({ params, searchParams }: SessionsPageProps) {
   const [{ locale }, search] = await Promise.all([params, searchParams]);
   const { status } = search;
   const sessionsPage = parsePage(search.sessionsPage);
   const requestsPage = parsePage(search.requestsPage);
+  const activeTab = parseTab(search.tab);
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
     supabase.auth.getUser(),
@@ -152,35 +184,58 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
               />
             </DashboardActionDrawer>
           </div>
-          <SessionAvailabilityManager
-            locale={locale}
-            slots={availabilitySlots}
-            status={status}
-            dictionary={dictionary.sessions}
-          />
-          <SessionList
-            locale={locale}
-            sessions={sessions}
-            clients={clients}
-            feedbackLinks={feedbackLinks}
-            siteUrl={siteUrl.replace(/\/$/, "")}
-            page={sessionsPage}
-            pageSize={PAGE_SIZE}
-            totalCount={sessionsPageData.totalCount}
-            previousHref={buildSessionsHref(locale, sessionsPage - 1, requestsPage)}
-            nextHref={buildSessionsHref(locale, sessionsPage + 1, requestsPage)}
-            dictionary={dictionary.sessions}
-          />
-          <SessionRequestList
-            locale={locale}
-            requests={sessionRequests}
-            page={requestsPage}
-            pageSize={PAGE_SIZE}
-            totalCount={sessionRequestsPageData.totalCount}
-            previousHref={buildRequestsHref(locale, sessionsPage, requestsPage - 1)}
-            nextHref={buildRequestsHref(locale, sessionsPage, requestsPage + 1)}
-            status={status}
-            dictionary={dictionary.sessionRequests}
+          <SessionDashboardTabs
+            activeTab={activeTab}
+            tabs={{
+              history: {
+                label: dictionary.sessions.listTitle,
+                href: buildTabHref(locale, "history", sessionsPage, requestsPage) as Route,
+                content: (
+                  <SessionList
+                    locale={locale}
+                    sessions={sessions}
+                    clients={clients}
+                    feedbackLinks={feedbackLinks}
+                    siteUrl={siteUrl.replace(/\/$/, "")}
+                    page={sessionsPage}
+                    pageSize={PAGE_SIZE}
+                    totalCount={sessionsPageData.totalCount}
+                    previousHref={buildSessionsHref(locale, sessionsPage - 1, requestsPage, "history")}
+                    nextHref={buildSessionsHref(locale, sessionsPage + 1, requestsPage, "history")}
+                    dictionary={dictionary.sessions}
+                  />
+                ),
+              },
+              requests: {
+                label: dictionary.sessionRequests.listTitle,
+                href: buildTabHref(locale, "requests", sessionsPage, requestsPage) as Route,
+                content: (
+                  <SessionRequestList
+                    locale={locale}
+                    requests={sessionRequests}
+                    page={requestsPage}
+                    pageSize={PAGE_SIZE}
+                    totalCount={sessionRequestsPageData.totalCount}
+                    previousHref={buildRequestsHref(locale, sessionsPage, requestsPage - 1, "requests")}
+                    nextHref={buildRequestsHref(locale, sessionsPage, requestsPage + 1, "requests")}
+                    status={status}
+                    dictionary={dictionary.sessionRequests}
+                  />
+                ),
+              },
+              availability: {
+                label: dictionary.sessions.availabilityTitle,
+                href: buildTabHref(locale, "availability", sessionsPage, requestsPage) as Route,
+                content: (
+                  <SessionAvailabilityManager
+                    locale={locale}
+                    slots={availabilitySlots}
+                    status={status}
+                    dictionary={dictionary.sessions}
+                  />
+                ),
+              },
+            }}
           />
         </div>
       </div>

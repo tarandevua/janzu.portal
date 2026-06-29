@@ -256,6 +256,7 @@
     "availabilityDescription": "Create public booking slots that visitors can request from your practitioner profile.",
     "addAvailability": "Add slot",
     "startsAt": "Start date and time",
+    "time": "Time",
     "availableSlots": "Upcoming slots",
     "emptyAvailability": "No upcoming availability slots.",
     "booked": "Booked",

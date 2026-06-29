@@ -1,5 +1,6 @@
 import { CalendarPlusIcon, XIcon } from "lucide-react";
 import { createAvailabilitySlot, cancelAvailabilitySlot } from "@/features/sessions/actions";
+import { SessionAvailabilityDateTimePicker } from "@/features/sessions/components/session-availability-date-time-picker";
 import type { Locale } from "@/lib/i18n/config";
 import type { SessionAvailabilitySlot } from "@/server/models/session-availability.model";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,8 @@ type SessionAvailabilityManagerProps = {
     availabilityDescription: string;
     addAvailability: string;
     startsAt: string;
+    pickDate: string;
+    time: string;
     duration: string;
     availableSlots: string;
     emptyAvailability: string;
@@ -84,10 +87,7 @@ export function SessionAvailabilityManager({
           <p className="text-sm font-medium text-destructive">{dictionary.availabilityInvalid}</p>
         ) : null}
         <form action={createAction} className="grid gap-4 md:grid-cols-[1fr_9rem_auto] md:items-end">
-          <div className="grid gap-2">
-            <Label htmlFor="availabilityStartsAt">{dictionary.startsAt}</Label>
-            <Input id="availabilityStartsAt" name="startsAt" type="datetime-local" required />
-          </div>
+          <SessionAvailabilityDateTimePicker dictionary={dictionary} />
           <div className="grid gap-2">
             <Label htmlFor="availabilityDuration">{dictionary.duration}</Label>
             <Input

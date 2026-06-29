@@ -67,7 +67,7 @@ export async function createAvailabilitySlot(locale: Locale, formData: FormData)
   }
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/sessions?status=availability-invalid`);
+    redirect(`/${locale}/dashboard/sessions?tab=availability&status=availability-invalid`);
   }
 
   await createSessionAvailabilitySlot(supabase, {
@@ -77,7 +77,7 @@ export async function createAvailabilitySlot(locale: Locale, formData: FormData)
   });
 
   revalidatePath(`/${locale}/dashboard/sessions`);
-  redirect(`/${locale}/dashboard/sessions?status=availability-created`);
+  redirect(`/${locale}/dashboard/sessions?tab=availability&status=availability-created`);
 }
 
 export async function cancelAvailabilitySlot(locale: Locale, formData: FormData) {
@@ -102,11 +102,11 @@ export async function cancelAvailabilitySlot(locale: Locale, formData: FormData)
   }
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/sessions?status=availability-invalid`);
+    redirect(`/${locale}/dashboard/sessions?tab=availability&status=availability-invalid`);
   }
 
   await cancelSessionAvailabilitySlot(supabase, practitioner.id, parsed.data.slotId);
 
   revalidatePath(`/${locale}/dashboard/sessions`);
-  redirect(`/${locale}/dashboard/sessions?status=availability-cancelled`);
+  redirect(`/${locale}/dashboard/sessions?tab=availability&status=availability-cancelled`);
 }

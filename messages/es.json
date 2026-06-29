@@ -256,6 +256,7 @@
     "availabilityDescription": "Crea horarios publicos que visitantes pueden solicitar desde tu perfil de practicante.",
     "addAvailability": "Agregar horario",
     "startsAt": "Fecha y hora de inicio",
+    "time": "Hora",
     "availableSlots": "Proximos horarios",
     "emptyAvailability": "No hay horarios disponibles proximos.",
     "booked": "Reservado",
