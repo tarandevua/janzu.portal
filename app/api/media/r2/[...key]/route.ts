@@ -8,7 +8,7 @@ type R2MediaRouteProps = {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET(_request: Request, { params }: R2MediaRouteProps) {
+async function handleR2MediaRequest({ params }: R2MediaRouteProps, includeBody: boolean) {
   const { key: keyParts } = await params;
   const key = keyParts.join("/");
   const result = await fetchPrivateR2ImageObject(key);
@@ -33,8 +33,16 @@ export async function GET(_request: Request, { params }: R2MediaRouteProps) {
     headers.set("ETag", result.etag);
   }
 
-  return new Response(result.response.body, {
+  return new Response(includeBody ? result.response.body : null, {
     status: 200,
     headers,
   });
+}
+
+export async function GET(_request: Request, context: R2MediaRouteProps) {
+  return handleR2MediaRequest(context, true);
+}
+
+export async function HEAD(_request: Request, context: R2MediaRouteProps) {
+  return handleR2MediaRequest(context, false);
 }

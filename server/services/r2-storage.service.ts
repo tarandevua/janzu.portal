@@ -151,6 +151,27 @@ function getEventImageUploadErrorCode(
   return "event-image-upload";
 }
 
+function getR2FetchError(status: number) {
+  if (status === 401 || status === 403) {
+    return {
+      status,
+      message: "Media storage credentials do not have permission to read this object.",
+    };
+  }
+
+  if (status === 404) {
+    return {
+      status: 404,
+      message: "Media object was not found.",
+    };
+  }
+
+  return {
+    status: 502,
+    message: "Media object could not be fetched.",
+  };
+}
+
 export function createR2AuthorizationHeader({
   accessKeyId,
   credentialScope,
@@ -594,10 +615,21 @@ export async function fetchPrivateR2ImageObject(key: string): Promise<R2ImageFet
     });
 
     if (!response.ok) {
+      const responseBody = await response.text().catch(() => "");
+      const fetchError = getR2FetchError(response.status);
+
+      console.error("Cloudflare R2 object fetch failed.", {
+        status: response.status,
+        statusText: response.statusText,
+        bucket: config.bucket,
+        key,
+        responseBody: responseBody.slice(0, 500),
+      });
+
       return {
         ok: false,
-        status: response.status === 404 ? 404 : 502,
-        message: response.status === 404 ? "Media object was not found." : "Media object could not be fetched.",
+        status: fetchError.status,
+        message: fetchError.message,
       };
     }
 
