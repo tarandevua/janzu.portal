@@ -274,7 +274,20 @@
     "cancelSlot": "Cancelar horario",
     "availabilityCreated": "Horario de disponibilidad creado.",
     "availabilityCancelled": "Horario de disponibilidad cancelado.",
-    "availabilityInvalid": "Revisa los campos de disponibilidad e intentalo nuevamente."
+    "availabilityInvalid": "Revisa los campos de disponibilidad e intentalo nuevamente.",
+    "availabilitySaving": "Guardando disponibilidad...",
+    "quickAddView": "Agregar rapido",
+    "calendarView": "Calendario",
+    "monthView": "Mes",
+    "weekView": "Semana",
+    "dayView": "Dia",
+    "previousPeriod": "Periodo anterior",
+    "nextPeriod": "Periodo siguiente",
+    "today": "Hoy",
+    "selectedDay": "Dia seleccionado",
+    "addSlot": "Agregar horario",
+    "slotTime": "Hora del horario",
+    "emptyDaySlots": "No hay horarios en este dia."
   },
   "feedback": {
     "title": "Feedback de sesion",

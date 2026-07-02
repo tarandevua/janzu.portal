@@ -274,7 +274,20 @@
     "cancelSlot": "Cancel slot",
     "availabilityCreated": "Availability slot created.",
     "availabilityCancelled": "Availability slot cancelled.",
-    "availabilityInvalid": "Check the availability fields and try again."
+    "availabilityInvalid": "Check the availability fields and try again.",
+    "availabilitySaving": "Saving availability...",
+    "quickAddView": "Quick add",
+    "calendarView": "Calendar",
+    "monthView": "Month",
+    "weekView": "Week",
+    "dayView": "Day",
+    "previousPeriod": "Previous period",
+    "nextPeriod": "Next period",
+    "today": "Today",
+    "selectedDay": "Selected day",
+    "addSlot": "Add slot",
+    "slotTime": "Slot time",
+    "emptyDaySlots": "No slots on this day."
   },
   "feedback": {
     "title": "Session feedback",

@@ -141,7 +141,7 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
       requestsPage,
       PAGE_SIZE
     ),
-    listUpcomingAvailabilitySlotsByPractitionerId(supabase, practitioner.id),
+    listUpcomingAvailabilitySlotsByPractitionerId(supabase, practitioner.id, 200),
   ]);
   const sessions = sessionsPageData.items;
   const sessionRequests = sessionRequestsPageData.items;

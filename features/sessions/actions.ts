@@ -16,6 +16,17 @@ import {
 } from "@/server/validators/session-availability.schema";
 import { sessionSchema } from "@/server/validators/session.schema";
 
+export type AvailabilityActionResult =
+  | {
+      ok: true;
+      status: "availability-created" | "availability-cancelled";
+      slot: Awaited<ReturnType<typeof createSessionAvailabilitySlot>>;
+    }
+  | {
+      ok: false;
+      status: "auth-required" | "profile-required" | "availability-invalid";
+    };
+
 export async function createSession(locale: Locale, formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const {
@@ -46,13 +57,34 @@ export async function createSession(locale: Locale, formData: FormData) {
 }
 
 export async function createAvailabilitySlot(locale: Locale, formData: FormData) {
+  const result = await createAvailabilitySlotInline(locale, formData);
+
+  if (result.status === "auth-required") {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+
+  if (result.status === "profile-required") {
+    redirect(`/${locale}/dashboard/profile`);
+  }
+
+  if (!result.ok) {
+    redirect(`/${locale}/dashboard/sessions?tab=availability&status=${result.status}`);
+  }
+
+  redirect(`/${locale}/dashboard/sessions?tab=availability&status=${result.status}`);
+}
+
+export async function createAvailabilitySlotInline(
+  locale: Locale,
+  formData: FormData
+): Promise<AvailabilityActionResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/${locale}/login?status=auth-required`);
+    return { ok: false, status: "auth-required" };
   }
 
   const [parsed, practitioner] = await Promise.all([
@@ -64,31 +96,52 @@ export async function createAvailabilitySlot(locale: Locale, formData: FormData)
   ]);
 
   if (!practitioner) {
-    redirect(`/${locale}/dashboard/profile`);
+    return { ok: false, status: "profile-required" };
   }
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/sessions?tab=availability&status=availability-invalid`);
+    return { ok: false, status: "availability-invalid" };
   }
 
-  await createSessionAvailabilitySlot(supabase, {
+  const slot = await createSessionAvailabilitySlot(supabase, {
     practitionerId: practitioner.id,
     startsAt: parsed.data.startsAt,
     endsAt: parsed.data.endsAt,
   });
 
   revalidatePath(`/${locale}/dashboard/sessions`);
-  redirect(`/${locale}/dashboard/sessions?tab=availability&status=availability-created`);
+  return { ok: true, status: "availability-created", slot };
 }
 
 export async function cancelAvailabilitySlot(locale: Locale, formData: FormData) {
+  const result = await cancelAvailabilitySlotInline(locale, formData);
+
+  if (result.status === "auth-required") {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+
+  if (result.status === "profile-required") {
+    redirect(`/${locale}/dashboard/profile`);
+  }
+
+  if (!result.ok) {
+    redirect(`/${locale}/dashboard/sessions?tab=availability&status=${result.status}`);
+  }
+
+  redirect(`/${locale}/dashboard/sessions?tab=availability&status=${result.status}`);
+}
+
+export async function cancelAvailabilitySlotInline(
+  locale: Locale,
+  formData: FormData
+): Promise<AvailabilityActionResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/${locale}/login?status=auth-required`);
+    return { ok: false, status: "auth-required" };
   }
 
   const [parsed, practitioner] = await Promise.all([
@@ -99,15 +152,15 @@ export async function cancelAvailabilitySlot(locale: Locale, formData: FormData)
   ]);
 
   if (!practitioner) {
-    redirect(`/${locale}/dashboard/profile`);
+    return { ok: false, status: "profile-required" };
   }
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/sessions?tab=availability&status=availability-invalid`);
+    return { ok: false, status: "availability-invalid" };
   }
 
-  await cancelSessionAvailabilitySlot(supabase, practitioner.id, parsed.data.slotId);
+  const slot = await cancelSessionAvailabilitySlot(supabase, practitioner.id, parsed.data.slotId);
 
   revalidatePath(`/${locale}/dashboard/sessions`);
-  redirect(`/${locale}/dashboard/sessions?tab=availability&status=availability-cancelled`);
+  return { ok: true, status: "availability-cancelled", slot };
 }

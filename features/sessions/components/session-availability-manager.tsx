@@ -1,5 +1,14 @@
+"use client";
+
+import { useEffect, useState, useTransition, type FormEvent } from "react";
+import { toast } from "sonner";
 import { CalendarPlusIcon, XIcon } from "lucide-react";
-import { createAvailabilitySlot, cancelAvailabilitySlot } from "@/features/sessions/actions";
+import {
+  cancelAvailabilitySlotInline,
+  createAvailabilitySlotInline,
+  type AvailabilityActionResult,
+} from "@/features/sessions/actions";
+import { SessionAvailabilityCalendar } from "@/features/sessions/components/session-availability-calendar";
 import { SessionAvailabilityDateTimePicker } from "@/features/sessions/components/session-availability-date-time-picker";
 import type { Locale } from "@/lib/i18n/config";
 import type { SessionAvailabilitySlot } from "@/server/models/session-availability.model";
@@ -8,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type SessionAvailabilityManagerProps = {
   locale: Locale;
@@ -30,6 +40,19 @@ type SessionAvailabilityManagerProps = {
     availabilityCreated: string;
     availabilityCancelled: string;
     availabilityInvalid: string;
+    availabilitySaving: string;
+    quickAddView: string;
+    calendarView: string;
+    monthView: string;
+    weekView: string;
+    dayView: string;
+    previousPeriod: string;
+    nextPeriod: string;
+    today: string;
+    selectedDay: string;
+    addSlot: string;
+    slotTime: string;
+    emptyDaySlots: string;
   };
 };
 
@@ -67,8 +90,87 @@ export function SessionAvailabilityManager({
   status,
   dictionary,
 }: SessionAvailabilityManagerProps) {
-  const createAction = createAvailabilitySlot.bind(null, locale);
-  const cancelAction = cancelAvailabilitySlot.bind(null, locale);
+  const [currentSlots, setCurrentSlots] = useState(slots);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setCurrentSlots(slots);
+  }, [slots]);
+
+  useEffect(() => {
+    if (status === "availability-created") {
+      toast.success(dictionary.availabilityCreated);
+      return;
+    }
+
+    if (status === "availability-cancelled") {
+      toast.success(dictionary.availabilityCancelled);
+      return;
+    }
+
+    if (status === "availability-invalid") {
+      toast.error(dictionary.availabilityInvalid);
+    }
+  }, [
+    dictionary.availabilityCancelled,
+    dictionary.availabilityCreated,
+    dictionary.availabilityInvalid,
+    status,
+  ]);
+
+  function upsertSlot(slot: SessionAvailabilitySlot) {
+    setCurrentSlots((items) => {
+      const nextItems = items.some((item) => item.id === slot.id)
+        ? items.map((item) => (item.id === slot.id ? slot : item))
+        : [...items, slot];
+
+      return nextItems.toSorted(
+        (first, second) =>
+          new Date(first.startsAt).getTime() - new Date(second.startsAt).getTime()
+      );
+    });
+  }
+
+  function runAvailabilityAction(
+    action: () => Promise<AvailabilityActionResult>,
+    options?: { onSuccess?: () => void }
+  ) {
+    startTransition(async () => {
+      const toastId = toast.loading(dictionary.availabilitySaving);
+      const result = await action();
+
+      if (result.ok) {
+        upsertSlot(result.slot);
+        options?.onSuccess?.();
+        toast.success(
+          result.status === "availability-created"
+            ? dictionary.availabilityCreated
+            : dictionary.availabilityCancelled,
+          { id: toastId }
+        );
+        return;
+      }
+
+      toast.error(dictionary.availabilityInvalid, { id: toastId });
+    });
+  }
+
+  function handleCreateSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    runAvailabilityAction(() => createAvailabilitySlotInline(locale, formData), {
+      onSuccess: () => form.reset(),
+    });
+  }
+
+  function handleCancelSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    runAvailabilityAction(() => cancelAvailabilitySlotInline(locale, formData));
+  }
 
   return (
     <Card>
@@ -77,66 +179,79 @@ export function SessionAvailabilityManager({
         <CardDescription>{dictionary.availabilityDescription}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-5">
-        {status === "availability-created" ? (
-          <p className="text-sm font-medium text-emerald-700">{dictionary.availabilityCreated}</p>
-        ) : null}
-        {status === "availability-cancelled" ? (
-          <p className="text-sm font-medium text-emerald-700">{dictionary.availabilityCancelled}</p>
-        ) : null}
-        {status === "availability-invalid" ? (
-          <p className="text-sm font-medium text-destructive">{dictionary.availabilityInvalid}</p>
-        ) : null}
-        <form action={createAction} className="grid gap-4 md:grid-cols-[1fr_9rem_auto] md:items-end">
-          <SessionAvailabilityDateTimePicker dictionary={dictionary} />
-          <div className="grid gap-2">
-            <Label htmlFor="availabilityDuration">{dictionary.duration}</Label>
-            <Input
-              id="availabilityDuration"
-              name="durationMinutes"
-              type="number"
-              min="15"
-              max="480"
-              step="15"
-              defaultValue="60"
-              required
-            />
-          </div>
-          <Button type="submit">
-            <CalendarPlusIcon className="h-4 w-4" />
-            {dictionary.addAvailability}
-          </Button>
-        </form>
-        <div className="grid gap-3">
-          <h3 className="text-sm font-medium">{dictionary.availableSlots}</h3>
-          {slots.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{dictionary.emptyAvailability}</p>
-          ) : (
-            <div className="grid gap-2">
-              {slots.map((slot) => (
-                <div
-                  key={slot.id}
-                  className="flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="grid gap-1">
-                    <p className="text-sm font-medium">{formatSlotRange(slot, locale)}</p>
-                    <Badge className="w-fit" variant={slot.status === "available" ? "secondary" : "outline"}>
-                      {getStatusLabel(slot.status, dictionary)}
-                    </Badge>
-                  </div>
-                  {slot.status === "available" ? (
-                    <form action={cancelAction}>
-                      <input type="hidden" name="slotId" value={slot.id} />
-                      <Button type="submit" size="sm" variant="outline">
-                        <XIcon className="h-4 w-4" />
-                        {dictionary.cancelSlot}
-                      </Button>
-                    </form>
-                  ) : null}
+        <Tabs defaultValue="quick-add" className="grid gap-4">
+          <TabsList className="h-auto w-full justify-start overflow-x-auto">
+            <TabsTrigger value="quick-add">{dictionary.quickAddView}</TabsTrigger>
+            <TabsTrigger value="calendar">{dictionary.calendarView}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="quick-add" className="mt-0 grid gap-5">
+            <form onSubmit={handleCreateSubmit} className="grid gap-4 md:grid-cols-[1fr_9rem_auto] md:items-end">
+              <SessionAvailabilityDateTimePicker dictionary={dictionary} />
+              <div className="grid gap-2">
+                <Label htmlFor="availabilityDuration">{dictionary.duration}</Label>
+                <Input
+                  id="availabilityDuration"
+                  name="durationMinutes"
+                  type="number"
+                  min="15"
+                  max="480"
+                  step="15"
+                  defaultValue="60"
+                  required
+                />
+              </div>
+              <Button type="submit" disabled={isPending}>
+                <CalendarPlusIcon className="h-4 w-4" />
+                {dictionary.addAvailability}
+              </Button>
+            </form>
+            <div className="grid gap-3">
+              <h3 className="text-sm font-medium">{dictionary.availableSlots}</h3>
+              {currentSlots.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{dictionary.emptyAvailability}</p>
+              ) : (
+                <div className="grid gap-2">
+                  {currentSlots.map((slot) => (
+                    <div
+                      key={slot.id}
+                      className="flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="grid gap-1">
+                        <p className="text-sm font-medium">{formatSlotRange(slot, locale)}</p>
+                        <Badge className="w-fit" variant={slot.status === "available" ? "secondary" : "outline"}>
+                          {getStatusLabel(slot.status, dictionary)}
+                        </Badge>
+                      </div>
+                      {slot.status === "available" ? (
+                        <form onSubmit={handleCancelSubmit}>
+                          <input type="hidden" name="slotId" value={slot.id} />
+                          <Button type="submit" size="sm" variant="outline" disabled={isPending}>
+                            <XIcon className="h-4 w-4" />
+                            {dictionary.cancelSlot}
+                          </Button>
+                        </form>
+                      ) : null}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-        </div>
+          </TabsContent>
+          <TabsContent value="calendar" className="mt-0">
+            <SessionAvailabilityCalendar
+              locale={locale}
+              slots={currentSlots}
+              dictionary={dictionary}
+              isPending={isPending}
+              onCreateSlot={(formData) =>
+                runAvailabilityAction(() => createAvailabilitySlotInline(locale, formData))
+              }
+              onCancelSlot={(formData) =>
+                runAvailabilityAction(() => cancelAvailabilitySlotInline(locale, formData))
+              }
+            />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
