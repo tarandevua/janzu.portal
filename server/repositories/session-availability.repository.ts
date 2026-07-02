@@ -18,6 +18,7 @@ function toSessionAvailabilitySlot(row: SessionAvailabilityRow): SessionAvailabi
     endsAt: row.ends_at,
     status: row.status,
     sessionRequestId: row.session_request_id,
+    recurrenceGroupId: row.recurrence_group_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -31,6 +32,7 @@ export async function createSessionAvailabilitySlot(
     practitioner_id: input.practitionerId,
     starts_at: input.startsAt,
     ends_at: input.endsAt,
+    recurrence_group_id: input.recurrenceGroupId ?? null,
   } satisfies SessionAvailabilityInsert;
 
   const { data, error } = await supabase
@@ -44,6 +46,34 @@ export async function createSessionAvailabilitySlot(
   }
 
   return toSessionAvailabilitySlot(data as SessionAvailabilityRow);
+}
+
+export async function createSessionAvailabilitySlots(
+  supabase: SupabaseServerClient,
+  inputs: SessionAvailabilityInput[]
+) {
+  if (inputs.length === 0) {
+    return [];
+  }
+
+  const payload = inputs.map((input) => ({
+    practitioner_id: input.practitionerId,
+    starts_at: input.startsAt,
+    ends_at: input.endsAt,
+    recurrence_group_id: input.recurrenceGroupId ?? null,
+  })) satisfies SessionAvailabilityInsert[];
+
+  const { data, error } = await supabase
+    .from("session_availability_slots")
+    .insert(payload as never)
+    .select("*")
+    .order("starts_at", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as SessionAvailabilityRow[]).map(toSessionAvailabilitySlot);
 }
 
 export async function listUpcomingAvailabilitySlotsByPractitionerId(
@@ -106,4 +136,26 @@ export async function cancelSessionAvailabilitySlot(
   }
 
   return toSessionAvailabilitySlot(data as SessionAvailabilityRow);
+}
+
+export async function cancelSessionAvailabilitySeries(
+  supabase: SupabaseServerClient,
+  practitionerId: string,
+  recurrenceGroupId: string
+) {
+  const { data, error } = await supabase
+    .from("session_availability_slots")
+    .update({ status: "cancelled" } as never)
+    .eq("practitioner_id", practitionerId)
+    .eq("recurrence_group_id", recurrenceGroupId)
+    .eq("status", "available")
+    .gte("starts_at", new Date().toISOString())
+    .select("*")
+    .order("starts_at", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as SessionAvailabilityRow[]).map(toSessionAvailabilitySlot);
 }

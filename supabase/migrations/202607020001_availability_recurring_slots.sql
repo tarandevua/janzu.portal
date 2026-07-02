@@ -1,0 +1,6 @@
+alter table public.session_availability_slots
+add column recurrence_group_id uuid;
+
+create index session_availability_slots_recurrence_group_id_idx
+on public.session_availability_slots(recurrence_group_id)
+where recurrence_group_id is not null;

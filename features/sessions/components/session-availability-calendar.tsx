@@ -24,6 +24,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +42,7 @@ type SessionAvailabilityCalendarProps = {
   isPending: boolean;
   onCreateSlot: (formData: FormData) => void;
   onCancelSlot: (formData: FormData) => void;
+  onCancelSeries: (formData: FormData) => void;
   dictionary: {
     calendarView: string;
     monthView: string;
@@ -52,6 +60,14 @@ type SessionAvailabilityCalendarProps = {
     booked: string;
     available: string;
     cancelled: string;
+    repeat: string;
+    repeatNone: string;
+    repeatDaily: string;
+    repeatWeekly: string;
+    repeatBiweekly: string;
+    repeatMonthly: string;
+    repeatCount: string;
+    cancelSeries: string;
   };
 };
 
@@ -124,6 +140,7 @@ export function SessionAvailabilityCalendar({
   isPending,
   onCreateSlot,
   onCancelSlot,
+  onCancelSeries,
   dictionary,
 }: SessionAvailabilityCalendarProps) {
   const [view, setView] = useState<CalendarView>("month");
@@ -213,6 +230,11 @@ export function SessionAvailabilityCalendar({
   function handleCancelSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     onCancelSlot(new FormData(event.currentTarget));
+  }
+
+  function handleCancelSeriesSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    onCancelSeries(new FormData(event.currentTarget));
   }
 
   const title =
@@ -389,7 +411,7 @@ export function SessionAvailabilityCalendar({
           <h3 className="text-sm font-semibold">
             {dictionary.selectedDay}: {format(selectedDate, "PPP")}
           </h3>
-          <form onSubmit={handleCreateSubmit} className="grid gap-3 sm:grid-cols-[1fr_8rem_auto] sm:items-end">
+          <form onSubmit={handleCreateSubmit} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_8rem_12rem_8rem_auto] xl:items-end">
             <input type="hidden" name="startsAt" value={selectedStartsAt} readOnly />
             <div className="grid gap-2">
               <Label htmlFor="calendarSlotTime">{dictionary.slotTime}</Label>
@@ -414,6 +436,33 @@ export function SessionAvailabilityCalendar({
                 required
               />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="calendarSlotRepeat">{dictionary.repeat}</Label>
+              <Select name="repeat" defaultValue="none">
+                <SelectTrigger id="calendarSlotRepeat">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{dictionary.repeatNone}</SelectItem>
+                  <SelectItem value="daily">{dictionary.repeatDaily}</SelectItem>
+                  <SelectItem value="weekly">{dictionary.repeatWeekly}</SelectItem>
+                  <SelectItem value="biweekly">{dictionary.repeatBiweekly}</SelectItem>
+                  <SelectItem value="monthly">{dictionary.repeatMonthly}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="calendarSlotRepeatCount">{dictionary.repeatCount}</Label>
+              <Input
+                id="calendarSlotRepeatCount"
+                name="repeatCount"
+                type="number"
+                min="1"
+                max="52"
+                defaultValue="8"
+                required
+              />
+            </div>
             <Button type="submit" disabled={isPending}>
               <CalendarPlusIcon className="h-4 w-4" />
               {dictionary.addSlot}
@@ -435,13 +484,24 @@ export function SessionAvailabilityCalendar({
                     </Badge>
                   </div>
                   {slot.status === "available" ? (
-                    <form onSubmit={handleCancelSubmit}>
-                      <input type="hidden" name="slotId" value={slot.id} />
-                      <Button type="submit" size="sm" variant="outline" disabled={isPending}>
-                        <XIcon className="h-4 w-4" />
-                        {dictionary.cancelSlot}
-                      </Button>
-                    </form>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <form onSubmit={handleCancelSubmit}>
+                        <input type="hidden" name="slotId" value={slot.id} />
+                        <Button type="submit" size="sm" variant="outline" disabled={isPending}>
+                          <XIcon className="h-4 w-4" />
+                          {dictionary.cancelSlot}
+                        </Button>
+                      </form>
+                      {slot.recurrenceGroupId ? (
+                        <form onSubmit={handleCancelSeriesSubmit}>
+                          <input type="hidden" name="recurrenceGroupId" value={slot.recurrenceGroupId} />
+                          <Button type="submit" size="sm" variant="outline" disabled={isPending}>
+                            <XIcon className="h-4 w-4" />
+                            {dictionary.cancelSeries}
+                          </Button>
+                        </form>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
               ))}

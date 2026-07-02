@@ -287,7 +287,15 @@
     "selectedDay": "Dia seleccionado",
     "addSlot": "Agregar horario",
     "slotTime": "Hora del horario",
-    "emptyDaySlots": "No hay horarios en este dia."
+    "emptyDaySlots": "No hay horarios en este dia.",
+    "repeat": "Repetir",
+    "repeatNone": "No se repite",
+    "repeatDaily": "Cada dia",
+    "repeatWeekly": "Cada semana",
+    "repeatBiweekly": "Cada 2 semanas",
+    "repeatMonthly": "Cada mes",
+    "repeatCount": "Ocurrencias",
+    "cancelSeries": "Cancelar serie"
   },
   "feedback": {
     "title": "Feedback de sesion",

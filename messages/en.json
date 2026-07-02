@@ -287,7 +287,15 @@
     "selectedDay": "Selected day",
     "addSlot": "Add slot",
     "slotTime": "Slot time",
-    "emptyDaySlots": "No slots on this day."
+    "emptyDaySlots": "No slots on this day.",
+    "repeat": "Repeat",
+    "repeatNone": "Does not repeat",
+    "repeatDaily": "Every day",
+    "repeatWeekly": "Every week",
+    "repeatBiweekly": "Every 2 weeks",
+    "repeatMonthly": "Every month",
+    "repeatCount": "Occurrences",
+    "cancelSeries": "Cancel series"
   },
   "feedback": {
     "title": "Session feedback",

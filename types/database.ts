@@ -290,6 +290,7 @@ export type Database = {
           ends_at: string;
           status: "available" | "booked" | "cancelled";
           session_request_id: string | null;
+          recurrence_group_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -300,6 +301,7 @@ export type Database = {
           ends_at: string;
           status?: "available" | "booked" | "cancelled";
           session_request_id?: string | null;
+          recurrence_group_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -310,6 +312,7 @@ export type Database = {
           ends_at?: string;
           status?: "available" | "booked" | "cancelled";
           session_request_id?: string | null;
+          recurrence_group_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };

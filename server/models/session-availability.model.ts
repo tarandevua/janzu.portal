@@ -7,6 +7,7 @@ export type SessionAvailabilitySlot = {
   endsAt: string;
   status: SessionAvailabilityStatus;
   sessionRequestId: string | null;
+  recurrenceGroupId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -15,4 +16,5 @@ export type SessionAvailabilityInput = {
   practitionerId: string;
   startsAt: string;
   endsAt: string;
+  recurrenceGroupId?: string | null;
 };

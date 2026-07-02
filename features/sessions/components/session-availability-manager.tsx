@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition, type FormEvent } from "react";
 import { toast } from "sonner";
 import { CalendarPlusIcon, XIcon } from "lucide-react";
 import {
+  cancelAvailabilitySeriesInline,
   cancelAvailabilitySlotInline,
   createAvailabilitySlotInline,
   type AvailabilityActionResult,
@@ -17,6 +18,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type SessionAvailabilityManagerProps = {
@@ -53,6 +61,14 @@ type SessionAvailabilityManagerProps = {
     addSlot: string;
     slotTime: string;
     emptyDaySlots: string;
+    repeat: string;
+    repeatNone: string;
+    repeatDaily: string;
+    repeatWeekly: string;
+    repeatBiweekly: string;
+    repeatMonthly: string;
+    repeatCount: string;
+    cancelSeries: string;
   };
 };
 
@@ -118,13 +134,15 @@ export function SessionAvailabilityManager({
     status,
   ]);
 
-  function upsertSlot(slot: SessionAvailabilitySlot) {
+  function upsertSlots(slotsToUpsert: SessionAvailabilitySlot[]) {
     setCurrentSlots((items) => {
-      const nextItems = items.some((item) => item.id === slot.id)
-        ? items.map((item) => (item.id === slot.id ? slot : item))
-        : [...items, slot];
+      const slotsById = new Map(items.map((item) => [item.id, item]));
 
-      return nextItems.toSorted(
+      for (const slot of slotsToUpsert) {
+        slotsById.set(slot.id, slot);
+      }
+
+      return [...slotsById.values()].toSorted(
         (first, second) =>
           new Date(first.startsAt).getTime() - new Date(second.startsAt).getTime()
       );
@@ -140,7 +158,7 @@ export function SessionAvailabilityManager({
       const result = await action();
 
       if (result.ok) {
-        upsertSlot(result.slot);
+        upsertSlots(result.slots);
         options?.onSuccess?.();
         toast.success(
           result.status === "availability-created"
@@ -172,6 +190,13 @@ export function SessionAvailabilityManager({
     runAvailabilityAction(() => cancelAvailabilitySlotInline(locale, formData));
   }
 
+  function handleCancelSeriesSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    runAvailabilityAction(() => cancelAvailabilitySeriesInline(locale, formData));
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -185,7 +210,7 @@ export function SessionAvailabilityManager({
             <TabsTrigger value="calendar">{dictionary.calendarView}</TabsTrigger>
           </TabsList>
           <TabsContent value="quick-add" className="mt-0 grid gap-5">
-            <form onSubmit={handleCreateSubmit} className="grid gap-4 md:grid-cols-[1fr_9rem_auto] md:items-end">
+            <form onSubmit={handleCreateSubmit} className="grid gap-4 lg:grid-cols-[1fr_9rem_12rem_8rem_auto] lg:items-end">
               <SessionAvailabilityDateTimePicker dictionary={dictionary} />
               <div className="grid gap-2">
                 <Label htmlFor="availabilityDuration">{dictionary.duration}</Label>
@@ -197,6 +222,33 @@ export function SessionAvailabilityManager({
                   max="480"
                   step="15"
                   defaultValue="60"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="availabilityRepeat">{dictionary.repeat}</Label>
+                <Select name="repeat" defaultValue="none">
+                  <SelectTrigger id="availabilityRepeat">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{dictionary.repeatNone}</SelectItem>
+                    <SelectItem value="daily">{dictionary.repeatDaily}</SelectItem>
+                    <SelectItem value="weekly">{dictionary.repeatWeekly}</SelectItem>
+                    <SelectItem value="biweekly">{dictionary.repeatBiweekly}</SelectItem>
+                    <SelectItem value="monthly">{dictionary.repeatMonthly}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="availabilityRepeatCount">{dictionary.repeatCount}</Label>
+                <Input
+                  id="availabilityRepeatCount"
+                  name="repeatCount"
+                  type="number"
+                  min="1"
+                  max="52"
+                  defaultValue="8"
                   required
                 />
               </div>
@@ -223,13 +275,24 @@ export function SessionAvailabilityManager({
                         </Badge>
                       </div>
                       {slot.status === "available" ? (
-                        <form onSubmit={handleCancelSubmit}>
-                          <input type="hidden" name="slotId" value={slot.id} />
-                          <Button type="submit" size="sm" variant="outline" disabled={isPending}>
-                            <XIcon className="h-4 w-4" />
-                            {dictionary.cancelSlot}
-                          </Button>
-                        </form>
+                        <div className="flex flex-wrap gap-2">
+                          <form onSubmit={handleCancelSubmit}>
+                            <input type="hidden" name="slotId" value={slot.id} />
+                            <Button type="submit" size="sm" variant="outline" disabled={isPending}>
+                              <XIcon className="h-4 w-4" />
+                              {dictionary.cancelSlot}
+                            </Button>
+                          </form>
+                          {slot.recurrenceGroupId ? (
+                            <form onSubmit={handleCancelSeriesSubmit}>
+                              <input type="hidden" name="recurrenceGroupId" value={slot.recurrenceGroupId} />
+                              <Button type="submit" size="sm" variant="outline" disabled={isPending}>
+                                <XIcon className="h-4 w-4" />
+                                {dictionary.cancelSeries}
+                              </Button>
+                            </form>
+                          ) : null}
+                        </div>
                       ) : null}
                     </div>
                   ))}
@@ -248,6 +311,9 @@ export function SessionAvailabilityManager({
               }
               onCancelSlot={(formData) =>
                 runAvailabilityAction(() => cancelAvailabilitySlotInline(locale, formData))
+              }
+              onCancelSeries={(formData) =>
+                runAvailabilityAction(() => cancelAvailabilitySeriesInline(locale, formData))
               }
             />
           </TabsContent>
