@@ -1,9 +1,14 @@
 import { notFound, redirect } from "next/navigation";
 import type { Route } from "next";
+import { Suspense } from "react";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { FacilitatorDashboard } from "@/components/dashboard/facilitator-dashboard";
 import { JanzuDashboardBlock } from "@/components/dashboard/janzu-dashboard-block";
-import { PractitionerDashboard } from "@/components/dashboard/practitioner-dashboard";
+import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import {
+  PractitionerDashboardContent,
+  PractitionerDashboardSkeleton,
+} from "@/components/dashboard/practitioner-dashboard";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -25,6 +30,36 @@ type RoleDashboardPageProps = {
     role: string;
   }>;
 };
+
+async function PractitionerDashboardContentLoader({
+  supabase,
+  userId,
+  locale,
+  user,
+  dictionary,
+}: {
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+  userId: string;
+  locale: Locale;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
+  dictionary: Parameters<typeof PractitionerDashboardContent>[0]["dictionary"];
+}) {
+  const dashboardData = await getPractitionerDashboardData(supabase, userId);
+
+  return (
+    <PractitionerDashboardContent
+      locale={locale}
+      user={user}
+      data={dashboardData}
+      dictionary={dictionary}
+    />
+  );
+}
 
 export default async function RoleDashboardPage({ params }: RoleDashboardPageProps) {
   const { locale, role } = await params;
@@ -65,17 +100,23 @@ export default async function RoleDashboardPage({ params }: RoleDashboardPagePro
   };
 
   if (role === "practitioner") {
-    const dashboardData = await getPractitionerDashboardData(supabase, data.user.id);
-
     return (
-      <PractitionerDashboard
+      <JanzuDashboardFrame
         locale={locale}
         access={access}
         user={user}
         title={roleDictionary.title}
-        data={dashboardData}
-        dictionary={dictionary.dashboard.practitionerData}
-      />
+      >
+        <Suspense fallback={<PractitionerDashboardSkeleton />}>
+          <PractitionerDashboardContentLoader
+            supabase={supabase}
+            userId={data.user.id}
+            locale={locale}
+            user={user}
+            dictionary={dictionary.dashboard.practitionerData}
+          />
+        </Suspense>
+      </JanzuDashboardFrame>
     );
   }
 

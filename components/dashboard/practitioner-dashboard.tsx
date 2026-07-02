@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Locale } from "@/lib/i18n/config";
 import type { RoleAccess } from "@/server/models/rbac.model";
 import type { PractitionerDashboardData } from "@/server/services/practitioner-dashboard.service";
@@ -74,6 +75,13 @@ type PractitionerDashboardProps = {
   dictionary: PractitionerDashboardDictionary;
 };
 
+type PractitionerDashboardContentProps = {
+  locale: Locale;
+  user: DashboardUser;
+  data: PractitionerDashboardData | null;
+  dictionary: PractitionerDashboardDictionary;
+};
+
 function formatDate(locale: Locale, value: string) {
   return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
@@ -103,6 +111,272 @@ function StatCard({
   );
 }
 
+function StatCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-8 w-20" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-4 w-full max-w-44" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function TableCardSkeleton({ columns, rows = 4 }: { columns: number; rows?: number }) {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-start justify-between gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-28" />
+        </div>
+        <Skeleton className="h-9 w-20" />
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div
+          className="grid gap-3"
+          style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+        >
+          {Array.from({ length: columns }).map((_, index) => (
+            <Skeleton key={index} className="h-4 w-24" />
+          ))}
+        </div>
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <div
+            key={rowIndex}
+            className="grid gap-3 border-t pt-3"
+            style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+          >
+            {Array.from({ length: columns }).map((_, columnIndex) => (
+              <Skeleton
+                key={columnIndex}
+                className={columnIndex === 0 ? "h-4 w-28" : "h-4 w-full max-w-40"}
+              />
+            ))}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function PractitionerDashboardSkeleton() {
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <StatCardSkeleton key={index} />
+          ))}
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <StatCardSkeleton key={index} />
+          ))}
+        </div>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <TableCardSkeleton columns={2} />
+          <TableCardSkeleton columns={3} />
+        </div>
+        <TableCardSkeleton columns={3} rows={5} />
+      </div>
+    </div>
+  );
+}
+
+export function PractitionerDashboardContent({
+  locale,
+  user,
+  data,
+  dictionary,
+}: PractitionerDashboardContentProps) {
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+        {!data ? (
+          <Alert>
+            <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                <strong>{dictionary.setupTitle}</strong> {dictionary.setupDescription}
+              </span>
+              <Button asChild size="sm">
+                <Link href={`/${locale}/dashboard/profile`}>{dictionary.setupAction}</Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <StatCard
+                title={dictionary.profileStatus}
+                value={data.profile.isPublic ? dictionary.publicProfile : dictionary.privateProfile}
+                description={[data.profile.city, data.profile.country].filter(Boolean).join(", ") || user.email}
+                icon={UsersIcon}
+              />
+              <StatCard
+                title={dictionary.certificationProgress}
+                value={`${data.certification.percentComplete}%`}
+                description={`${data.certification.validatedSessionsCount}/${data.certification.requiredSessionsCount} ${dictionary.certificationRequired}`}
+                icon={CheckCircle2Icon}
+              />
+              <StatCard
+                title={dictionary.privateClients}
+                value={data.counts.clients}
+                description={`${data.counts.sessions} ${dictionary.totalSessions}`}
+                icon={UsersIcon}
+              />
+              <StatCard
+                title={dictionary.pendingRequests}
+                value={data.counts.pendingRequests}
+                description={`${data.counts.feedback} ${dictionary.feedbackReceived}`}
+                icon={ClipboardListIcon}
+              />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              <StatCard
+                title={dictionary.validatedSessions}
+                value={data.counts.validatedSessions}
+                description={`${data.counts.sessions} ${dictionary.totalSessions}`}
+                icon={CheckCircle2Icon}
+              />
+              <StatCard
+                title={dictionary.submittedLocations}
+                value={data.counts.locations}
+                description={`${data.counts.approvedLocations} ${dictionary.approvedLocations}`}
+                icon={MapPinnedIcon}
+              />
+              <StatCard
+                title={dictionary.pendingLocations}
+                value={data.counts.pendingLocations}
+                description={dictionary.submittedLocations}
+                icon={MapPinnedIcon}
+              />
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Card>
+                <CardHeader className="flex-row items-start justify-between gap-4">
+                  <div>
+                    <CardTitle>{dictionary.recentSessions}</CardTitle>
+                    <CardDescription>{dictionary.totalSessions}</CardDescription>
+                  </div>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/${locale}/dashboard/sessions`}>{dictionary.viewAll}</Link>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {data.recentSessions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{dictionary.emptySessions}</p>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{dictionary.date}</TableHead>
+                          <TableHead>{dictionary.location}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {data.recentSessions.map((session) => (
+                          <TableRow key={session.id}>
+                            <TableCell>{formatDate(locale, session.sessionDate)}</TableCell>
+                            <TableCell>{session.location ?? ""}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex-row items-start justify-between gap-4">
+                  <div>
+                    <CardTitle>{dictionary.recentRequests}</CardTitle>
+                    <CardDescription>{dictionary.pendingRequests}</CardDescription>
+                  </div>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/${locale}/dashboard/sessions?tab=requests`}>{dictionary.viewAll}</Link>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {data.recentRequests.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{dictionary.emptyRequests}</p>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{dictionary.requestFrom}</TableHead>
+                          <TableHead>{dictionary.date}</TableHead>
+                          <TableHead>{dictionary.profileStatus}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {data.recentRequests.map((request) => (
+                          <TableRow key={request.id}>
+                            <TableCell>{request.requesterName}</TableCell>
+                            <TableCell>
+                              {request.preferredDate ? formatDate(locale, request.preferredDate) : ""}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">{request.status}</Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader className="flex-row items-start justify-between gap-4">
+                <div>
+                  <CardTitle>{dictionary.recentFeedback}</CardTitle>
+                  <CardDescription>{dictionary.feedbackReceived}</CardDescription>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/${locale}/dashboard/feedback`}>{dictionary.viewAll}</Link>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {data.recentFeedback.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{dictionary.emptyFeedback}</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{dictionary.date}</TableHead>
+                        <TableHead>{dictionary.rating}</TableHead>
+                        <TableHead>{dictionary.recentFeedback}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.recentFeedback.map((feedback) => (
+                        <TableRow key={feedback.feedbackId}>
+                          <TableCell>{formatDate(locale, feedback.submittedAt)}</TableCell>
+                          <TableCell>{feedback.rating}</TableCell>
+                          <TableCell className="max-w-xl text-sm text-muted-foreground">
+                            {feedback.experienceText ?? ""}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function PractitionerDashboard({
   locale,
   access,
@@ -113,186 +387,12 @@ export function PractitionerDashboard({
 }: PractitionerDashboardProps) {
   return (
     <JanzuDashboardFrame locale={locale} access={access} user={user} title={title}>
-      <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          {!data ? (
-            <Alert>
-              <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <span>
-                  <strong>{dictionary.setupTitle}</strong> {dictionary.setupDescription}
-                </span>
-                <Button asChild size="sm">
-                  <Link href={`/${locale}/dashboard/profile`}>{dictionary.setupAction}</Link>
-                </Button>
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard
-                  title={dictionary.profileStatus}
-                  value={data.profile.isPublic ? dictionary.publicProfile : dictionary.privateProfile}
-                  description={[data.profile.city, data.profile.country].filter(Boolean).join(", ") || user.email}
-                  icon={UsersIcon}
-                />
-                <StatCard
-                  title={dictionary.certificationProgress}
-                  value={`${data.certification.percentComplete}%`}
-                  description={`${data.certification.validatedSessionsCount}/${data.certification.requiredSessionsCount} ${dictionary.certificationRequired}`}
-                  icon={CheckCircle2Icon}
-                />
-                <StatCard
-                  title={dictionary.privateClients}
-                  value={data.counts.clients}
-                  description={`${data.counts.sessions} ${dictionary.totalSessions}`}
-                  icon={UsersIcon}
-                />
-                <StatCard
-                  title={dictionary.pendingRequests}
-                  value={data.counts.pendingRequests}
-                  description={`${data.counts.feedback} ${dictionary.feedbackReceived}`}
-                  icon={ClipboardListIcon}
-                />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                <StatCard
-                  title={dictionary.validatedSessions}
-                  value={data.counts.validatedSessions}
-                  description={`${data.counts.sessions} ${dictionary.totalSessions}`}
-                  icon={CheckCircle2Icon}
-                />
-                <StatCard
-                  title={dictionary.submittedLocations}
-                  value={data.counts.locations}
-                  description={`${data.counts.approvedLocations} ${dictionary.approvedLocations}`}
-                  icon={MapPinnedIcon}
-                />
-                <StatCard
-                  title={dictionary.pendingLocations}
-                  value={data.counts.pendingLocations}
-                  description={dictionary.submittedLocations}
-                  icon={MapPinnedIcon}
-                />
-              </div>
-
-              <div className="grid gap-4 xl:grid-cols-2">
-                <Card>
-                  <CardHeader className="flex-row items-start justify-between gap-4">
-                    <div>
-                      <CardTitle>{dictionary.recentSessions}</CardTitle>
-                      <CardDescription>{dictionary.totalSessions}</CardDescription>
-                    </div>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/${locale}/dashboard/sessions`}>{dictionary.viewAll}</Link>
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    {data.recentSessions.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">{dictionary.emptySessions}</p>
-                    ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>{dictionary.date}</TableHead>
-                            <TableHead>{dictionary.location}</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {data.recentSessions.map((session) => (
-                            <TableRow key={session.id}>
-                              <TableCell>{formatDate(locale, session.sessionDate)}</TableCell>
-                              <TableCell>{session.location ?? ""}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex-row items-start justify-between gap-4">
-                    <div>
-                      <CardTitle>{dictionary.recentRequests}</CardTitle>
-                      <CardDescription>{dictionary.pendingRequests}</CardDescription>
-                    </div>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/${locale}/dashboard/sessions?tab=requests`}>{dictionary.viewAll}</Link>
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    {data.recentRequests.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">{dictionary.emptyRequests}</p>
-                    ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>{dictionary.requestFrom}</TableHead>
-                            <TableHead>{dictionary.date}</TableHead>
-                            <TableHead>{dictionary.profileStatus}</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {data.recentRequests.map((request) => (
-                            <TableRow key={request.id}>
-                              <TableCell>{request.requesterName}</TableCell>
-                              <TableCell>
-                                {request.preferredDate ? formatDate(locale, request.preferredDate) : ""}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="secondary">{request.status}</Badge>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card>
-                <CardHeader className="flex-row items-start justify-between gap-4">
-                  <div>
-                    <CardTitle>{dictionary.recentFeedback}</CardTitle>
-                    <CardDescription>{dictionary.feedbackReceived}</CardDescription>
-                  </div>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/${locale}/dashboard/feedback`}>{dictionary.viewAll}</Link>
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  {data.recentFeedback.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">{dictionary.emptyFeedback}</p>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{dictionary.date}</TableHead>
-                          <TableHead>{dictionary.rating}</TableHead>
-                          <TableHead>{dictionary.recentFeedback}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {data.recentFeedback.map((feedback) => (
-                          <TableRow key={feedback.feedbackId}>
-                            <TableCell>{formatDate(locale, feedback.submittedAt)}</TableCell>
-                            <TableCell>{feedback.rating}</TableCell>
-                            <TableCell className="max-w-xl text-sm text-muted-foreground">
-                              {feedback.experienceText ?? ""}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </div>
-      </div>
+      <PractitionerDashboardContent
+        locale={locale}
+        user={user}
+        data={data}
+        dictionary={dictionary}
+      />
     </JanzuDashboardFrame>
   );
 }

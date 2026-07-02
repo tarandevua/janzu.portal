@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type DashboardNavigationLoadingContextValue = {
   isLoading: boolean;
+  skeletonVariant: DashboardSkeletonVariant;
   startNavigation: (href: string) => void;
 };
 
@@ -29,7 +30,95 @@ function normalizePath(href: string) {
   }
 }
 
-function DashboardPageSkeleton() {
+type DashboardSkeletonVariant = "generic" | "practitioner";
+
+function StatCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-8 w-20" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-4 w-full max-w-44" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function TableCardSkeleton({
+  rows = 4,
+  columns = 2,
+}: {
+  rows?: number;
+  columns?: number;
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-start justify-between gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-28" />
+        </div>
+        <Skeleton className="h-9 w-20" />
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div
+          className="grid gap-3"
+          style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+        >
+          {Array.from({ length: columns }).map((_, index) => (
+            <Skeleton key={index} className="h-4 w-24" />
+          ))}
+        </div>
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <div
+            key={rowIndex}
+            className="grid gap-3 border-t pt-3"
+            style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+          >
+            {Array.from({ length: columns }).map((_, columnIndex) => (
+              <Skeleton
+                key={columnIndex}
+                className={columnIndex === 0 ? "h-4 w-28" : "h-4 w-full max-w-40"}
+              />
+            ))}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function PractitionerDashboardSkeleton() {
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <StatCardSkeleton key={index} />
+          ))}
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <StatCardSkeleton key={index} />
+          ))}
+        </div>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <TableCardSkeleton columns={2} />
+          <TableCardSkeleton columns={3} />
+        </div>
+        <TableCardSkeleton rows={5} columns={3} />
+      </div>
+    </div>
+  );
+}
+
+function DashboardPageSkeleton({ variant }: { variant: DashboardSkeletonVariant }) {
+  if (variant === "practitioner") {
+    return <PractitionerDashboardSkeleton />;
+  }
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
@@ -70,10 +159,12 @@ export function DashboardNavigationLoadingProvider({ children }: { children: Rea
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [skeletonVariant, setSkeletonVariant] = useState<DashboardSkeletonVariant>("generic");
   const routeKey = `${pathname}?${searchParams.toString()}`;
 
   useEffect(() => {
     setIsLoading(false);
+    setSkeletonVariant("generic");
   }, [routeKey]);
 
   const startNavigation = useCallback(
@@ -81,13 +172,17 @@ export function DashboardNavigationLoadingProvider({ children }: { children: Rea
       const nextPath = normalizePath(href);
 
       if (nextPath !== pathname) {
+        setSkeletonVariant(nextPath.endsWith("/dashboard/practitioner") ? "practitioner" : "generic");
         setIsLoading(true);
       }
     },
     [pathname]
   );
 
-  const value = useMemo(() => ({ isLoading, startNavigation }), [isLoading, startNavigation]);
+  const value = useMemo(
+    () => ({ isLoading, skeletonVariant, startNavigation }),
+    [isLoading, skeletonVariant, startNavigation]
+  );
 
   return (
     <DashboardNavigationLoadingContext.Provider value={value}>
@@ -99,7 +194,9 @@ export function DashboardNavigationLoadingProvider({ children }: { children: Rea
 export function DashboardNavigationContent({ children }: { children: ReactNode }) {
   const navigationLoading = useContext(DashboardNavigationLoadingContext);
 
-  return navigationLoading?.isLoading ? <DashboardPageSkeleton /> : children;
+  return navigationLoading?.isLoading ? (
+    <DashboardPageSkeleton variant={navigationLoading.skeletonVariant} />
+  ) : children;
 }
 
 export function useDashboardNavigationLoading() {

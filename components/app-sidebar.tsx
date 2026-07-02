@@ -60,16 +60,11 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
 
   return {
     roleLinks: access.map((item) => ({
-      title: dictionary.roles[item.role],
+      title: dictionary.roles[item.role] + " " + dictionary.dashboard,
       url: `/${locale}/dashboard/${item.dashboardPath}`,
       icon: LayoutDashboardIcon,
     })),
     navMain: [
-    {
-      title: dictionary.dashboard,
-      url: `/${locale}/dashboard`,
-      icon: LayoutDashboardIcon,
-    },
     ...(canManageUsers
       ? [
           {
@@ -187,7 +182,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {data.roleLinks.length > 1 ? <NavMain items={data.roleLinks} /> : null}
+        <NavMain items={data.roleLinks} />
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} label={dictionary.community} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
