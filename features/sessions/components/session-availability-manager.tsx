@@ -61,6 +61,7 @@ type SessionAvailabilityManagerProps = {
     addSlot: string;
     slotTime: string;
     emptyDaySlots: string;
+    closeDetails: string;
     repeat: string;
     repeatNone: string;
     repeatDaily: string;

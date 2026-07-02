@@ -218,7 +218,7 @@ export function PractitionerDashboard({
                       <CardDescription>{dictionary.pendingRequests}</CardDescription>
                     </div>
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/${locale}/dashboard/sessions`}>{dictionary.viewAll}</Link>
+                      <Link href={`/${locale}/dashboard/sessions?tab=requests`}>{dictionary.viewAll}</Link>
                     </Button>
                   </CardHeader>
                   <CardContent>

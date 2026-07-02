@@ -288,6 +288,7 @@
     "addSlot": "Add slot",
     "slotTime": "Slot time",
     "emptyDaySlots": "No slots on this day.",
+    "closeDetails": "Close details",
     "repeat": "Repeat",
     "repeatNone": "Does not repeat",
     "repeatDaily": "Every day",

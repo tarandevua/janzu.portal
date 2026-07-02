@@ -288,6 +288,7 @@
     "addSlot": "Agregar horario",
     "slotTime": "Hora del horario",
     "emptyDaySlots": "No hay horarios en este dia.",
+    "closeDetails": "Cerrar detalles",
     "repeat": "Repetir",
     "repeatNone": "No se repite",
     "repeatDaily": "Cada dia",

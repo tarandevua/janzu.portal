@@ -22,6 +22,15 @@ import type { Locale } from "@/lib/i18n/config";
 import type { SessionAvailabilitySlot } from "@/server/models/session-availability.model";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -57,6 +66,7 @@ type SessionAvailabilityCalendarProps = {
     duration: string;
     cancelSlot: string;
     emptyDaySlots: string;
+    closeDetails: string;
     booked: string;
     available: string;
     cancelled: string;
@@ -147,6 +157,7 @@ export function SessionAvailabilityCalendar({
   const [cursorDate, setCursorDate] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [selectedTime, setSelectedTime] = useState("09:00");
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const slotsByDay = useMemo(() => {
     const map = new Map<string, SessionAvailabilitySlot[]>();
 
@@ -209,6 +220,7 @@ export function SessionAvailabilityCalendar({
   function selectDate(date: Date, time = selectedTime) {
     setSelectedDate(date);
     setSelectedTime(time);
+    setIsDetailsOpen(true);
 
     if (view === "day") {
       setCursorDate(date);
@@ -406,109 +418,135 @@ export function SessionAvailabilityCalendar({
         </div>
       ) : null}
 
-      <div className="grid gap-4 rounded-md border p-4 lg:grid-cols-[1fr_1fr]">
-        <div className="grid gap-3">
-          <h3 className="text-sm font-semibold">
-            {dictionary.selectedDay}: {format(selectedDate, "PPP")}
-          </h3>
-          <form onSubmit={handleCreateSubmit} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_8rem_12rem_8rem_auto] xl:items-end">
-            <input type="hidden" name="startsAt" value={selectedStartsAt} readOnly />
-            <div className="grid gap-2">
-              <Label htmlFor="calendarSlotTime">{dictionary.slotTime}</Label>
-              <Input
-                id="calendarSlotTime"
-                type="time"
-                value={selectedTime}
-                onChange={(event) => setSelectedTime(event.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="calendarSlotDuration">{dictionary.duration}</Label>
-              <Input
-                id="calendarSlotDuration"
-                name="durationMinutes"
-                type="number"
-                min="15"
-                max="480"
-                step="15"
-                defaultValue="60"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="calendarSlotRepeat">{dictionary.repeat}</Label>
-              <Select name="repeat" defaultValue="none">
-                <SelectTrigger id="calendarSlotRepeat">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{dictionary.repeatNone}</SelectItem>
-                  <SelectItem value="daily">{dictionary.repeatDaily}</SelectItem>
-                  <SelectItem value="weekly">{dictionary.repeatWeekly}</SelectItem>
-                  <SelectItem value="biweekly">{dictionary.repeatBiweekly}</SelectItem>
-                  <SelectItem value="monthly">{dictionary.repeatMonthly}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="calendarSlotRepeatCount">{dictionary.repeatCount}</Label>
-              <Input
-                id="calendarSlotRepeatCount"
-                name="repeatCount"
-                type="number"
-                min="1"
-                max="52"
-                defaultValue="8"
-                required
-              />
-            </div>
-            <Button type="submit" disabled={isPending}>
-              <CalendarPlusIcon className="h-4 w-4" />
-              {dictionary.addSlot}
-            </Button>
-          </form>
-        </div>
-        <div className="grid gap-3">
-          <h3 className="text-sm font-semibold">{dictionary.calendarView}</h3>
-          {selectedDaySlots.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{dictionary.emptyDaySlots}</p>
-          ) : (
-            <div className="grid gap-2">
-              {selectedDaySlots.map((slot) => (
-                <div key={slot.id} className="flex items-center justify-between gap-3 rounded-md border p-2">
-                  <div className="grid gap-1">
-                    <span className="text-sm font-medium">{formatSlotTime(slot, locale)}</span>
-                    <Badge className="w-fit" variant={slot.status === "available" ? "secondary" : "outline"}>
-                      {getStatusLabel(slot.status, dictionary)}
-                    </Badge>
+      <Drawer direction="right" open={isDetailsOpen} onOpenChange={setIsDetailsOpen} handleOnly>
+        <DrawerContent className="inset-x-auto bottom-0 left-auto right-0 top-0 mt-0 flex h-[100dvh] max-h-[100dvh] w-[min(100vw,36rem)] max-w-[100vw] overflow-hidden rounded-none border-l">
+          <DrawerHeader className="relative shrink-0 border-b pr-14 text-left">
+            <DrawerTitle>{dictionary.selectedDay}</DrawerTitle>
+            <DrawerDescription>{format(selectedDate, "PPP")}</DrawerDescription>
+            <DrawerClose asChild>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="absolute right-3 top-3 h-8 w-8"
+              >
+                <XIcon className="h-4 w-4" />
+                <span className="sr-only">{dictionary.closeDetails}</span>
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
+          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
+            <div className="grid gap-6">
+              <section className="grid gap-3">
+                <h3 className="text-sm font-semibold">{dictionary.addSlot}</h3>
+                <form onSubmit={handleCreateSubmit} className="grid gap-3">
+                  <input type="hidden" name="startsAt" value={selectedStartsAt} readOnly />
+                  <div className="grid gap-2">
+                    <Label htmlFor="calendarSlotTime">{dictionary.slotTime}</Label>
+                    <Input
+                      id="calendarSlotTime"
+                      type="time"
+                      value={selectedTime}
+                      onChange={(event) => setSelectedTime(event.target.value)}
+                      required
+                    />
                   </div>
-                  {slot.status === "available" ? (
-                    <div className="flex flex-wrap justify-end gap-2">
-                      <form onSubmit={handleCancelSubmit}>
-                        <input type="hidden" name="slotId" value={slot.id} />
-                        <Button type="submit" size="sm" variant="outline" disabled={isPending}>
-                          <XIcon className="h-4 w-4" />
-                          {dictionary.cancelSlot}
-                        </Button>
-                      </form>
-                      {slot.recurrenceGroupId ? (
-                        <form onSubmit={handleCancelSeriesSubmit}>
-                          <input type="hidden" name="recurrenceGroupId" value={slot.recurrenceGroupId} />
-                          <Button type="submit" size="sm" variant="outline" disabled={isPending}>
-                            <XIcon className="h-4 w-4" />
-                            {dictionary.cancelSeries}
-                          </Button>
-                        </form>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              ))}
+                  <div className="grid gap-2">
+                    <Label htmlFor="calendarSlotDuration">{dictionary.duration}</Label>
+                    <Input
+                      id="calendarSlotDuration"
+                      name="durationMinutes"
+                      type="number"
+                      min="15"
+                      max="480"
+                      step="15"
+                      defaultValue="60"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="calendarSlotRepeat">{dictionary.repeat}</Label>
+                    <Select name="repeat" defaultValue="none">
+                      <SelectTrigger id="calendarSlotRepeat">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{dictionary.repeatNone}</SelectItem>
+                        <SelectItem value="daily">{dictionary.repeatDaily}</SelectItem>
+                        <SelectItem value="weekly">{dictionary.repeatWeekly}</SelectItem>
+                        <SelectItem value="biweekly">{dictionary.repeatBiweekly}</SelectItem>
+                        <SelectItem value="monthly">{dictionary.repeatMonthly}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="calendarSlotRepeatCount">{dictionary.repeatCount}</Label>
+                    <Input
+                      id="calendarSlotRepeatCount"
+                      name="repeatCount"
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="8"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" disabled={isPending}>
+                    <CalendarPlusIcon className="h-4 w-4" />
+                    {dictionary.addSlot}
+                  </Button>
+                </form>
+              </section>
+              <section className="grid gap-3">
+                <h3 className="text-sm font-semibold">{dictionary.calendarView}</h3>
+                {selectedDaySlots.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{dictionary.emptyDaySlots}</p>
+                ) : (
+                  <div className="grid gap-2">
+                    {selectedDaySlots.map((slot) => (
+                      <div key={slot.id} className="grid gap-3 rounded-md border p-3">
+                        <div className="grid gap-1">
+                          <span className="text-sm font-medium">{formatSlotTime(slot, locale)}</span>
+                          <Badge className="w-fit" variant={slot.status === "available" ? "secondary" : "outline"}>
+                            {getStatusLabel(slot.status, dictionary)}
+                          </Badge>
+                        </div>
+                        {slot.status === "available" ? (
+                          <div className="flex flex-wrap gap-2">
+                            <form onSubmit={handleCancelSubmit}>
+                              <input type="hidden" name="slotId" value={slot.id} />
+                              <Button type="submit" size="sm" variant="outline" disabled={isPending}>
+                                <XIcon className="h-4 w-4" />
+                                {dictionary.cancelSlot}
+                              </Button>
+                            </form>
+                            {slot.recurrenceGroupId ? (
+                              <form onSubmit={handleCancelSeriesSubmit}>
+                                <input type="hidden" name="recurrenceGroupId" value={slot.recurrenceGroupId} />
+                                <Button type="submit" size="sm" variant="outline" disabled={isPending}>
+                                  <XIcon className="h-4 w-4" />
+                                  {dictionary.cancelSeries}
+                                </Button>
+                              </form>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+          <DrawerFooter className="shrink-0 border-t bg-background">
+            <DrawerClose asChild>
+              <Button type="button" variant="outline" className="w-full">
+                {dictionary.closeDetails}
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
