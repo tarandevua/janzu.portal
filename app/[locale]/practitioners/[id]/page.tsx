@@ -53,19 +53,19 @@ export default async function PractitionerPublicProfilePage({
     profile,
     dictionary.practitioners.public.unknownCity
   );
-  const marker: MapMarker[] = hasValidCoordinates(profile)
-    ? [
-        {
-          id: profile.id,
-          kind: "practitioner",
-          title: practitionerName,
-          description: profile.bio,
-          latitude: profile.latitude,
-          longitude: profile.longitude,
-          meta: [profile.country, profile.city].filter(Boolean).join(", "),
-        },
-      ]
-    : [];
+  const marker: MapMarker[] = profile.practiceLocations.filter(hasValidCoordinates).map((location, index) => ({
+    id: `${profile.id}-${index}`,
+    kind: "practitioner",
+    practitionerGroup: profile.publicGroup,
+    title: practitionerName,
+    description: profile.bio,
+    imageUrl: profile.profileImageUrl,
+    fallbackText: getAvatarFallback(practitionerName),
+    note: location.note,
+    latitude: location.latitude,
+    longitude: location.longitude,
+    meta: [profile.country, profile.city].filter(Boolean).join(", "),
+  }));
   const availableSlots = await listPublicAvailableSlotsByPractitionerId(supabase, profile.id);
 
   return (
@@ -82,7 +82,7 @@ export default async function PractitionerPublicProfilePage({
         <Card>
           <CardHeader>
             <div className="flex items-start gap-4">
-              <Avatar className="h-16 w-16 rounded-lg">
+              <Avatar className="h-16 w-16 shrink-0 rounded-lg">
                 <AvatarImage src={profile.profileImageUrl ?? ""} alt={practitionerName} />
                 <AvatarFallback className="rounded-lg">
                   {getAvatarFallback(practitionerName)}
@@ -93,6 +93,9 @@ export default async function PractitionerPublicProfilePage({
                 <p className="mt-1 text-sm text-muted-foreground">
                   {[profile.country, profile.city].filter(Boolean).join(", ")}
                 </p>
+                <Badge variant="secondary" className="mt-2">
+                  {dictionary.practitioners.public[`${profile.publicGroup}Pin`]}
+                </Badge>
               </div>
             </div>
           </CardHeader>

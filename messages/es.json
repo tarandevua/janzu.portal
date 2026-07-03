@@ -43,6 +43,10 @@
       "practitioner": {
         "title": "Panel de practicante",
         "description": "Gestiona tu perfil, clientes privados, sesiones, feedback y progreso de certificacion."
+      },
+      "apprentice": {
+        "title": "Panel de aprendiz",
+        "description": "Inicia tu recorrido en el portal Janzu y prepara tu perfil."
       }
     },
     "sidebar": {
@@ -50,7 +54,8 @@
         "admin": "Administrador",
         "manager": "Gestion",
         "facilitator": "Facilitador",
-        "practitioner": "Practicante"
+        "practitioner": "Practicante",
+        "apprentice": "Aprendiz"
       },
       "dashboard": "Panel",
       "users": "Usuarios",
@@ -98,6 +103,39 @@
       "requestFrom": "Solicitud de",
       "rating": "Calificacion",
       "certificationRequired": "requeridas"
+    },
+    "apprenticeData": {
+      "profileReadiness": "Preparacion del perfil",
+      "profileReadinessDescription": "Completa los datos del perfil que ayudan a la comunidad a entender tu camino en Janzu.",
+      "profileFields": "campos de perfil completados",
+      "editProfile": "Editar perfil",
+      "certificationProgress": "Progreso de certificacion",
+      "validatedSessions": "Sesiones validadas",
+      "totalSessions": "sesiones totales",
+      "certificationRequired": "requeridas",
+      "submittedLocations": "Ubicaciones enviadas",
+      "approvedLocations": "aprobadas",
+      "pendingLocations": "Ubicaciones pendientes",
+      "upcomingEvents": "Eventos proximos",
+      "rsvps": "RSVP",
+      "unreadNotifications": "Notificaciones sin leer",
+      "recentLocations": "Ubicaciones recientes",
+      "recentLocationsDescription": "Ultimas ubicaciones de agua conectadas a tu perfil.",
+      "communityEvents": "Eventos comunitarios",
+      "communityEventsDescription": "Proximos eventos publicos y encuentros.",
+      "recentNotifications": "Notificaciones recientes",
+      "recentNotificationsDescription": "Ultimas actualizaciones para tu cuenta.",
+      "viewAll": "Ver todo",
+      "emptyLocations": "Aun no has enviado ubicaciones.",
+      "emptyEvents": "No hay eventos proximos disponibles.",
+      "emptyNotifications": "Aun no hay notificaciones.",
+      "name": "Nombre",
+      "status": "Estado",
+      "date": "Fecha",
+      "location": "Ubicacion",
+      "publicProfile": "Perfil publico",
+      "privateProfile": "Perfil privado",
+      "notStarted": "Crea tu perfil para empezar a seguir tu progreso."
     },
     "adminData": {
       "users": "Usuarios",
@@ -178,10 +216,12 @@
       "city": "Ciudad",
       "latitude": "Latitud",
       "longitude": "Longitud",
-      "mapPickerTitle": "Coloca tu pin de practicante en el mapa",
-      "mapPickerDescription": "Haz clic en el area publica exacta de practica para tu perfil. La latitud y longitud se tomaran del pin.",
+      "mapPickerTitle": "Coloca tus pines de practica en el mapa",
+      "mapPickerDescription": "Haz clic en cada area publica de practica que quieres agregar a tu perfil. Puedes agregar mas de un pin y arrastrar cualquier pin para ajustarlo.",
       "selectedCoordinates": "Coordenadas seleccionadas",
-      "noCoordinatesSelected": "Aun no has seleccionado un pin de practicante.",
+      "noCoordinatesSelected": "Aun no has seleccionado pines de practica.",
+      "removeLocation": "Eliminar ubicacion",
+      "locationNotePlaceholder": "Nota opcional para esta ubicacion de practica",
       "languages": "Idiomas",
       "website": "Sitio web",
       "profileImageUrl": "URL de imagen de perfil",
@@ -204,7 +244,13 @@
       "unknownCity": "Practicante de Janzu",
       "profileTitle": "Perfil de practicante",
       "emptyMap": "Aun no hay coordenadas publicas de practicantes disponibles.",
-      "backToList": "Volver a practicantes"
+      "backToPortal": "Volver al portal",
+      "backToList": "Volver a practicantes",
+      "apprenticePin": "Aprendiz",
+      "participantPin": "Profesional certificado",
+      "facilitatorPin": "Facilitador",
+      "emptyGroup": "Aun no hay perfiles publicos disponibles en este grupo.",
+      "viewDetails": "Ver detalles"
     }
   },
   "clients": {
@@ -300,7 +346,7 @@
   },
   "feedback": {
     "title": "Feedback de sesion",
-    "description": "Tu feedback ayuda a validar esta sesion de Janzu.",
+    "description": "Gracias por tomarte un minuto para compartir tu retroalimentación sobre tu sesión Janzu. Por favor escribe el nombre del facilitador que te dió la sesion exactamente cómo te fue proporcionado y sé lo más sincera(o) posible en tus respuestas. Muchas Gracias!",
     "rating": "Calificacion general de la sesion",
     "feltInFacilitatorArms": "Como te sentiste en los brazos de tu facilitador?",
     "experienceText": "Experiencia general de tu sesion de Janzu",
@@ -403,6 +449,7 @@
     "reviewDescription": "Revisa ubicaciones de agua enviadas antes de que aparezcan publicamente.",
     "publicTitle": "Ubicaciones de agua Janzu",
     "publicDescription": "Explora piscinas, spas y ubicaciones de agua natural aprobadas por la comunidad Janzu.",
+    "backToPortal": "Volver al portal",
     "name": "Nombre",
     "type": "Tipo",
     "pool": "Piscina",
@@ -475,6 +522,7 @@
     "listDescription": "Registros de eventos para administracion y gestion con capacidad de RSVP.",
     "publicTitle": "Eventos Janzu",
     "publicDescription": "Explora proximos retiros, formaciones y encuentros comunitarios.",
+    "backToPortal": "Volver al portal",
     "titleLabel": "Titulo",
     "description": "Descripcion",
     "type": "Tipo",
@@ -551,7 +599,7 @@
   },
   "userManagement": {
     "title": "Gestion de usuarios",
-    "description": "Gestiona usuarios del portal y asignaciones de roles. Gestion puede asignar roles de practicante y facilitador; administracion puede gestionar todos los roles.",
+    "description": "Gestiona usuarios del portal y asignaciones de roles. Gestion puede asignar roles de aprendiz, practicante y facilitador; administracion puede gestionar todos los roles.",
     "inviteTitle": "Invitar usuario",
     "inviteDescription": "Crea o encuentra un usuario, asigna un rol inicial y envia una invitacion por Brevo.",
     "authSettingsTitle": "Configuracion de autenticacion",
@@ -619,7 +667,8 @@
       "admin": "Admin",
       "manager": "Gestion",
       "facilitator": "Facilitador",
-      "practitioner": "Practicante"
+      "practitioner": "Practicante",
+      "apprentice": "Aprendiz"
     }
   },
   "settings": {

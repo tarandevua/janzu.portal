@@ -15,6 +15,7 @@ import {
 import type { Database } from "@/types/database";
 import {
   parseLanguages,
+  parsePracticeLocations,
   practitionerProfileSchema,
 } from "@/server/validators/practitioner.schema";
 
@@ -28,14 +29,35 @@ type FullNameRpcClient = {
   ): Promise<{ error: { message: string } | null }>;
 };
 
-export async function savePractitionerProfile(locale: Locale, formData: FormData) {
+export type PractitionerProfileActionResult =
+  | {
+      ok: true;
+      status: "saved";
+    }
+  | {
+      ok: false;
+      status:
+        | "auth-required"
+        | "invalid"
+        | "avatar-type"
+        | "avatar-size"
+        | "avatar-config"
+        | "avatar-auth"
+        | "avatar-bucket"
+        | "avatar-upload";
+    };
+
+export async function savePractitionerProfileInline(
+  locale: Locale,
+  formData: FormData
+): Promise<PractitionerProfileActionResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/${locale}/login?status=auth-required`);
+    return { ok: false, status: "auth-required" };
   }
 
   const currentProfile = await getMyPractitionerProfile(supabase, user.id);
@@ -50,19 +72,22 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
     const upload = await uploadPractitionerAvatar(user.id, avatarFile);
 
     if (!upload.ok) {
-      redirect(`/${locale}/dashboard/profile?status=${upload.code}`);
+      return { ok: false, status: upload.code };
     }
 
     profileImageUrl = upload.url;
   }
 
+  const practiceLocations = parsePracticeLocations(formData.get("practiceLocations"));
+  const primaryLocation = practiceLocations[0] ?? null;
   const parsed = practitionerProfileSchema.safeParse({
     fullName: formData.get("fullName"),
     bio: formData.get("bio"),
     country: formData.get("country"),
     city: formData.get("city"),
-    latitude: formData.get("latitude"),
-    longitude: formData.get("longitude"),
+    latitude: primaryLocation?.latitude ?? null,
+    longitude: primaryLocation?.longitude ?? null,
+    practiceLocations,
     languages: parseLanguages(formData.get("languages")),
     website: formData.get("website"),
     profileImageUrl,
@@ -70,7 +95,7 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/profile?status=invalid`);
+    return { ok: false, status: "invalid" };
   }
 
   const fullName = parsed.data.fullName ?? null;
@@ -89,12 +114,26 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
   });
 
   if (userUpdateError) {
-    redirect(`/${locale}/dashboard/profile?status=invalid`);
+    return { ok: false, status: "invalid" };
   }
 
   await saveMyPractitionerProfile(supabase, user.id, parsed.data);
 
   revalidatePath(`/${locale}/dashboard/profile`);
   revalidatePath(`/${locale}/practitioners`);
+  return { ok: true, status: "saved" };
+}
+
+export async function savePractitionerProfile(locale: Locale, formData: FormData) {
+  const result = await savePractitionerProfileInline(locale, formData);
+
+  if (result.status === "auth-required") {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+
+  if (!result.ok) {
+    redirect(`/${locale}/dashboard/profile?status=${result.status}`);
+  }
+
   redirect(`/${locale}/dashboard/profile?status=saved`);
 }

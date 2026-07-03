@@ -12,7 +12,7 @@ as $$
     public.user_has_role(actor_user_id, 'admin')
     or (
       public.user_has_role(actor_user_id, 'manager')
-      and target_role in ('facilitator', 'practitioner')
+      and target_role in ('facilitator', 'practitioner', 'apprentice')
     );
 $$;
 

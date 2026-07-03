@@ -1,4 +1,5 @@
-import { StarIcon } from "lucide-react";
+import Link from "next/link";
+import { Shell, StarIcon } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { LocationWithMedia } from "@/server/models/location.model";
 import {
@@ -26,6 +27,7 @@ type PublicLocationListProps = {
   dictionary: {
     publicTitle: string;
     publicDescription: string;
+    backToPortal: string;
     emptyPublic: string;
     pool: string;
     spa: string;
@@ -124,7 +126,17 @@ export function PublicLocationList({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
+        {canReview ? (
+          <Button asChild variant="ghost" className="w-fit">
+            <Link href={`/${locale}`}>
+              <Shell className="h-5 w-5" />
+              <span className="text-base font-semibold">Janzu Portal</span>
+            </Link>
+          </Button>
+        ) : null}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
+        </div>
         <p className="max-w-3xl text-muted-foreground">{dictionary.publicDescription}</p>
       </div>
 

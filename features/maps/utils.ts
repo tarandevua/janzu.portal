@@ -53,15 +53,36 @@ export function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
+function truncateText(value: string, maxLength: number) {
+  const normalized = value.trim().replace(/\s+/g, " ");
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength).trimEnd()}...`;
+}
+
 export function createMarkerPopupHtml(marker: MapMarker) {
   const title = escapeHtml(marker.title);
-  const description = marker.description ? escapeHtml(marker.description) : "";
+  const description = marker.description ? escapeHtml(truncateText(marker.description, 150)) : "";
+  const note = marker.note ? escapeHtml(truncateText(marker.note, 120)) : "";
   const meta = marker.meta ? escapeHtml(marker.meta) : "";
+  const fallbackText = escapeHtml(marker.fallbackText ?? marker.title.slice(0, 2).toUpperCase());
+  const avatar = marker.imageUrl
+    ? `<img class="janzu-map-popup-avatar" src="${escapeHtml(marker.imageUrl)}" alt="${title}" loading="lazy" />`
+    : `<span class="janzu-map-popup-avatar fallback">${fallbackText}</span>`;
 
   return `
     <div class="janzu-map-popup">
-      <strong>${title}</strong>
-      ${meta ? `<span>${meta}</span>` : ""}
+      <div class="janzu-map-popup-header">
+        ${avatar}
+        <div>
+          <strong>${title}</strong>
+          ${meta ? `<span>${meta}</span>` : ""}
+        </div>
+      </div>
+      ${note ? `<p>${note}</p>` : ""}
       ${description ? `<p>${description}</p>` : ""}
       ${marker.href ? `<a href="${escapeHtml(marker.href)}">View details</a>` : ""}
     </div>

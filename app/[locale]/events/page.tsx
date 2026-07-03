@@ -22,6 +22,7 @@ export default async function PublicEventsPage({ params, searchParams }: PublicE
     <PublicEventList
       locale={locale}
       events={events}
+      isSignedIn={Boolean(data.user)}
       status={status}
       dictionary={dictionary.events}
     />

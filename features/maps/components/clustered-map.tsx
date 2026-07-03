@@ -23,6 +23,30 @@ type LeafletModule = typeof import("leaflet") & {
   default?: typeof import("leaflet");
 };
 
+function getMarkerClassName(marker: MapMarker) {
+  if (marker.kind === "location") {
+    return "janzu-map-marker location";
+  }
+
+  return `janzu-map-marker practitioner ${marker.practitionerGroup ?? "apprentice"}`;
+}
+
+function getMarkerLabel(marker: MapMarker) {
+  if (marker.kind === "location") {
+    return "L";
+  }
+
+  if (marker.practitionerGroup === "facilitator") {
+    return "F";
+  }
+
+  if (marker.practitionerGroup === "participant") {
+    return "P";
+  }
+
+  return "A";
+}
+
 export function ClusteredMap({ markers, emptyText, className }: ClusteredMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -70,11 +94,9 @@ export function ClusteredMap({ markers, emptyText, className }: ClusteredMapProp
       const bounds: [number, number][] = [];
 
       markers.forEach((marker) => {
-        const className =
-          marker.kind === "location" ? "janzu-map-marker location" : "janzu-map-marker practitioner";
         const icon = L.divIcon({
-          className,
-          html: `<span>${marker.kind === "location" ? "L" : "P"}</span>`,
+          className: getMarkerClassName(marker),
+          html: `<span>${getMarkerLabel(marker)}</span>`,
           iconSize: [32, 32],
           iconAnchor: [16, 16],
         });

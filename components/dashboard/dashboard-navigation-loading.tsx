@@ -30,7 +30,7 @@ function normalizePath(href: string) {
   }
 }
 
-type DashboardSkeletonVariant = "generic" | "practitioner";
+type DashboardSkeletonVariant = "generic" | "practitioner" | "apprentice";
 
 function StatCardSkeleton() {
   return (
@@ -114,9 +114,50 @@ function PractitionerDashboardSkeleton() {
   );
 }
 
+function ApprenticeDashboardSkeleton() {
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <Card>
+          <CardHeader className="flex-row items-start justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-44" />
+              <Skeleton className="h-4 w-full max-w-md" />
+            </div>
+            <Skeleton className="h-9 w-24" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-4 w-44" />
+          </CardContent>
+        </Card>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <StatCardSkeleton key={index} />
+          ))}
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <StatCardSkeleton key={index} />
+          ))}
+        </div>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <TableCardSkeleton columns={2} />
+          <TableCardSkeleton columns={3} />
+        </div>
+        <TableCardSkeleton rows={4} columns={2} />
+      </div>
+    </div>
+  );
+}
+
 function DashboardPageSkeleton({ variant }: { variant: DashboardSkeletonVariant }) {
   if (variant === "practitioner") {
     return <PractitionerDashboardSkeleton />;
+  }
+
+  if (variant === "apprentice") {
+    return <ApprenticeDashboardSkeleton />;
   }
 
   return (
@@ -172,7 +213,13 @@ export function DashboardNavigationLoadingProvider({ children }: { children: Rea
       const nextPath = normalizePath(href);
 
       if (nextPath !== pathname) {
-        setSkeletonVariant(nextPath.endsWith("/dashboard/practitioner") ? "practitioner" : "generic");
+        if (nextPath.endsWith("/dashboard/practitioner")) {
+          setSkeletonVariant("practitioner");
+        } else if (nextPath.endsWith("/dashboard/apprentice")) {
+          setSkeletonVariant("apprentice");
+        } else {
+          setSkeletonVariant("generic");
+        }
         setIsLoading(true);
       }
     },

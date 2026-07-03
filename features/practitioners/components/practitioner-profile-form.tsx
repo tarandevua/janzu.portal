@@ -1,8 +1,15 @@
+"use client";
+
+import { useEffect, useRef, useTransition, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import type { Locale } from "@/lib/i18n/config";
 import type { PractitionerProfile } from "@/server/models/practitioner.model";
-import { savePractitionerProfile } from "@/features/practitioners/actions";
-import { CoordinatePicker } from "@/features/maps/components/coordinate-picker";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  savePractitionerProfileInline,
+  type PractitionerProfileActionResult,
+} from "@/features/practitioners/actions";
+import { MultiCoordinatePicker } from "@/features/maps/components/multi-coordinate-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +34,8 @@ type PractitionerProfileFormProps = {
     mapPickerDescription: string;
     selectedCoordinates: string;
     noCoordinatesSelected: string;
+    removeLocation: string;
+    locationNotePlaceholder: string;
     languages: string;
     website: string;
     profileImageUrl: string;
@@ -47,6 +56,7 @@ type PractitionerProfileFormProps = {
 
 const statusMessages = {
   saved: "saved",
+  "auth-required": "invalid",
   invalid: "invalid",
   "avatar-type": "avatarType",
   "avatar-size": "avatarSize",
@@ -55,6 +65,15 @@ const statusMessages = {
   "avatar-bucket": "avatarBucket",
   "avatar-upload": "avatarUpload",
 } as const;
+
+function getStatusMessage(
+  dictionary: PractitionerProfileFormProps["dictionary"],
+  statusValue: PractitionerProfileActionResult["status"] | string
+) {
+  const messageKey = statusMessages[statusValue as keyof typeof statusMessages] ?? "invalid";
+
+  return dictionary[messageKey];
+}
 
 function getAvatarFallback(fullName: string) {
   const words = fullName.trim().split(/\s+/).filter(Boolean);
@@ -73,11 +92,49 @@ export function PractitionerProfileForm({
   dictionary,
   status,
 }: PractitionerProfileFormProps) {
-  const action = savePractitionerProfile.bind(null, locale);
-  const messageKey = status ? statusMessages[status as keyof typeof statusMessages] : null;
-  const message = messageKey ? dictionary[messageKey] : null;
-  const isError = status !== "saved";
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const message = status ? getStatusMessage(dictionary, status) : null;
   const avatarFallback = getAvatarFallback(fullName);
+
+  useEffect(() => {
+    if (!message) {
+      return;
+    }
+
+    if (status === "saved") {
+      toast.success(message);
+      return;
+    }
+
+    toast.error(message);
+  }, [message, status]);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = formRef.current;
+
+    if (!form) {
+      return;
+    }
+
+    const formData = new FormData(form);
+
+    startTransition(() => {
+      void savePractitionerProfileInline(locale, formData).then((result) => {
+        const nextMessage = getStatusMessage(dictionary, result.status);
+
+        if (result.ok) {
+          toast.success(nextMessage);
+          router.refresh();
+          return;
+        }
+
+        toast.error(nextMessage);
+      });
+    });
+  }
 
   return (
     <Card>
@@ -86,13 +143,7 @@ export function PractitionerProfileForm({
         <CardDescription>{dictionary.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={action} encType="multipart/form-data" className="grid gap-5">
-          {message ? (
-            <Alert variant={isError ? "destructive" : "default"}>
-              <AlertDescription>{message}</AlertDescription>
-            </Alert>
-          ) : null}
-
+        <form ref={formRef} onSubmit={handleSubmit} encType="multipart/form-data" className="grid gap-5">
           <div className="grid gap-2">
             <Label htmlFor="fullName">{dictionary.fullName}</Label>
             <Input id="fullName" name="fullName" defaultValue={fullName} />
@@ -114,10 +165,10 @@ export function PractitionerProfileForm({
             </div>
           </div>
 
-          <CoordinatePicker
-            defaultLatitude={profile?.latitude}
-            defaultLongitude={profile?.longitude}
-            markerLabel="P"
+          <MultiCoordinatePicker
+            name="practiceLocations"
+            defaultLocations={profile?.practiceLocations ?? []}
+            markerGroup={profile?.publicGroup ?? "apprentice"}
             dictionary={dictionary}
           />
 
@@ -134,8 +185,8 @@ export function PractitionerProfileForm({
             <div className="grid gap-2">
               <Label htmlFor="avatarImage">{dictionary.profileImageUpload}</Label>
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 rounded-lg">
-                  <AvatarImage src={profile?.profileImageUrl ?? ""} alt={fullName} />
+                <Avatar className="h-12 w-12 shrink-0 rounded-lg">
+                  <AvatarImage src={profile?.profileImageUrl ?? ""} alt={fullName} className="object-cover" />
                   <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 gap-1">
@@ -160,7 +211,7 @@ export function PractitionerProfileForm({
             </div>
           </div>
 
-          <Button type="submit" className="w-fit">
+          <Button type="submit" className="w-fit" disabled={isPending}>
             {dictionary.save}
           </Button>
         </form>

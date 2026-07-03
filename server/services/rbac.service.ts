@@ -21,6 +21,11 @@ export const roleAccess: Record<Role, Omit<RoleAccess, "role">> = {
     label: "Practitioner",
     dashboardPath: "practitioner",
     permissions: ["clients:manage", "profile:manage"]
+  },
+  apprentice: {
+    label: "Apprentice",
+    dashboardPath: "apprentice",
+    permissions: ["profile:manage"]
   }
 };
 
@@ -63,7 +68,7 @@ export function hasPermission(userRoles: Role[], permission: RolePermission) {
 
 export function canManageUserRole(actorRoles: Role[], targetRole: Role) {
   return hasRole(actorRoles, "admin")
-    || (hasRole(actorRoles, "manager") && ["facilitator", "practitioner"].includes(targetRole));
+    || (hasRole(actorRoles, "manager") && ["facilitator", "practitioner", "apprentice"].includes(targetRole));
 }
 
 export function canAccessDashboard(userRoles: Role[], dashboardRole: Role) {

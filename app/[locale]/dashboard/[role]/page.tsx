@@ -1,6 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import type { Route } from "next";
 import { Suspense } from "react";
+import {
+  ApprenticeDashboardContent,
+  ApprenticeDashboardSkeleton,
+} from "@/components/dashboard/apprentice-dashboard";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { FacilitatorDashboard } from "@/components/dashboard/facilitator-dashboard";
 import { JanzuDashboardBlock } from "@/components/dashboard/janzu-dashboard-block";
@@ -13,6 +17,7 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
+import { getApprenticeDashboardData } from "@/server/services/apprentice-dashboard.service";
 import { getAdminDashboardData } from "@/server/services/admin-dashboard.service";
 import { getFacilitatorDashboardData } from "@/server/services/facilitator-dashboard.service";
 import { getPractitionerDashboardData } from "@/server/services/practitioner-dashboard.service";
@@ -55,6 +60,28 @@ async function PractitionerDashboardContentLoader({
     <PractitionerDashboardContent
       locale={locale}
       user={user}
+      data={dashboardData}
+      dictionary={dictionary}
+    />
+  );
+}
+
+async function ApprenticeDashboardContentLoader({
+  supabase,
+  userId,
+  locale,
+  dictionary,
+}: {
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+  userId: string;
+  locale: Locale;
+  dictionary: Parameters<typeof ApprenticeDashboardContent>[0]["dictionary"];
+}) {
+  const dashboardData = await getApprenticeDashboardData(supabase, userId);
+
+  return (
+    <ApprenticeDashboardContent
+      locale={locale}
       data={dashboardData}
       dictionary={dictionary}
     />
@@ -114,6 +141,26 @@ export default async function RoleDashboardPage({ params }: RoleDashboardPagePro
             locale={locale}
             user={user}
             dictionary={dictionary.dashboard.practitionerData}
+          />
+        </Suspense>
+      </JanzuDashboardFrame>
+    );
+  }
+
+  if (role === "apprentice") {
+    return (
+      <JanzuDashboardFrame
+        locale={locale}
+        access={access}
+        user={user}
+        title={roleDictionary.title}
+      >
+        <Suspense fallback={<ApprenticeDashboardSkeleton />}>
+          <ApprenticeDashboardContentLoader
+            supabase={supabase}
+            userId={data.user.id}
+            locale={locale}
+            dictionary={dictionary.dashboard.apprenticeData}
           />
         </Suspense>
       </JanzuDashboardFrame>

@@ -4,7 +4,8 @@ create type public.app_role as enum (
   'admin',
   'manager',
   'facilitator',
-  'practitioner'
+  'practitioner',
+  'apprentice'
 );
 
 create table public.users (
@@ -40,7 +41,8 @@ values
   ('admin', 'Full platform administration access.'),
   ('manager', 'Operational management access.'),
   ('facilitator', 'Session facilitation access.'),
-  ('practitioner', 'Practitioner dashboard and private client access.')
+  ('practitioner', 'Practitioner dashboard and private client access.'),
+  ('apprentice', 'Default apprentice portal access.')
 on conflict (name) do nothing;
 
 create or replace function public.set_updated_at()
@@ -78,7 +80,7 @@ begin
   insert into public.user_roles (user_id, role_id)
   select new.id, roles.id
   from public.roles
-  where roles.name = 'practitioner'
+  where roles.name = 'apprentice'
   on conflict do nothing;
 
   return new;
@@ -104,7 +106,12 @@ insert into public.user_roles (user_id, role_id)
 select users.id, roles.id
 from public.users
 cross join public.roles
-where roles.name = 'practitioner'
+where roles.name = 'apprentice'
+  and not exists (
+    select 1
+    from public.user_roles
+    where user_roles.user_id = users.id
+  )
 on conflict do nothing;
 
 create or replace function public.user_has_role(target_user_id uuid, role_name public.app_role)

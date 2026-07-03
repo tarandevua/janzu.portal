@@ -60,18 +60,56 @@
     background: hsl(var(--primary));
   }
 
+  .janzu-map-marker.practitioner.apprentice {
+    background: #d97706;
+  }
+
+  .janzu-map-marker.practitioner.participant {
+    background: hsl(var(--primary));
+  }
+
+  .janzu-map-marker.practitioner.facilitator {
+    background: #4f46e5;
+  }
+
   .janzu-map-marker.location {
     background: #a0442c;
   }
 
   .janzu-map-popup {
     display: grid;
-    gap: 0.25rem;
-    min-width: 10rem;
+    gap: 0.5rem;
+    max-width: 16rem;
+    min-width: 12rem;
+  }
+
+  .janzu-map-popup-header {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .janzu-map-popup-avatar {
+    border-radius: 0.5rem;
+    flex: 0 0 auto;
+    height: 2.25rem;
+    object-fit: cover;
+    width: 2.25rem;
+  }
+
+  .janzu-map-popup-avatar.fallback {
+    align-items: center;
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+    display: flex;
+    font-size: 0.75rem;
+    font-weight: 700;
+    justify-content: center;
   }
 
   .janzu-map-popup strong {
-    color: hsl(var(--foreground));
+    color: hsl(var(--primary));
+    display: block;
     font-size: 0.875rem;
   }
 

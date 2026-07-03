@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Shell } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { CommunityEvent } from "@/server/models/event.model";
 import { rsvpToEvent } from "@/features/events/actions";
@@ -10,10 +12,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 type PublicEventListProps = {
   locale: Locale;
   events: CommunityEvent[];
+  isSignedIn: boolean;
   status?: string;
   dictionary: {
     publicTitle: string;
     publicDescription: string;
+    backToPortal: string;
     emptyPublic: string;
     retreat: string;
     training: string;
@@ -62,14 +66,24 @@ function EventDescription({ html }: { html: string }) {
   );
 }
 
-export function PublicEventList({ locale, events, status, dictionary }: PublicEventListProps) {
+export function PublicEventList({ locale, events, isSignedIn, status, dictionary }: PublicEventListProps) {
   const action = rsvpToEvent.bind(null, locale);
   const message = getMessage(status, dictionary);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
+        {isSignedIn ? (
+          <Button asChild variant="ghost" className="w-fit">
+            <Link href={`/${locale}`}>
+              <Shell className="h-5 w-5" />
+              <span className="text-base font-semibold">Janzu Portal</span>
+            </Link>
+          </Button>
+        ) : null}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
+        </div>
         <p className="max-w-3xl text-muted-foreground">{dictionary.publicDescription}</p>
       </div>
 

@@ -1,10 +1,16 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
-import type { PractitionerProfile, PractitionerProfileInput } from "@/server/models/practitioner.model";
+import type {
+  PractitionerProfile,
+  PractitionerProfileInput,
+  PractitionerPracticeLocation,
+  PublicPractitionerGroup,
+} from "@/server/models/practitioner.model";
 
 type PractitionerRow = {
   id: string;
   user_id: string;
+  public_group?: PublicPractitionerGroup | null;
   display_name?: string | null;
   bio: string | null;
   country: string | null;
@@ -19,6 +25,17 @@ type PractitionerRow = {
   updated_at: string;
 };
 
+type PractitionerLocationRow = {
+  id: string;
+  practitioner_id: string;
+  latitude: number;
+  longitude: number;
+  note: string | null;
+  sort_order: number;
+};
+
+type UserDisplayRow = Pick<Database["public"]["Tables"]["users"]["Row"], "full_name">;
+
 type PublicPractitionerRpcClient = {
   rpc(
     functionName: "list_public_practitioner_profiles"
@@ -29,16 +46,46 @@ type PublicPractitionerRpcClient = {
   ): Promise<{ data: PractitionerRow[] | null; error: { message: string } | null }>;
 };
 
-function toProfile(row: PractitionerRow): PractitionerProfile {
+function toPracticeLocation(row: PractitionerLocationRow): PractitionerPracticeLocation {
+  return {
+    id: row.id,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    note: row.note,
+    sortOrder: row.sort_order,
+  };
+}
+
+function getFallbackPracticeLocations(row: PractitionerRow): PractitionerPracticeLocation[] {
+  if (typeof row.latitude !== "number" || typeof row.longitude !== "number") {
+    return [];
+  }
+
+  return [
+    {
+      latitude: row.latitude,
+      longitude: row.longitude,
+      note: null,
+      sortOrder: 0,
+    },
+  ];
+}
+
+function toProfile(
+  row: PractitionerRow,
+  practiceLocations: PractitionerPracticeLocation[] = getFallbackPracticeLocations(row)
+): PractitionerProfile {
   return {
     id: row.id,
     userId: row.user_id,
+    publicGroup: row.public_group ?? "apprentice",
     displayName: row.display_name,
     bio: row.bio,
     country: row.country,
     city: row.city,
     latitude: row.latitude,
     longitude: row.longitude,
+    practiceLocations,
     languages: row.languages,
     website: row.website,
     profileImageUrl: row.profile_image_url,
@@ -46,6 +93,66 @@ function toProfile(row: PractitionerRow): PractitionerProfile {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+async function listPracticeLocationsByPractitionerIds(
+  supabase: SupabaseServerClient,
+  practitionerIds: string[]
+) {
+  if (practitionerIds.length === 0) {
+    return new Map<string, PractitionerPracticeLocation[]>();
+  }
+
+  const { data, error } = await supabase
+    .from("practitioner_locations")
+    .select("*")
+    .in("practitioner_id", practitionerIds)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const locationsByPractitionerId = new Map<string, PractitionerPracticeLocation[]>();
+
+  ((data ?? []) as PractitionerLocationRow[]).forEach((row) => {
+    const locations = locationsByPractitionerId.get(row.practitioner_id) ?? [];
+
+    locations.push(toPracticeLocation(row));
+    locationsByPractitionerId.set(row.practitioner_id, locations);
+  });
+
+  return locationsByPractitionerId;
+}
+
+async function attachPracticeLocations(
+  supabase: SupabaseServerClient,
+  rows: PractitionerRow[]
+) {
+  const locationsByPractitionerId = await listPracticeLocationsByPractitionerIds(
+    supabase,
+    rows.map((row) => row.id)
+  );
+
+  return rows.map((row) => {
+    const practiceLocations = locationsByPractitionerId.get(row.id);
+
+    return toProfile(row, practiceLocations?.length ? practiceLocations : getFallbackPracticeLocations(row));
+  });
+}
+
+async function getUserFullName(supabase: SupabaseServerClient, userId: string) {
+  const { data, error } = await supabase
+    .from("users")
+    .select("full_name")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data as UserDisplayRow | null)?.full_name ?? null;
 }
 
 export async function getPractitionerProfileByUserId(
@@ -62,7 +169,19 @@ export async function getPractitionerProfileByUserId(
     throw new Error(error.message);
   }
 
-  return data ? toProfile(data) : null;
+  if (!data) {
+    return null;
+  }
+
+  const practitioner = data as PractitionerRow;
+  const [profile] = await attachPracticeLocations(supabase, [
+    {
+      ...practitioner,
+      display_name: await getUserFullName(supabase, userId),
+    },
+  ]);
+
+  return profile;
 }
 
 export async function getPublicPractitionerProfile(
@@ -80,7 +199,13 @@ export async function getPublicPractitionerProfile(
 
   const [profile] = data ?? [];
 
-  return profile ? toProfile(profile) : null;
+  if (!profile) {
+    return null;
+  }
+
+  const [profileWithLocations] = await attachPracticeLocations(supabase, [profile]);
+
+  return profileWithLocations;
 }
 
 export async function listPublicPractitionerProfiles(supabase: SupabaseServerClient) {
@@ -91,7 +216,7 @@ export async function listPublicPractitionerProfiles(supabase: SupabaseServerCli
     throw new Error(error.message);
   }
 
-  return (data ?? []).map(toProfile);
+  return attachPracticeLocations(supabase, data ?? []);
 }
 
 export async function upsertPractitionerProfile(
@@ -99,13 +224,15 @@ export async function upsertPractitionerProfile(
   userId: string,
   input: PractitionerProfileInput
 ) {
+  const practiceLocations = input.practiceLocations ?? [];
+  const primaryLocation = practiceLocations[0] ?? null;
   const payload = {
     user_id: userId,
     bio: input.bio ?? null,
     country: input.country ?? null,
     city: input.city ?? null,
-    latitude: input.latitude ?? null,
-    longitude: input.longitude ?? null,
+    latitude: primaryLocation?.latitude ?? input.latitude ?? null,
+    longitude: primaryLocation?.longitude ?? input.longitude ?? null,
     languages: input.languages ?? [],
     website: input.website ?? null,
     profile_image_url: input.profileImageUrl ?? null,
@@ -122,5 +249,37 @@ export async function upsertPractitionerProfile(
     throw new Error(error.message);
   }
 
-  return toProfile(data);
+  const profile = toProfile(data);
+
+  const { error: deleteError } = await supabase
+    .from("practitioner_locations")
+    .delete()
+    .eq("practitioner_id", profile.id);
+
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  if (practiceLocations.length > 0) {
+    const { error: insertError } = await supabase
+      .from("practitioner_locations")
+      .insert(
+        practiceLocations.map((location, index) => ({
+          practitioner_id: profile.id,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          note: location.note ?? null,
+          sort_order: index,
+        })) as never
+      );
+
+    if (insertError) {
+      throw new Error(insertError.message);
+    }
+  }
+
+  return {
+    ...profile,
+    practiceLocations,
+  };
 }

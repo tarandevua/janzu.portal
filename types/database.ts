@@ -30,19 +30,19 @@ export type Database = {
       roles: {
         Row: {
           id: string;
-          name: "admin" | "manager" | "facilitator" | "practitioner";
+          name: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
           description: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
-          name: "admin" | "manager" | "facilitator" | "practitioner";
+          name: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
           description?: string | null;
           created_at?: string;
         };
         Update: {
           id?: string;
-          name?: "admin" | "manager" | "facilitator" | "practitioner";
+          name?: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
           description?: string | null;
           created_at?: string;
         };
@@ -142,6 +142,39 @@ export type Database = {
           website?: string | null;
           profile_image_url?: string | null;
           is_public?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      practitioner_locations: {
+        Row: {
+          id: string;
+          practitioner_id: string;
+          latitude: number;
+          longitude: number;
+          note: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          practitioner_id: string;
+          latitude: number;
+          longitude: number;
+          note?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          practitioner_id?: string;
+          latitude?: number;
+          longitude?: number;
+          note?: string | null;
+          sort_order?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -729,14 +762,14 @@ export type Database = {
       user_has_role: {
         Args: {
           target_user_id: string;
-          role_name: "admin" | "manager" | "facilitator" | "practitioner";
+          role_name: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
         };
         Returns: boolean;
       };
       can_manage_user_role: {
         Args: {
           actor_user_id: string;
-          target_role: "admin" | "manager" | "facilitator" | "practitioner";
+          target_role: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
         };
         Returns: boolean;
       };
@@ -746,7 +779,7 @@ export type Database = {
           page_number?: number;
           page_size?: number;
           search_query?: string | null;
-          role_filter?: "admin" | "manager" | "facilitator" | "practitioner" | null;
+          role_filter?: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice" | null;
           profile_filter?: string | null;
         };
         Returns: {
@@ -754,7 +787,7 @@ export type Database = {
           email: string;
           full_name: string | null;
           created_at: string;
-          roles: ("admin" | "manager" | "facilitator" | "practitioner")[];
+          roles: ("admin" | "manager" | "facilitator" | "practitioner" | "apprentice")[];
           practitioner_id: string | null;
           practitioner_is_public: boolean | null;
           practitioner_country: string | null;
@@ -774,7 +807,7 @@ export type Database = {
         Args: {
           actor_user_id: string;
           target_user_id: string;
-          target_role: "admin" | "manager" | "facilitator" | "practitioner";
+          target_role: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
         };
         Returns: undefined;
       };
@@ -782,7 +815,7 @@ export type Database = {
         Args: {
           actor_user_id: string;
           target_user_id: string;
-          target_role: "admin" | "manager" | "facilitator" | "practitioner";
+          target_role: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
         };
         Returns: undefined;
       };
@@ -971,7 +1004,7 @@ export type Database = {
       };
     };
     Enums: {
-      app_role: "admin" | "manager" | "facilitator" | "practitioner";
+      app_role: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
       certification_status: "in_progress" | "eligible" | "approved";
       location_type: "pool" | "spa" | "natural_water";
       approval_status: "pending" | "approved" | "rejected";

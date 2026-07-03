@@ -39,6 +39,7 @@ export function UserInviteForm({
 }: UserInviteFormProps) {
   const action = inviteUser.bind(null, locale);
   const assignableRoles = roles.filter((role) => canManageUserRole(actorRoles, role));
+  const defaultRole = assignableRoles.includes("apprentice") ? "apprentice" : assignableRoles[0];
 
   return (
     <>
@@ -59,7 +60,7 @@ export function UserInviteForm({
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">{dictionary.assignRole}</Label>
-            <Select name="role" required>
+            <Select name="role" defaultValue={defaultRole} required>
               <SelectTrigger id="role">
                 <SelectValue placeholder={dictionary.assignRole} />
               </SelectTrigger>

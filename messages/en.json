@@ -43,6 +43,10 @@
       "practitioner": {
         "title": "Practitioner dashboard",
         "description": "Manage your profile, private clients, sessions, feedback, and certification progress."
+      },
+      "apprentice": {
+        "title": "Apprentice dashboard",
+        "description": "Start your Janzu portal journey and prepare your profile."
       }
     },
     "sidebar": {
@@ -50,7 +54,8 @@
         "admin": "Admin",
         "manager": "Manager",
         "facilitator": "Facilitator",
-        "practitioner": "Practitioner"
+        "practitioner": "Practitioner",
+        "apprentice": "Apprentice"
       },
       "dashboard": "Dashboard",
       "users": "Users",
@@ -98,6 +103,39 @@
       "requestFrom": "Request from",
       "rating": "Rating",
       "certificationRequired": "required"
+    },
+    "apprenticeData": {
+      "profileReadiness": "Profile readiness",
+      "profileReadinessDescription": "Complete the profile details that help the community understand your Janzu path.",
+      "profileFields": "profile fields completed",
+      "editProfile": "Edit profile",
+      "certificationProgress": "Certification progress",
+      "validatedSessions": "Validated sessions",
+      "totalSessions": "total sessions",
+      "certificationRequired": "required",
+      "submittedLocations": "Submitted locations",
+      "approvedLocations": "approved",
+      "pendingLocations": "Pending locations",
+      "upcomingEvents": "Upcoming events",
+      "rsvps": "RSVPs",
+      "unreadNotifications": "Unread notifications",
+      "recentLocations": "Recent locations",
+      "recentLocationsDescription": "Latest water locations connected to your profile.",
+      "communityEvents": "Community events",
+      "communityEventsDescription": "Upcoming public events and gatherings.",
+      "recentNotifications": "Recent notifications",
+      "recentNotificationsDescription": "Latest updates for your account.",
+      "viewAll": "View all",
+      "emptyLocations": "No locations submitted yet.",
+      "emptyEvents": "No upcoming events are available.",
+      "emptyNotifications": "No notifications yet.",
+      "name": "Name",
+      "status": "Status",
+      "date": "Date",
+      "location": "Location",
+      "publicProfile": "Public profile",
+      "privateProfile": "Private profile",
+      "notStarted": "Create your profile to start tracking progress."
     },
     "adminData": {
       "users": "Users",
@@ -178,10 +216,12 @@
       "city": "City",
       "latitude": "Latitude",
       "longitude": "Longitude",
-      "mapPickerTitle": "Drop your practitioner pin on the map",
-      "mapPickerDescription": "Click the exact public practice area for your profile. The latitude and longitude will be captured from the pin.",
+      "mapPickerTitle": "Drop your practice pins on the map",
+      "mapPickerDescription": "Click each public practice area you want to add to your profile. You can add more than one pin, then drag any pin to adjust it.",
       "selectedCoordinates": "Selected coordinates",
-      "noCoordinatesSelected": "No practitioner pin selected yet.",
+      "noCoordinatesSelected": "No practice pins selected yet.",
+      "removeLocation": "Remove location",
+      "locationNotePlaceholder": "Optional note for this practice location",
       "languages": "Languages",
       "website": "Website",
       "profileImageUrl": "Profile image URL",
@@ -204,7 +244,13 @@
       "unknownCity": "Janzu practitioner",
       "profileTitle": "Practitioner profile",
       "emptyMap": "No public practitioner coordinates are available yet.",
-      "backToList": "Back to practitioners"
+      "backToPortal": "Back to portal",
+      "backToList": "Back to practitioners",
+      "apprenticePin": "Apprentice",
+      "participantPin": "Certified professional",
+      "facilitatorPin": "Facilitator",
+      "emptyGroup": "No public profiles are available in this group yet.",
+      "viewDetails": "View details"
     }
   },
   "clients": {
@@ -300,7 +346,7 @@
   },
   "feedback": {
     "title": "Session feedback",
-    "description": "Your feedback helps validate this Janzu session.",
+    "description": "Thank you for taking a minute to share your feedback about your Janzu session. Please write the name of the facilitator who gave you the session exactly as it was provided to you and be as truthful as possible in your responses. \n Thank you very much!",
     "rating": "Overall session rating",
     "feltInFacilitatorArms": "How did you feel in the arms of your facilitator?",
     "experienceText": "Overall experience of your Janzu session",
@@ -403,6 +449,7 @@
     "reviewDescription": "Review submitted water locations before they appear publicly.",
     "publicTitle": "Janzu water locations",
     "publicDescription": "Browse approved pools, spas, and natural water locations shared by the Janzu community.",
+    "backToPortal": "Back to portal",
     "name": "Name",
     "type": "Type",
     "pool": "Pool",
@@ -475,6 +522,7 @@
     "listDescription": "Admin and manager event records with RSVP capacity.",
     "publicTitle": "Janzu events",
     "publicDescription": "Explore upcoming retreats, trainings, and community gatherings.",
+    "backToPortal": "Back to portal",
     "titleLabel": "Title",
     "description": "Description",
     "type": "Type",
@@ -551,7 +599,7 @@
   },
   "userManagement": {
     "title": "User management",
-    "description": "Manage portal users and role assignments. Managers can assign practitioner and facilitator roles; admins can manage all roles.",
+    "description": "Manage portal users and role assignments. Managers can assign apprentice, practitioner, and facilitator roles; admins can manage all roles.",
     "inviteTitle": "Invite user",
     "inviteDescription": "Create or find a user, assign an initial role, and send a Brevo invite email.",
     "authSettingsTitle": "Authentication settings",
@@ -619,7 +667,8 @@
       "admin": "Admin",
       "manager": "Manager",
       "facilitator": "Facilitator",
-      "practitioner": "Practitioner"
+      "practitioner": "Practitioner",
+      "apprentice": "Apprentice"
     }
   },
   "settings": {
