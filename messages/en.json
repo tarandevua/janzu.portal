@@ -347,6 +347,7 @@
   "feedback": {
     "title": "Session feedback",
     "description": "Thank you for taking a minute to share your feedback about your Janzu session. Please write the name of the facilitator who gave you the session exactly as it was provided to you and be as truthful as possible in your responses. \n Thank you very much!",
+    "email": "Email",
     "rating": "Overall session rating",
     "feltInFacilitatorArms": "How did you feel in the arms of your facilitator?",
     "experienceText": "Overall experience of your Janzu session",

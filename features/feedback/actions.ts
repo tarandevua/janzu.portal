@@ -36,6 +36,7 @@ export async function submitFeedbackForm(locale: Locale, token: string, formData
   }
 
   const parsed = feedbackSchema.safeParse({
+    participantEmail: formData.get("participantEmail"),
     rating: formData.get("rating"),
     experienceText: formData.get("experienceText"),
     emotionalImpact: formData.get("emotionalImpact"),

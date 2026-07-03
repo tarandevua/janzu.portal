@@ -1,4 +1,5 @@
 alter table public.session_feedback
+add column if not exists participant_email text,
 add column if not exists felt_in_facilitator_arms text,
 add column if not exists support_at_end text,
 add column if not exists support_other_text text,
@@ -37,6 +38,7 @@ end $$;
 
 create or replace function public.submit_session_feedback(
   feedback_token text,
+  feedback_participant_email text,
   feedback_rating integer,
   feedback_experience_text text,
   feedback_emotional_impact text,
@@ -59,7 +61,8 @@ declare
   updated_feedback public.session_feedback;
 begin
   update public.session_feedback
-  set rating = feedback_rating,
+  set participant_email = lower(nullif(trim(feedback_participant_email), '')),
+      rating = feedback_rating,
       experience_text = feedback_experience_text,
       emotional_impact = feedback_emotional_impact,
       felt_in_facilitator_arms = feedback_felt_in_facilitator_arms,
@@ -75,6 +78,7 @@ begin
   where token = feedback_token
     and submitted_at is null
     and feedback_rating between 1 and 5
+    and nullif(trim(feedback_participant_email), '') is not null
     and feedback_gdpr_agreed = true
   returning * into updated_feedback;
 

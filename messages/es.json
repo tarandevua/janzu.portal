@@ -347,6 +347,7 @@
   "feedback": {
     "title": "Feedback de sesion",
     "description": "Gracias por tomarte un minuto para compartir tu retroalimentación sobre tu sesión Janzu. Por favor escribe el nombre del facilitador que te dió la sesion exactamente cómo te fue proporcionado y sé lo más sincera(o) posible en tus respuestas. Muchas Gracias!",
+    "email": "Correo electronico",
     "rating": "Calificacion general de la sesion",
     "feltInFacilitatorArms": "Como te sentiste en los brazos de tu facilitador?",
     "experienceText": "Experiencia general de tu sesion de Janzu",

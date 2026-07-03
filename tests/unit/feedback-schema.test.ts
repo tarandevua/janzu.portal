@@ -4,6 +4,7 @@ import { feedbackSchema, feedbackTokenSchema } from "@/server/validators/feedbac
 describe("feedbackSchema", () => {
   it("accepts a valid feedback payload", () => {
     const parsed = feedbackSchema.safeParse({
+      participantEmail: "participant@example.com",
       rating: "5",
       experienceText: "Deeply calming.",
       emotionalImpact: "More grounded.",
@@ -19,6 +20,7 @@ describe("feedbackSchema", () => {
 
   it("rejects ratings outside the allowed range", () => {
     const payload = {
+      participantEmail: "participant@example.com",
       experienceText: "Deeply calming.",
       feltInFacilitatorArms: "Safe and relaxed.",
       supportAtEnd: "yes",
@@ -33,6 +35,7 @@ describe("feedbackSchema", () => {
 
   it("requires support details for other support responses", () => {
     const parsed = feedbackSchema.safeParse({
+      participantEmail: "participant@example.com",
       rating: 4,
       experienceText: "Helpful.",
       feltInFacilitatorArms: "Held.",
@@ -47,6 +50,7 @@ describe("feedbackSchema", () => {
 
   it("requires GDPR agreement", () => {
     const parsed = feedbackSchema.safeParse({
+      participantEmail: "participant@example.com",
       rating: 4,
       experienceText: "Helpful.",
       feltInFacilitatorArms: "Held.",
@@ -54,6 +58,21 @@ describe("feedbackSchema", () => {
       continueWaterProcess: "no_thank_you",
       interestedLearningJanzu: false,
       gdprAgreed: false,
+    });
+
+    expect(parsed.success).toBe(false);
+  });
+
+  it("requires a valid participant email", () => {
+    const parsed = feedbackSchema.safeParse({
+      participantEmail: "not-an-email",
+      rating: 4,
+      experienceText: "Helpful.",
+      feltInFacilitatorArms: "Held.",
+      supportAtEnd: "yes",
+      continueWaterProcess: "no_thank_you",
+      interestedLearningJanzu: false,
+      gdprAgreed: true,
     });
 
     expect(parsed.success).toBe(false);

@@ -2,6 +2,7 @@ export type SessionFeedback = {
   id: string;
   sessionId: string;
   token: string;
+  participantEmail: string | null;
   rating: number;
   experienceText: string | null;
   emotionalImpact: string | null;
@@ -20,6 +21,7 @@ export type SessionFeedback = {
 };
 
 export type FeedbackInput = {
+  participantEmail: string;
   rating: number;
   experienceText?: string | null;
   emotionalImpact?: string | null;
@@ -54,6 +56,7 @@ export type DashboardFeedback = {
   practitionerName: string;
   practitionerEmail: string;
   clientName: string | null;
+  participantEmail: string | null;
   sessionDate: string;
   rating: number;
   experienceText: string | null;

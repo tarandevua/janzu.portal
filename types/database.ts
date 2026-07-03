@@ -257,6 +257,7 @@ export type Database = {
           id: string;
           session_id: string;
           token: string;
+          participant_email: string | null;
           rating: number;
           experience_text: string | null;
           emotional_impact: string | null;
@@ -277,6 +278,7 @@ export type Database = {
           id?: string;
           session_id: string;
           token: string;
+          participant_email?: string | null;
           rating?: number;
           experience_text?: string | null;
           emotional_impact?: string | null;
@@ -297,6 +299,7 @@ export type Database = {
           id?: string;
           session_id?: string;
           token?: string;
+          participant_email?: string | null;
           rating?: number;
           experience_text?: string | null;
           emotional_impact?: string | null;
@@ -886,6 +889,7 @@ export type Database = {
           practitioner_name: string;
           practitioner_email: string;
           client_name: string | null;
+          participant_email: string | null;
           session_date: string;
           rating: number;
           experience_text: string | null;
@@ -913,6 +917,7 @@ export type Database = {
       submit_session_feedback: {
         Args: {
           feedback_token: string;
+          feedback_participant_email: string;
           feedback_rating: number;
           feedback_experience_text: string | null;
           feedback_emotional_impact: string | null;

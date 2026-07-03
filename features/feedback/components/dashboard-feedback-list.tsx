@@ -36,6 +36,7 @@ type FeedbackDashboardDictionary = {
   applyFilter: string;
   sessionDate: string;
   client: string;
+  email: string;
   rating: string;
   experienceText: string;
   emotionalImpact: string;
@@ -151,6 +152,7 @@ function FeedbackDetailSheet({
         <dl className="mt-6 grid gap-3">
           <DetailItem label={dictionary.sessionDate} value={formatDate(locale, item.sessionDate)} />
           <DetailItem label={dictionary.client} value={item.clientName} />
+          <DetailItem label={dictionary.email} value={item.participantEmail} />
           <DetailItem label={dictionary.rating} value={item.rating} />
           <DetailItem label={dictionary.feltInFacilitatorArms} value={item.feltInFacilitatorArms} />
           <DetailItem label={dictionary.experienceText} value={item.experienceText} />

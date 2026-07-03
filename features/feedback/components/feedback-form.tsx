@@ -22,6 +22,7 @@ type FeedbackFormProps = {
   dictionary: {
     title: string;
     description: string;
+    email: string;
     rating: string;
     feltInFacilitatorArms: string;
     experienceText: string;
@@ -92,16 +93,27 @@ export function FeedbackForm({
           ) : (
           <>
           <div className="grid gap-2">
-            <Label htmlFor="feltInFacilitatorArms">{dictionary.feltInFacilitatorArms}</Label>
+            <Label htmlFor="participantEmail">{dictionary.email} <span className="text-destructive">*</span></Label>
+            <Input
+              id="participantEmail"
+              name="participantEmail"
+              type="email"
+              autoComplete="email"
+              disabled={isSubmitted}
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="feltInFacilitatorArms">{dictionary.feltInFacilitatorArms} <span className="text-destructive">*</span></Label>
             <Textarea id="feltInFacilitatorArms" name="feltInFacilitatorArms" rows={4} disabled={isSubmitted} required />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="experienceText">{dictionary.experienceText}</Label>
+            <Label htmlFor="experienceText">{dictionary.experienceText} <span className="text-destructive">*</span></Label>
             <Textarea id="experienceText" name="experienceText" rows={5} disabled={isSubmitted} required />
           </div>
 
           <fieldset className="grid gap-3">
-            <legend className="text-sm font-medium">{dictionary.supportAtEnd}</legend>
+            <legend className="text-sm font-medium">{dictionary.supportAtEnd} <span className="text-destructive">*</span></legend>
             <div className="grid gap-2 sm:grid-cols-3">
               {[
                 ["yes", dictionary.supportYes],
@@ -145,7 +157,7 @@ export function FeedbackForm({
           </div>
 
           <fieldset className="grid gap-3">
-            <legend className="text-sm font-medium">{dictionary.continueWaterProcess}</legend>
+            <legend className="text-sm font-medium">{dictionary.continueWaterProcess} <span className="text-destructive">*</span></legend>
             <div className="grid gap-2">
               <Label className="flex cursor-pointer items-center gap-2 rounded-md border p-3 text-sm">
                 <input
