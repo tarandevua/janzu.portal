@@ -1,4 +1,5 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { LocationInput, LocationMediaInput } from "@/server/models/location.model";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 import {
@@ -7,8 +8,10 @@ import {
   createLocationForPractitioner,
   listApprovedLocations,
   listDeletedLocations,
+  listLocationMediaStorageKeys,
   listLocationsByPractitionerId,
   listLocationsForReview,
+  permanentlyDeleteLocationById,
   rejectLocationById,
   restoreDeletedLocationById,
   resubmitRejectedLocationById,
@@ -16,6 +19,9 @@ import {
   toggleLocationReviewHelpfulVote,
   upsertLocationCommunityReview,
 } from "@/server/repositories/location.repository";
+import { listUserRoles } from "@/server/repositories/rbac.repository";
+import { hasRole } from "@/server/services/rbac.service";
+import { deletePrivateR2Object } from "@/server/services/r2-storage.service";
 
 export async function requireLocationPractitionerId(
   supabase: SupabaseServerClient,
@@ -122,4 +128,26 @@ export function restoreLocation(
   actorUserId: string
 ) {
   return restoreDeletedLocationById(supabase, locationId, actorUserId);
+}
+
+export async function permanentlyDeleteLocation(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  actorUserId: string
+) {
+  const roles = await listUserRoles(supabase, actorUserId);
+
+  if (!hasRole(roles, "admin")) {
+    throw new Error("Admin access is required to permanently delete locations.");
+  }
+
+  const admin = createSupabaseAdminClient();
+  const adminClient = admin as unknown as SupabaseServerClient;
+  const mediaKeys = await listLocationMediaStorageKeys(adminClient, locationId);
+
+  for (const mediaKey of mediaKeys) {
+    await deletePrivateR2Object(mediaKey);
+  }
+
+  await permanentlyDeleteLocationById(adminClient, locationId);
 }

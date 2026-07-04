@@ -7,6 +7,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import {
   deleteLocation,
+  permanentlyDeleteLocation,
   reviewLocation,
   restoreLocation,
   resubmitRejectedLocation,
@@ -27,6 +28,7 @@ import {
   locationReviewHelpfulSchema,
   locationReviewSchema,
   locationSchema,
+  permanentLocationDeleteSchema,
 } from "@/server/validators/location.schema";
 
 export type LocationDeleteActionResult = {
@@ -37,6 +39,15 @@ export type LocationDeleteActionResult = {
 export type LocationRestoreActionResult = {
   ok: boolean;
   status: "restored" | "auth-required" | "restore-invalid" | "restore-forbidden";
+};
+
+export type LocationPermanentDeleteActionResult = {
+  ok: boolean;
+  status:
+    | "permanent-deleted"
+    | "auth-required"
+    | "permanent-delete-invalid"
+    | "permanent-delete-forbidden";
 };
 
 export async function submitLocation(locale: Locale, formData: FormData) {
@@ -297,6 +308,39 @@ export async function restoreDeletedLocationInline(
   revalidatePath(`/${locale}/dashboard/locations`);
   revalidatePath(`/${locale}/locations`);
   return { ok: true, status: "restored" };
+}
+
+export async function permanentlyDeleteLocationInline(
+  locale: Locale,
+  formData: FormData
+): Promise<LocationPermanentDeleteActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false, status: "auth-required" };
+  }
+
+  const parsed = permanentLocationDeleteSchema.safeParse({
+    locationId: formData.get("locationId"),
+    confirmation: formData.get("confirmation"),
+  });
+
+  if (!parsed.success) {
+    return { ok: false, status: "permanent-delete-invalid" };
+  }
+
+  try {
+    await permanentlyDeleteLocation(supabase, parsed.data.locationId, user.id);
+  } catch {
+    return { ok: false, status: "permanent-delete-forbidden" };
+  }
+
+  revalidatePath(`/${locale}/dashboard/locations`);
+  revalidatePath(`/${locale}/locations`);
+  return { ok: true, status: "permanent-deleted" };
 }
 
 export async function submitLocationCommunityReview(locale: Locale, formData: FormData) {

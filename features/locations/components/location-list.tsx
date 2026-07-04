@@ -9,6 +9,7 @@ import { deleteLocationSubmissionInline, updateRejectedLocation } from "@/featur
 import { LocationDeleteConfirmation } from "@/features/locations/components/location-delete-confirmation";
 import { LocationEditDrawer } from "@/features/locations/components/location-edit-drawer";
 import { LocationForm } from "@/features/locations/components/location-form";
+import { LocationPreviewDrawer } from "@/features/locations/components/location-preview-drawer";
 import { formatCoordinate } from "@/features/maps/utils";
 import { getLocationMediaItems } from "@/features/locations/utils/location-media";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +52,11 @@ type LocationListProps = {
     coordinates: string;
     status: string;
     latestReview: string;
+    reviewedBy: string;
+    reason: string;
     action: string;
+    view: string;
+    review: string;
     edit: string;
     delete: string;
     cancel: string;
@@ -63,12 +68,29 @@ type LocationListProps = {
     update: string;
     editRejectedDescription: string;
     submit: string;
+    approve: string;
+    reject: string;
     created: string;
     updated: string;
     deleted: string;
     invalid: string;
     deleteInvalid: string;
     deleteForbidden: string;
+    restore: string;
+    restoreSaving: string;
+    restored: string;
+    restoreInvalid: string;
+    restoreForbidden: string;
+    deletePermanently: string;
+    permanentDeleteTitle: string;
+    permanentDeleteDescription: string;
+    permanentDeleteInputLabel: string;
+    permanentDeleteInputPlaceholder: string;
+    permanentDeleteAction: string;
+    permanentDeleteSaving: string;
+    permanentDeleted: string;
+    permanentDeleteInvalid: string;
+    permanentDeleteForbidden: string;
     imageType: string;
     imageSize: string;
     imageCount: string;
@@ -236,6 +258,12 @@ export function LocationList({ locale, locations, dictionary }: LocationListProp
                             />
                           </LocationEditDrawer>
                         ) : null}
+                        <LocationPreviewDrawer
+                          locale={locale}
+                          location={location}
+                          mode="view"
+                          dictionary={dictionary}
+                        />
                         <LocationDeleteConfirmation
                           locationId={location.id}
                           locationName={location.name}

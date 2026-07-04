@@ -290,7 +290,7 @@ export function AdminDashboard({
                   <CardDescription>{dictionary.pendingLocationsDescription}</CardDescription>
                 </div>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/${locale}/dashboard/locations`}>{dictionary.viewAll}</Link>
+                  <Link href={`/${locale}/dashboard/locations?tab=approvals`}>{dictionary.viewAll}</Link>
                 </Button>
               </CardHeader>
               <CardContent>

@@ -72,6 +72,18 @@ export const locationMutationSchema = z.object({
   locationId: z.string().uuid(),
 });
 
+export const permanentLocationDeleteSchema = locationMutationSchema.extend({
+  confirmation: z.string().trim(),
+}).superRefine((value, context) => {
+  if (value.confirmation !== "delete") {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["confirmation"],
+      message: "Type delete to confirm.",
+    });
+  }
+});
+
 export type LocationPayload = z.infer<typeof locationSchema>;
 export type LocationReviewPayload = z.infer<typeof locationReviewSchema>;
 export type LocationCommunityReviewPayload = z.infer<typeof locationCommunityReviewSchema>;

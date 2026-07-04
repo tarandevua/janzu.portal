@@ -70,6 +70,10 @@ type LocationRpcClient = {
     args: { target_location_id: string; actor_user_id: string }
   ): Promise<{ data: LocationRow | null; error: { message: string } | null }>;
   rpc(
+    functionName: "permanently_delete_location",
+    args: { target_location_id: string; actor_user_id: string }
+  ): Promise<{ data: null; error: { message: string } | null }>;
+  rpc(
     functionName: "list_location_community_reviews",
     args: Database["public"]["Functions"]["list_location_community_reviews"]["Args"]
   ): Promise<{ data: CommunityReviewRow[] | null; error: { message: string } | null }>;
@@ -410,6 +414,24 @@ export async function addLocationMedia(
   return ((data ?? []) as MediaRow[]).map(toMedia);
 }
 
+export async function listLocationMediaStorageKeys(
+  supabase: SupabaseServerClient,
+  locationId: string
+) {
+  const { data, error } = await supabase
+    .from("location_media")
+    .select("storage_key")
+    .eq("location_id", locationId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as Pick<MediaRow, "storage_key">[])
+    .map((item) => item.storage_key)
+    .filter((key): key is string => Boolean(key));
+}
+
 export async function resubmitRejectedLocationById(
   supabase: SupabaseServerClient,
   locationId: string,
@@ -531,6 +553,21 @@ export async function restoreDeletedLocationById(
   }
 
   return toLocation(data);
+}
+
+export async function permanentlyDeleteLocationById(
+  supabase: SupabaseServerClient,
+  locationId: string
+) {
+  const { error } = await supabase
+    .from("locations")
+    .delete()
+    .eq("id", locationId)
+    .eq("is_deleted", true);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 export async function upsertLocationCommunityReview(

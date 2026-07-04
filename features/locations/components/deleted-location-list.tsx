@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { MapPinIcon, RotateCcwIcon } from "lucide-react";
-import { toast } from "sonner";
+import { MapPinIcon } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { LocationWithMedia } from "@/server/models/location.model";
-import { restoreDeletedLocationInline, type LocationRestoreActionResult } from "@/features/locations/actions";
+import { LocationPreviewDrawer } from "@/features/locations/components/location-preview-drawer";
 import { getLocationMediaItems } from "@/features/locations/utils/location-media";
 import { formatCoordinate } from "@/features/maps/utils";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -32,11 +30,35 @@ type DeletedLocationListProps = {
     coordinates: string;
     status: string;
     action: string;
+    view: string;
+    review: string;
     restore: string;
     restoreSaving: string;
     restored: string;
     restoreInvalid: string;
     restoreForbidden: string;
+    deletePermanently: string;
+    permanentDeleteTitle: string;
+    permanentDeleteDescription: string;
+    permanentDeleteInputLabel: string;
+    permanentDeleteInputPlaceholder: string;
+    permanentDeleteAction: string;
+    permanentDeleteSaving: string;
+    permanentDeleted: string;
+    permanentDeleteInvalid: string;
+    permanentDeleteForbidden: string;
+    cancel: string;
+    close: string;
+    description: string;
+    temperature: string;
+    accessInfo: string;
+    reviewedBy: string;
+    latestReview: string;
+    reason: string;
+    approve: string;
+    reject: string;
+    created: string;
+    updated: string;
     pool: string;
     spa: string;
     naturalWater: string;
@@ -82,19 +104,18 @@ export function DeletedLocationList({
   dictionary,
 }: DeletedLocationListProps) {
   const [visibleLocations, setVisibleLocations] = useState(locations);
-  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setVisibleLocations(locations);
   }, [locations]);
 
-  function handleOptimisticRestore(locationId: string) {
+  function handleOptimisticRemove(locationId: string) {
     setVisibleLocations((currentLocations) =>
       currentLocations.filter((location) => location.id !== locationId)
     );
   }
 
-  function handleRestoreFailed(locationId: string) {
+  function handleRemoveFailed(locationId: string) {
     const restoredLocation = locations.find((location) => location.id === locationId);
 
     if (!restoredLocation) {
@@ -107,39 +128,6 @@ export function DeletedLocationList({
       }
 
       return [restoredLocation, ...currentLocations];
-    });
-  }
-
-  function getErrorMessage(status: LocationRestoreActionResult["status"]) {
-    if (status === "restore-forbidden") {
-      return dictionary.restoreForbidden;
-    }
-
-    return dictionary.restoreInvalid;
-  }
-
-  function handleRestoreSubmit(locationId: string, event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    handleOptimisticRestore(locationId);
-    const toastId = toast.loading(dictionary.restoreSaving);
-
-    startTransition(() => {
-      void restoreDeletedLocationInline(locale, formData)
-        .then((result) => {
-          if (result.ok) {
-            toast.success(dictionary.restored, { id: toastId });
-            return;
-          }
-
-          handleRestoreFailed(locationId);
-          toast.error(getErrorMessage(result.status), { id: toastId });
-        })
-        .catch(() => {
-          handleRestoreFailed(locationId);
-          toast.error(dictionary.restoreInvalid, { id: toastId });
-        });
     });
   }
 
@@ -198,13 +186,16 @@ export function DeletedLocationList({
                       </TableCell>
                       <TableCell>{getStatusLabel(location.status, dictionary)}</TableCell>
                       <TableCell className="text-right">
-                        <form onSubmit={(event) => handleRestoreSubmit(location.id, event)}>
-                          <input type="hidden" name="locationId" value={location.id} />
-                          <Button type="submit" size="sm" variant="outline" disabled={isPending}>
-                            <RotateCcwIcon />
-                            {dictionary.restore}
-                          </Button>
-                        </form>
+                        <LocationPreviewDrawer
+                          locale={locale}
+                          location={location}
+                          mode="deleted"
+                          onRestore={handleOptimisticRemove}
+                          onRestoreFailed={handleRemoveFailed}
+                          onPermanentDelete={handleOptimisticRemove}
+                          onPermanentDeleteFailed={handleRemoveFailed}
+                          dictionary={dictionary}
+                        />
                       </TableCell>
                     </TableRow>
                   );
