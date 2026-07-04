@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { CircleHelpIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -114,8 +114,10 @@ export function PractitionerProfileForm({
   const formRef = useRef<HTMLFormElement | null>(null);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const message = status ? getStatusMessage(dictionary, status) : null;
   const avatarFallback = getAvatarFallback(fullName);
+  const avatarImageSrc = avatarPreviewUrl ?? profile?.profileImageUrl ?? "";
 
   useEffect(() => {
     if (!message) {
@@ -155,6 +157,26 @@ export function PractitionerProfileForm({
     });
   }
 
+  function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    setAvatarPreviewUrl((currentPreviewUrl) => {
+      if (currentPreviewUrl) {
+        URL.revokeObjectURL(currentPreviewUrl);
+      }
+
+      return file ? URL.createObjectURL(file) : null;
+    });
+  }
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+    };
+  }, [avatarPreviewUrl]);
+
   return (
     <Card>
       <CardHeader>
@@ -168,7 +190,7 @@ export function PractitionerProfileForm({
               <Label htmlFor="avatarImage">{dictionary.profileImageUpload}</Label>
               <div className="flex items-center gap-3">
                 <Avatar className="h-24 w-24 shrink-0 rounded-lg">
-                  <AvatarImage src={profile?.profileImageUrl ?? ""} alt={fullName} className="object-cover" />
+                  <AvatarImage src={avatarImageSrc} alt={fullName} className="object-cover" />
                   <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 gap-1">
@@ -183,6 +205,7 @@ export function PractitionerProfileForm({
                     name="avatarImage"
                     type="file"
                     accept="image/jpeg,.jpg,.jpeg"
+                    onChange={handleAvatarChange}
                   />
                   <p className="text-xs text-muted-foreground">{dictionary.profileImageUploadHelp}</p>
                 </div>

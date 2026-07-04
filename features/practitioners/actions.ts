@@ -9,6 +9,8 @@ import {
   saveMyPractitionerProfile,
 } from "@/server/services/practitioner.service";
 import {
+  deletePrivateR2Object,
+  getManagedAvatarKeyFromUrl,
   isUploadedFile,
   uploadPractitionerAvatar,
 } from "@/server/services/r2-storage.service";
@@ -67,6 +69,8 @@ export async function savePractitionerProfileInline(
     typeof currentProfileImageUrl === "string" && currentProfileImageUrl.trim()
       ? currentProfileImageUrl
       : null;
+  const previousAvatarKey = getManagedAvatarKeyFromUrl(currentProfile?.profileImageUrl ?? null);
+  let uploadedAvatarKey: string | null = null;
 
   if (isUploadedFile(avatarFile) && avatarFile.size > 0) {
     const upload = await uploadPractitionerAvatar(user.id, avatarFile);
@@ -76,6 +80,7 @@ export async function savePractitionerProfileInline(
     }
 
     profileImageUrl = upload.url;
+    uploadedAvatarKey = upload.key;
   }
 
   const practiceLocations = parsePracticeLocations(formData.get("practiceLocations"));
@@ -125,6 +130,12 @@ export async function savePractitionerProfileInline(
   }
 
   await saveMyPractitionerProfile(supabase, user.id, parsed.data);
+
+  if (uploadedAvatarKey && previousAvatarKey && previousAvatarKey !== uploadedAvatarKey) {
+    await deletePrivateR2Object(previousAvatarKey).catch((error: unknown) => {
+      console.error("Previous practitioner avatar could not be deleted.", error);
+    });
+  }
 
   revalidatePath(`/${locale}/dashboard/profile`);
   revalidatePath(`/${locale}/practitioners`);

@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { getR2Env } from "@/lib/env";
-import { getR2MediaUrl } from "@/lib/r2-media";
+import { R2_MEDIA_ROUTE_PREFIX, getR2MediaUrl } from "@/lib/r2-media";
 
 export const MAX_AVATAR_UPLOAD_BYTES = 2 * 1024 * 1024;
 export const MAX_LOCATION_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -204,6 +204,22 @@ export function isAllowedR2ImageKey(key: string) {
     !keyParts.some((part) => part.trim() === "") &&
     /\.jpe?g$/i.test(key)
   );
+}
+
+export function getManagedAvatarKeyFromUrl(value: string | null | undefined) {
+  if (!value?.startsWith(`${R2_MEDIA_ROUTE_PREFIX}/avatars/`)) {
+    return null;
+  }
+
+  const encodedKey = value.slice(`${R2_MEDIA_ROUTE_PREFIX}/`.length);
+
+  try {
+    const key = encodedKey.split("/").map(decodeURIComponent).join("/");
+
+    return key.startsWith("avatars/") && isAllowedR2ImageKey(key) ? key : null;
+  } catch {
+    return null;
+  }
 }
 
 function getAmzDates(date = new Date()) {
