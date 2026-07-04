@@ -62,6 +62,14 @@ type LocationRpcClient = {
     }
   ): Promise<{ data: LocationRow | null; error: { message: string } | null }>;
   rpc(
+    functionName: "soft_delete_location",
+    args: { target_location_id: string; actor_user_id: string }
+  ): Promise<{ data: LocationRow | null; error: { message: string } | null }>;
+  rpc(
+    functionName: "restore_deleted_location",
+    args: { target_location_id: string; actor_user_id: string }
+  ): Promise<{ data: LocationRow | null; error: { message: string } | null }>;
+  rpc(
     functionName: "list_location_community_reviews",
     args: Database["public"]["Functions"]["list_location_community_reviews"]["Args"]
   ): Promise<{ data: CommunityReviewRow[] | null; error: { message: string } | null }>;
@@ -86,6 +94,7 @@ function toLocation(row: LocationRow & {
     approvedBy: row.approved_by,
     approvedByName: row.approvedByName,
     approvedAt: row.approved_at,
+    isDeleted: row.is_deleted,
     latestReview: row.latestReview,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -247,6 +256,7 @@ export async function listApprovedLocations(
     .from("locations")
     .select("*, location_media(*)")
     .eq("status", "approved")
+    .eq("is_deleted", false)
     .order("updated_at", { ascending: false });
 
   if (error) {
@@ -285,6 +295,7 @@ export async function listLocationsByPractitionerId(
     .from("locations")
     .select("*, location_media(*)")
     .eq("submitted_by", practitionerId)
+    .eq("is_deleted", false)
     .order("updated_at", { ascending: false });
 
   if (error) {
@@ -304,6 +315,26 @@ export async function listLocationsForReview(supabase: SupabaseServerClient) {
     .from("locations")
     .select("*, location_media(*)")
     .in("status", ["pending", "approved", "rejected"])
+    .eq("is_deleted", false)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const rows = await attachReviewData(supabase, (data ?? []) as LocationJoinRow[], {
+    includeLogs: true,
+    includeReviewerNames: true,
+  });
+
+  return rows.map(toLocationWithMedia);
+}
+
+export async function listDeletedLocations(supabase: SupabaseServerClient) {
+  const { data, error } = await supabase
+    .from("locations")
+    .select("*, location_media(*)")
+    .eq("is_deleted", true)
     .order("updated_at", { ascending: false });
 
   if (error) {
@@ -453,6 +484,50 @@ export async function rejectLocationById(
 
   if (!data) {
     throw new Error("Location rejection failed.");
+  }
+
+  return toLocation(data);
+}
+
+export async function softDeleteLocationById(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  actorUserId: string
+) {
+  const rpcClient = supabase as unknown as LocationRpcClient;
+  const { data, error } = await rpcClient.rpc("soft_delete_location", {
+    target_location_id: locationId,
+    actor_user_id: actorUserId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Location deletion failed.");
+  }
+
+  return toLocation(data);
+}
+
+export async function restoreDeletedLocationById(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  actorUserId: string
+) {
+  const rpcClient = supabase as unknown as LocationRpcClient;
+  const { data, error } = await rpcClient.rpc("restore_deleted_location", {
+    target_location_id: locationId,
+    actor_user_id: actorUserId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Location restore failed.");
   }
 
   return toLocation(data);

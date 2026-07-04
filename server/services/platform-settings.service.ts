@@ -7,7 +7,7 @@ import {
   updateAuthSettings,
   userEmailExists,
 } from "@/server/repositories/platform-settings.repository";
-import { hasRole } from "@/server/services/rbac.service";
+import { hasAnyRole } from "@/server/services/rbac.service";
 
 export async function getAdminAuthSettings(
   supabase: SupabaseServerClient,
@@ -15,8 +15,8 @@ export async function getAdminAuthSettings(
 ) {
   const roles = await listUserRoles(supabase, actorUserId);
 
-  if (!hasRole(roles, "admin")) {
-    throw new Error("Admin access is required to manage authentication settings.");
+  if (!hasAnyRole(roles, ["admin", "manager"])) {
+    throw new Error("Admin or manager access is required to manage authentication settings.");
   }
 
   return getAuthSettings(supabase);
@@ -29,8 +29,8 @@ export async function updateAdminAuthSettings(
 ) {
   const roles = await listUserRoles(supabase, actorUserId);
 
-  if (!hasRole(roles, "admin")) {
-    throw new Error("Admin access is required to manage authentication settings.");
+  if (!hasAnyRole(roles, ["admin", "manager"])) {
+    throw new Error("Admin or manager access is required to manage authentication settings.");
   }
 
   await updateAuthSettings(supabase, actorUserId, settings);

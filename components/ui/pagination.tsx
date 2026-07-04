@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
+import { Slot, Slottable } from "@radix-ui/react-slot";
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ButtonProps, buttonVariants } from "@/components/ui/button";
@@ -77,7 +77,7 @@ const PaginationPrevious = ({
     {...props}
   >
     <ChevronLeftIcon className="h-4 w-4" />
-    {children}
+    <Slottable>{children}</Slottable>
   </PaginationLink>
 );
 PaginationPrevious.displayName = "PaginationPrevious";
@@ -93,7 +93,7 @@ const PaginationNext = ({
     className={cn("gap-1 pr-2.5", className)}
     {...props}
   >
-    {children}
+    <Slottable>{children}</Slottable>
     <ChevronRightIcon className="h-4 w-4" />
   </PaginationLink>
 );

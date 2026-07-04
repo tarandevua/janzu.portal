@@ -68,6 +68,10 @@ export const locationReviewHelpfulSchema = z.object({
   reviewId: z.string().uuid(),
 });
 
+export const locationMutationSchema = z.object({
+  locationId: z.string().uuid(),
+});
+
 export type LocationPayload = z.infer<typeof locationSchema>;
 export type LocationReviewPayload = z.infer<typeof locationReviewSchema>;
 export type LocationCommunityReviewPayload = z.infer<typeof locationCommunityReviewSchema>;

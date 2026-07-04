@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import { SettingsTabs } from "@/features/settings/components/settings-tabs";
 import { AuthSettingsForm } from "@/features/user-management/components/auth-settings-form";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getAdminAuthSettings } from "@/server/services/platform-settings.service";
-import { getPrimaryRole, getRoleAccessList, hasRole } from "@/server/services/rbac.service";
+import { getPrimaryRole, getRoleAccessList, hasAnyRole } from "@/server/services/rbac.service";
 
 type SettingsPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -32,11 +33,10 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
     redirect(`/${locale}/dashboard`);
   }
 
-  if (!hasRole(roles, "admin")) {
-    redirect(`/${locale}/dashboard`);
-  }
-
-  const authSettings = await getAdminAuthSettings(supabase, data.user.id);
+  const canManageAdminSettings = hasAnyRole(roles, ["admin", "manager"]);
+  const authSettings = canManageAdminSettings
+    ? await getAdminAuthSettings(supabase, data.user.id)
+    : null;
 
   return (
     <JanzuDashboardFrame
@@ -52,11 +52,20 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          <AuthSettingsForm
+          <SettingsTabs
             locale={locale}
-            allowUnknownMagicLinkLogin={authSettings.allowUnknownMagicLinkLogin}
-            status={status}
-            dictionary={dictionary.userManagement}
+            canManageAdminSettings={canManageAdminSettings}
+            dictionary={dictionary.settings}
+            adminSettings={
+              authSettings ? (
+                <AuthSettingsForm
+                  locale={locale}
+                  allowUnknownMagicLinkLogin={authSettings.allowUnknownMagicLinkLogin}
+                  status={status}
+                  dictionary={dictionary.userManagement}
+                />
+              ) : null
+            }
           />
         </div>
       </div>

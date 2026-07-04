@@ -477,6 +477,7 @@ export type Database = {
           status: "pending" | "approved" | "rejected";
           approved_by: string | null;
           approved_at: string | null;
+          is_deleted: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -494,6 +495,7 @@ export type Database = {
           status?: "pending" | "approved" | "rejected";
           approved_by?: string | null;
           approved_at?: string | null;
+          is_deleted?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -511,6 +513,7 @@ export type Database = {
           status?: "pending" | "approved" | "rejected";
           approved_by?: string | null;
           approved_at?: string | null;
+          is_deleted?: boolean;
           created_at?: string;
           updated_at?: string;
         };

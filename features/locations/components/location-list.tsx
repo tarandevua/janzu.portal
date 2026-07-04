@@ -1,8 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { MapPinIcon } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { LocationWithMedia } from "@/server/models/location.model";
-import { updateRejectedLocation } from "@/features/locations/actions";
+import { deleteLocationSubmissionInline, updateRejectedLocation } from "@/features/locations/actions";
+import { LocationDeleteConfirmation } from "@/features/locations/components/location-delete-confirmation";
 import { LocationEditDrawer } from "@/features/locations/components/location-edit-drawer";
 import { LocationForm } from "@/features/locations/components/location-form";
 import { formatCoordinate } from "@/features/maps/utils";
@@ -49,12 +53,22 @@ type LocationListProps = {
     latestReview: string;
     action: string;
     edit: string;
+    delete: string;
+    cancel: string;
+    close: string;
+    deleteConfirmTitle: string;
+    deleteConfirmDescription: string;
+    deleteConfirmAction: string;
+    deleteSaving: string;
     update: string;
     editRejectedDescription: string;
     submit: string;
     created: string;
     updated: string;
+    deleted: string;
     invalid: string;
+    deleteInvalid: string;
+    deleteForbidden: string;
     imageType: string;
     imageSize: string;
     imageCount: string;
@@ -96,6 +110,35 @@ function getStatusLabel(status: LocationWithMedia["status"], dictionary: Locatio
 }
 
 export function LocationList({ locale, locations, dictionary }: LocationListProps) {
+  const [visibleLocations, setVisibleLocations] = useState(locations);
+  const deleteAction = deleteLocationSubmissionInline.bind(null, locale);
+
+  useEffect(() => {
+    setVisibleLocations(locations);
+  }, [locations]);
+
+  function handleOptimisticDelete(locationId: string) {
+    setVisibleLocations((currentLocations) =>
+      currentLocations.filter((location) => location.id !== locationId)
+    );
+  }
+
+  function handleDeleteFailed(locationId: string) {
+    const deletedLocation = locations.find((location) => location.id === locationId);
+
+    if (!deletedLocation) {
+      return;
+    }
+
+    setVisibleLocations((currentLocations) => {
+      if (currentLocations.some((location) => location.id === locationId)) {
+        return currentLocations;
+      }
+
+      return [deletedLocation, ...currentLocations];
+    });
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -103,7 +146,7 @@ export function LocationList({ locale, locations, dictionary }: LocationListProp
         <CardDescription>{dictionary.listDescription}</CardDescription>
       </CardHeader>
       <CardContent>
-        {locations.length === 0 ? (
+        {visibleLocations.length === 0 ? (
           <p className="text-sm text-muted-foreground">{dictionary.empty}</p>
         ) : (
           <div className="overflow-hidden rounded-md border">
@@ -120,7 +163,7 @@ export function LocationList({ locale, locations, dictionary }: LocationListProp
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {locations.map((location) => {
+                {visibleLocations.map((location) => {
                   const [media] = getLocationMediaItems(location.media);
 
                   return (
@@ -164,34 +207,44 @@ export function LocationList({ locale, locations, dictionary }: LocationListProp
                     <TableCell className="max-w-[280px] text-sm text-muted-foreground">
                       {location.latestReview?.reason ?? "—"}
                     </TableCell>
-                    <TableCell className="text-right">
-                      {location.status === "rejected" ? (
-                        <LocationEditDrawer
-                          title={dictionary.edit}
-                          description={dictionary.editRejectedDescription}
-                          triggerLabel={dictionary.edit}
-                        >
-                          <LocationForm
-                            locale={locale}
-                            variant="plain"
-                            action={updateRejectedLocation.bind(null, locale, location.id)}
-                            initialValues={{
-                              name: location.name,
-                              locationType: location.locationType,
-                              description: location.description,
-                              latitude: location.latitude,
-                              longitude: location.longitude,
-                              temperatureValue: location.temperatureValue,
-                              temperatureUnit: location.temperatureUnit,
-                              accessInfo: location.accessInfo,
-                            }}
-                            submitLabel={dictionary.update}
-                            dictionary={dictionary}
-                          />
-                        </LocationEditDrawer>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">—</span>
-                      )}
+                    <TableCell>
+                      <div className="flex justify-end gap-2">
+                        {location.status === "rejected" ? (
+                          <LocationEditDrawer
+                            title={dictionary.edit}
+                            description={dictionary.editRejectedDescription}
+                            triggerLabel={dictionary.edit}
+                            cancelLabel={dictionary.cancel}
+                            closeLabel={dictionary.close}
+                          >
+                            <LocationForm
+                              locale={locale}
+                              variant="plain"
+                              action={updateRejectedLocation.bind(null, locale, location.id)}
+                              initialValues={{
+                                name: location.name,
+                                locationType: location.locationType,
+                                description: location.description,
+                                latitude: location.latitude,
+                                longitude: location.longitude,
+                                temperatureValue: location.temperatureValue,
+                                temperatureUnit: location.temperatureUnit,
+                                accessInfo: location.accessInfo,
+                              }}
+                              submitLabel={dictionary.update}
+                              dictionary={dictionary}
+                            />
+                          </LocationEditDrawer>
+                        ) : null}
+                        <LocationDeleteConfirmation
+                          locationId={location.id}
+                          locationName={location.name}
+                          action={deleteAction}
+                          onOptimisticDelete={handleOptimisticDelete}
+                          onDeleteFailed={handleDeleteFailed}
+                          dictionary={dictionary}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                   );

@@ -17,6 +17,7 @@ export type Location = {
   approvedBy: string | null;
   approvedByName?: string | null;
   approvedAt: string | null;
+  isDeleted: boolean;
   latestReview?: LocationReviewLog | null;
   createdAt: string;
   updatedAt: string;

@@ -56,7 +56,6 @@ type SidebarDictionary = {
 
 function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictionary) {
   const canManageUsers = access.some((item) => item.permissions.includes("users:manage"))
-  const isAdmin = access.some((item) => item.role === "admin")
 
   return {
     roleLinks: access.map((item) => ({
@@ -100,15 +99,13 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
         ]
       : []),
   ],
-  navSecondary: [...(isAdmin
-      ? [
-          {
-            title: dictionary.settings,
-            url: `/${locale}/dashboard/settings`,
-            icon: SettingsIcon,
-          },
-        ]
-      : []),],
+  navSecondary: [
+    {
+      title: dictionary.settings,
+      url: `/${locale}/dashboard/settings`,
+      icon: SettingsIcon,
+    }
+  ],
   documents: [
     {
       name: dictionary.practitionerMap,

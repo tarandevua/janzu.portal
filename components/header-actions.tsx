@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { Route } from "next";
-import { BellIcon, LanguagesIcon } from "lucide-react";
-import { ThemeModeToggle } from "@/components/theme-mode-toggle";
+import { BellIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDashboardNavigationLoading } from "@/components/dashboard/dashboard-navigation-loading";
@@ -15,24 +13,8 @@ type HeaderActionsProps = {
   unreadCount: number;
 };
 
-function getLocalizedHref(pathname: string, nextLocale: Locale) {
-  const segments = pathname.split("/");
-
-  if (segments[1] === "en" || segments[1] === "es") {
-    segments[1] = nextLocale;
-  } else {
-    segments.splice(1, 0, nextLocale);
-  }
-
-  const localizedPath = segments.join("/") || `/${nextLocale}`;
-  return localizedPath;
-}
-
 export function HeaderActions({ locale, unreadCount }: HeaderActionsProps) {
-  const pathname = usePathname();
   const navigationLoading = useDashboardNavigationLoading();
-  const nextLocale: Locale = locale === "en" ? "es" : "en";
-  const languageHref = getLocalizedHref(pathname, nextLocale);
   const notificationsHref = `/${locale}/dashboard/notifications`;
 
   return (
@@ -51,17 +33,6 @@ export function HeaderActions({ locale, unreadCount }: HeaderActionsProps) {
           ) : null}
         </Link>
       </Button>
-      <ThemeModeToggle />
-      <Button asChild variant="ghost" size="sm" className="gap-2">
-        <Link
-          href={languageHref as Route}
-          onClick={() => navigationLoading?.startNavigation(languageHref)}
-        >
-          <LanguagesIcon className="h-4 w-4" />
-          <span className="uppercase">{nextLocale}</span>
-        </Link>
-      </Button>
-      
     </div>
   );
 }

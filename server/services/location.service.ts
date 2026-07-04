@@ -6,10 +6,13 @@ import {
   approveLocationById,
   createLocationForPractitioner,
   listApprovedLocations,
+  listDeletedLocations,
   listLocationsByPractitionerId,
   listLocationsForReview,
   rejectLocationById,
+  restoreDeletedLocationById,
   resubmitRejectedLocationById,
+  softDeleteLocationById,
   toggleLocationReviewHelpfulVote,
   upsertLocationCommunityReview,
 } from "@/server/repositories/location.repository";
@@ -69,6 +72,10 @@ export function listLocationReviewQueue(supabase: SupabaseServerClient) {
   return listLocationsForReview(supabase);
 }
 
+export function listDeletedLocationQueue(supabase: SupabaseServerClient) {
+  return listDeletedLocations(supabase);
+}
+
 export async function reviewLocation(
   supabase: SupabaseServerClient,
   locationId: string,
@@ -99,4 +106,20 @@ export function toggleLocationReviewHelpful(
   userId: string
 ) {
   return toggleLocationReviewHelpfulVote(supabase, reviewId, userId);
+}
+
+export function deleteLocation(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  actorUserId: string
+) {
+  return softDeleteLocationById(supabase, locationId, actorUserId);
+}
+
+export function restoreLocation(
+  supabase: SupabaseServerClient,
+  locationId: string,
+  actorUserId: string
+) {
+  return restoreDeletedLocationById(supabase, locationId, actorUserId);
 }

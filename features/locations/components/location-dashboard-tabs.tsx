@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export type LocationDashboardTab = "submitted" | "approvals";
+export type LocationDashboardTab = "submitted" | "approvals" | "deleted";
 
 type LocationDashboardTabsProps = {
   activeTab: LocationDashboardTab;

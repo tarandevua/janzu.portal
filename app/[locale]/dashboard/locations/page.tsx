@@ -2,6 +2,7 @@ import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import { DeletedLocationList } from "@/features/locations/components/deleted-location-list";
 import {
   LocationDashboardTabs,
   type LocationDashboardTab,
@@ -15,10 +16,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import {
+  listDeletedLocationQueue,
   listLocationReviewQueue,
   listMyLocations,
 } from "@/server/services/location.service";
-import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/services/rbac.service";
+import { getPrimaryRole, getRoleAccessList, hasPermission, hasRole } from "@/server/services/rbac.service";
 
 type LocationsPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -26,7 +28,11 @@ type LocationsPageProps = {
 };
 
 function parseTab(value: string | undefined): LocationDashboardTab {
-  return value === "approvals" ? "approvals" : "submitted";
+  if (value === "approvals" || value === "deleted") {
+    return value;
+  }
+
+  return "submitted";
 }
 
 function buildLocationsHref(locale: Locale, tab: LocationDashboardTab) {
@@ -58,6 +64,7 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
   ]);
   const primaryRole = getPrimaryRole(roles);
   const canApproveLocations = hasPermission(roles, "locations:approve");
+  const canDeleteAnyLocations = hasRole(roles, "admin");
   const requestedTab = parseTab(tab);
 
   if (!primaryRole) {
@@ -68,9 +75,10 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
     redirect(`/${locale}/dashboard/profile`);
   }
 
-  const [myLocations, reviewLocations] = await Promise.all([
+  const [myLocations, reviewLocations, deletedLocations] = await Promise.all([
     practitioner ? listMyLocations(supabase, data.user.id) : Promise.resolve([]),
     canApproveLocations ? listLocationReviewQueue(supabase) : Promise.resolve([]),
+    canDeleteAnyLocations ? listDeletedLocationQueue(supabase) : Promise.resolve([]),
   ]);
   const availableTabs = [
     ...(practitioner
@@ -96,6 +104,23 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
                 locale={locale}
                 locations={reviewLocations}
                 status={status}
+                canDeleteAnyLocations={canDeleteAnyLocations}
+                dictionary={dictionary.locations}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(canDeleteAnyLocations
+      ? [
+          {
+            value: "deleted" as const,
+            label: dictionary.locations.deletedTitle,
+            href: buildLocationsHref(locale, "deleted") as Route,
+            content: (
+              <DeletedLocationList
+                locale={locale}
+                locations={deletedLocations}
                 dictionary={dictionary.locations}
               />
             ),

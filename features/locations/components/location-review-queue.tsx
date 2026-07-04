@@ -1,8 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { CheckCircle2Icon, XCircleIcon } from "lucide-react";
 import Image from "next/image";
 import type { Locale } from "@/lib/i18n/config";
 import type { LocationWithMedia } from "@/server/models/location.model";
-import { reviewLocationSubmission } from "@/features/locations/actions";
+import { deleteLocationSubmissionInline, reviewLocationSubmission } from "@/features/locations/actions";
+import { LocationDeleteConfirmation } from "@/features/locations/components/location-delete-confirmation";
 import { formatCoordinate } from "@/features/maps/utils";
 import { getLocationMediaItems } from "@/features/locations/utils/location-media";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -24,6 +28,7 @@ type LocationReviewQueueProps = {
   locale: Locale;
   locations: LocationWithMedia[];
   status?: string;
+  canDeleteAnyLocations?: boolean;
   dictionary: {
     reviewTitle: string;
     reviewDescription: string;
@@ -37,6 +42,12 @@ type LocationReviewQueueProps = {
     reviewedBy: string;
     latestReview: string;
     action: string;
+    delete: string;
+    cancel: string;
+    deleteConfirmTitle: string;
+    deleteConfirmDescription: string;
+    deleteConfirmAction: string;
+    deleteSaving: string;
     approve: string;
     reject: string;
     pool: string;
@@ -49,6 +60,9 @@ type LocationReviewQueueProps = {
     reviewRejected: string;
     reviewInvalid: string;
     reviewForbidden: string;
+    deleted: string;
+    deleteInvalid: string;
+    deleteForbidden: string;
   };
 };
 
@@ -102,6 +116,18 @@ function getStatusMessage(
     return dictionary.reviewForbidden;
   }
 
+  if (status === "deleted") {
+    return dictionary.deleted;
+  }
+
+  if (status === "delete-invalid") {
+    return dictionary.deleteInvalid;
+  }
+
+  if (status === "delete-forbidden") {
+    return dictionary.deleteForbidden;
+  }
+
   return null;
 }
 
@@ -109,10 +135,39 @@ export function LocationReviewQueue({
   locale,
   locations,
   status,
+  canDeleteAnyLocations = false,
   dictionary,
 }: LocationReviewQueueProps) {
   const action = reviewLocationSubmission.bind(null, locale);
+  const deleteAction = deleteLocationSubmissionInline.bind(null, locale);
+  const [visibleLocations, setVisibleLocations] = useState(locations);
   const message = getStatusMessage(status, dictionary);
+
+  useEffect(() => {
+    setVisibleLocations(locations);
+  }, [locations]);
+
+  function handleOptimisticDelete(locationId: string) {
+    setVisibleLocations((currentLocations) =>
+      currentLocations.filter((location) => location.id !== locationId)
+    );
+  }
+
+  function handleDeleteFailed(locationId: string) {
+    const deletedLocation = locations.find((location) => location.id === locationId);
+
+    if (!deletedLocation) {
+      return;
+    }
+
+    setVisibleLocations((currentLocations) => {
+      if (currentLocations.some((location) => location.id === locationId)) {
+        return currentLocations;
+      }
+
+      return [deletedLocation, ...currentLocations];
+    });
+  }
 
   return (
     <Card>
@@ -122,12 +177,21 @@ export function LocationReviewQueue({
       </CardHeader>
       <CardContent className="grid gap-4">
         {message ? (
-          <Alert variant={status === "review-invalid" || status === "review-forbidden" ? "destructive" : "default"}>
+          <Alert
+            variant={
+              status === "review-invalid" ||
+              status === "review-forbidden" ||
+              status === "delete-invalid" ||
+              status === "delete-forbidden"
+                ? "destructive"
+                : "default"
+            }
+          >
             <AlertDescription>{message}</AlertDescription>
           </Alert>
         ) : null}
 
-        {locations.length === 0 ? (
+        {visibleLocations.length === 0 ? (
           <p className="text-sm text-muted-foreground">{dictionary.emptyReview}</p>
         ) : (
           <div className="overflow-hidden rounded-md border">
@@ -144,7 +208,7 @@ export function LocationReviewQueue({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {locations.map((location) => {
+                {visibleLocations.map((location) => {
                   const [media] = getLocationMediaItems(location.media);
 
                   return (
@@ -192,40 +256,53 @@ export function LocationReviewQueue({
                       {location.latestReview?.reason ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      {location.status === "pending" ? (
-                        <div className="grid justify-end gap-2">
-                          <form action={action}>
-                            <input type="hidden" name="locationId" value={location.id} />
-                            <input type="hidden" name="action" value="approve" />
-                            <Button type="submit" size="sm" className="w-full">
-                              <CheckCircle2Icon />
-                              {dictionary.approve}
-                            </Button>
-                          </form>
-                          <form action={action} className="grid min-w-56 gap-2">
-                            <input type="hidden" name="locationId" value={location.id} />
-                            <input type="hidden" name="action" value="reject" />
-                            <Label className="sr-only" htmlFor={`reason-${location.id}`}>
-                              {dictionary.reason}
-                            </Label>
-                            <Textarea
-                              id={`reason-${location.id}`}
-                              name="reason"
-                              required
-                              rows={2}
-                              placeholder={dictionary.reason}
-                            />
-                            <Button type="submit" size="sm" variant="outline" className="w-full">
-                              <XCircleIcon />
-                              {dictionary.reject}
-                            </Button>
-                          </form>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          {getStatusLabel(location.status, dictionary)}
-                        </span>
-                      )}
+                      <div className="grid justify-end gap-2">
+                        {location.status === "pending" ? (
+                          <>
+                            <form action={action}>
+                              <input type="hidden" name="locationId" value={location.id} />
+                              <input type="hidden" name="action" value="approve" />
+                              <Button type="submit" size="sm" className="w-full">
+                                <CheckCircle2Icon />
+                                {dictionary.approve}
+                              </Button>
+                            </form>
+                            <form action={action} className="grid min-w-56 gap-2">
+                              <input type="hidden" name="locationId" value={location.id} />
+                              <input type="hidden" name="action" value="reject" />
+                              <Label className="sr-only" htmlFor={`reason-${location.id}`}>
+                                {dictionary.reason}
+                              </Label>
+                              <Textarea
+                                id={`reason-${location.id}`}
+                                name="reason"
+                                required
+                                rows={2}
+                                placeholder={dictionary.reason}
+                              />
+                              <Button type="submit" size="sm" variant="outline" className="w-full">
+                                <XCircleIcon />
+                                {dictionary.reject}
+                              </Button>
+                            </form>
+                          </>
+                        ) : (
+                          <span className="text-right text-sm text-muted-foreground">
+                            {getStatusLabel(location.status, dictionary)}
+                          </span>
+                        )}
+                        {canDeleteAnyLocations ? (
+                          <LocationDeleteConfirmation
+                            locationId={location.id}
+                            locationName={location.name}
+                            action={deleteAction}
+                            onOptimisticDelete={handleOptimisticDelete}
+                            onDeleteFailed={handleDeleteFailed}
+                            fullWidth
+                            dictionary={dictionary}
+                          />
+                        ) : null}
+                      </div>
                     </TableCell>
                   </TableRow>
                   );
