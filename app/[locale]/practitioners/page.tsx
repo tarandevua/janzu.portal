@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Shell } from "lucide-react";
 import { PublicPractitionerDirectory } from "@/features/practitioners/components/public-practitioner-directory";
+import { LanguageSelector } from "@/components/language-selector";
 import { Button } from "@/components/ui/button";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
@@ -36,6 +37,7 @@ export default async function PractitionersPage({ params }: PractitionersPagePro
             ) : null}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-3xl font-semibold">{dictionary.practitioners.public.title}</h1>
+            <LanguageSelector locale={locale} />
           </div>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             {dictionary.practitioners.public.description}

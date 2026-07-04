@@ -15,7 +15,8 @@
       "authRequired": "Please sign in to continue.",
       "invalidLink": "That sign-in link is invalid or expired.",
       "signedOut": "You have been signed out.",
-      "unknownUserDisabled": "This email is not registered. Ask an admin to invite you before signing in."
+      "unknownUserDisabled": "This email is not registered. Ask an admin to invite you before signing in.",
+      "deletedUser": "This account has been deactivated. Contact an admin if you need access restored."
     }
   },
   "common": {
@@ -257,7 +258,7 @@
       "backToPortal": "Back to portal",
       "backToList": "Back to practitioners",
       "apprenticePin": "Apprentice",
-      "participantPin": "Certified professional",
+      "participantPin": "Certified Professional",
       "facilitatorPin": "Facilitator",
       "emptyGroup": "No public profiles are available in this group yet.",
       "viewDetails": "View details"
@@ -317,6 +318,7 @@
     "page": "Page",
     "feedbackCreated": "Feedback link created.",
     "feedbackInvalid": "Could not create feedback link.",
+    "publicProfileRequired": "Your public profile is not visible yet. Please contact an admin or manager to make your profile public before using this section.",
     "allSessionsTitle": "All users sessions",
     "allSessionsDescription": "Review sessions across all practitioners and filter by participant or validation status.",
     "emptyAllSessions": "No sessions match these filters.",
@@ -644,6 +646,7 @@
     "createdAt": "Created",
     "action": "Action",
     "view": "View",
+    "viewMore": "View more",
     "markRead": "Mark read",
     "invalid": "That notification could not be updated."
   },
@@ -667,6 +670,8 @@
     "assignRole": "Assign role",
     "removeRole": "Remove role",
     "viewDetails": "Details",
+    "cancel": "Cancel",
+    "close": "Close",
     "detailsTitle": "User details",
     "detailsDescription": "Review account, profile, and activity summary for this portal user.",
     "userId": "User ID",

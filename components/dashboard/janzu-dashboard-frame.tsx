@@ -10,7 +10,7 @@ import type { Locale } from "@/lib/i18n/config"
 import { getDictionary } from "@/lib/i18n/dictionaries"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type { RoleAccess } from "@/server/models/rbac.model"
-import { countMyUnreadNotifications } from "@/server/services/notification.service"
+import { listMyNotifications } from "@/server/services/notification.service"
 
 type DashboardUser = {
   id: string
@@ -34,12 +34,25 @@ export async function JanzuDashboardFrame({
   title,
   children,
 }: JanzuDashboardFrameProps) {
-  const [unreadCount, dictionary] = await Promise.all([
+  const [notificationSummary, dictionary] = await Promise.all([
     createSupabaseServerClient()
-      .then((supabase) => countMyUnreadNotifications(supabase, user.id))
-      .catch(() => 0),
+      .then((supabase) => listMyNotifications(supabase, user.id))
+      .catch(() => ({ notifications: [], unreadCount: 0 })),
     getDictionary(locale),
   ])
+  const latestUnreadNotifications = notificationSummary.notifications
+    .filter((notification) => !notification.readAt)
+    .slice(0, 4)
+    .map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      body: notification.body,
+      href: notification.href,
+      createdAtLabel: new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(notification.createdAt)),
+    }))
 
   return (
     <DashboardNavigationLoadingProvider>
@@ -52,7 +65,14 @@ export async function JanzuDashboardFrame({
           dictionary={dictionary.dashboard.sidebar}
         />
         <SidebarInset>
-          <SiteHeader title={title} locale={locale} unreadCount={unreadCount} />
+          <SiteHeader
+            title={title}
+            locale={locale}
+            unreadCount={notificationSummary.unreadCount}
+            latestNotifications={latestUnreadNotifications}
+            notificationCount={notificationSummary.unreadCount}
+            notificationDictionary={dictionary.notifications}
+          />
           <DashboardNavigationContent>{children}</DashboardNavigationContent>
         </SidebarInset>
       </SidebarProvider>

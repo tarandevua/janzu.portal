@@ -4,6 +4,7 @@ import type { Locale } from "@/lib/i18n/config";
 import type { CommunityEvent } from "@/server/models/event.model";
 import { rsvpToEvent } from "@/features/events/actions";
 import { EventImageCarousel } from "@/features/events/components/event-image-carousel";
+import { LanguageSelector } from "@/components/language-selector";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,7 @@ export function PublicEventList({ locale, events, isSignedIn, status, dictionary
         ) : null}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
+          <LanguageSelector locale={locale} />
         </div>
         <p className="max-w-3xl text-muted-foreground">{dictionary.publicDescription}</p>
       </div>

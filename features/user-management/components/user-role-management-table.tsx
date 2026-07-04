@@ -25,13 +25,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   Table,
   TableBody,
@@ -61,6 +63,8 @@ type UserManagementDictionary = {
   assignRole: string;
   removeRole: string;
   viewDetails: string;
+  cancel: string;
+  close: string;
   detailsTitle: string;
   detailsDescription: string;
   userId: string;
@@ -182,7 +186,7 @@ function UserManagementSkeleton() {
   );
 }
 
-function UserDetailsSheet({
+function UserDetailsDrawer({
   locale,
   managedUser,
   actorRoles,
@@ -209,19 +213,30 @@ function UserDetailsSheet({
     .join(", ");
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
+    <Drawer direction="right" handleOnly>
+      <DrawerTrigger asChild>
         <Button type="button" size="sm" variant="outline">
           <EyeIcon className="h-4 w-4" />
           {dictionary.viewDetails}
         </Button>
-      </SheetTrigger>
-      <SheetContent className="flex h-full w-full max-w-[100vw] flex-col overflow-hidden sm:max-w-xl">
-        <SheetHeader className="shrink-0 pr-8">
-          <SheetTitle>{dictionary.detailsTitle}</SheetTitle>
-          <SheetDescription>{dictionary.detailsDescription}</SheetDescription>
-        </SheetHeader>
-        <div className="min-h-0 flex-1 overflow-y-auto py-4">
+      </DrawerTrigger>
+      <DrawerContent className="inset-x-auto bottom-0 left-auto right-0 top-0 mt-0 flex h-[100dvh] max-h-[100dvh] w-[min(100vw,40rem)] max-w-[100vw] overflow-hidden rounded-none border-l">
+        <DrawerHeader className="relative shrink-0 border-b pr-14 text-left">
+          <DrawerTitle>{dictionary.detailsTitle}</DrawerTitle>
+          <DrawerDescription>{dictionary.detailsDescription}</DrawerDescription>
+          <DrawerClose asChild>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="absolute right-3 top-3 h-8 w-8"
+            >
+              <XIcon className="h-4 w-4" />
+              <span className="sr-only">{dictionary.close}</span>
+            </Button>
+          </DrawerClose>
+        </DrawerHeader>
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
           <div className="grid gap-6">
             <section className="grid gap-3">
               <h3 className="text-sm font-semibold">{dictionary.user}</h3>
@@ -341,8 +356,15 @@ function UserDetailsSheet({
             </section>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+        <DrawerFooter className="shrink-0 border-t bg-background">
+          <DrawerClose asChild>
+            <Button type="button" variant="outline" className="w-full">
+              {dictionary.cancel}
+            </Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -514,7 +536,7 @@ export function UserRoleManagementTable({
                     </TableCell>
                     <TableCell className="w-40">
                       <div className="flex flex-wrap gap-2">
-                        <UserDetailsSheet
+                        <UserDetailsDrawer
                           locale={locale}
                           managedUser={managedUser}
                           actorRoles={actorRoles}

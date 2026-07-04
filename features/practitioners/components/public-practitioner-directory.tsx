@@ -31,7 +31,7 @@ type PublicPractitionerDirectoryProps = {
   dictionary: PublicPractitionerDirectoryDictionary;
 };
 
-const practitionerGroups: PractitionerMarkerGroup[] = ["apprentice", "participant", "facilitator"];
+const practitionerGroups: PractitionerMarkerGroup[] = ["apprentice", "participant"]; // "facilitator"
 
 const groupColorClassName: Record<PractitionerMarkerGroup, string> = {
   apprentice: "bg-[#d97706]",
@@ -128,7 +128,7 @@ export function PublicPractitionerDirectory({
             <Card key={profile.id} className="flex h-full flex-col transition-colors hover:bg-accent/40">
               <CardHeader>
                 <div className="flex items-start gap-3">
-                  <Avatar className="h-12 w-12 shrink-0 rounded-lg">
+                  <Avatar className="h-20 w-20 shrink-0 rounded-lg">
                     <AvatarImage
                       src={profile.profileImageUrl ?? ""}
                       alt={practitionerName}
@@ -143,7 +143,7 @@ export function PublicPractitionerDirectory({
                     <CardDescription>
                       {[profile.country, profile.city].filter(Boolean).join(", ")}
                     </CardDescription>
-                    <Badge variant="secondary" className="mt-2">
+                    <Badge className={`mt-2 ${groupColorClassName[profile.publicGroup]}`}>
                       {getGroupLabel(dictionary, profile.publicGroup)}
                     </Badge>
                   </div>

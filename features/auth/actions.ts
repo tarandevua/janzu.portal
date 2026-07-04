@@ -9,7 +9,7 @@ import { getMagicLinkLoginPolicy } from "@/server/services/platform-settings.ser
 
 export type MagicLinkActionResult = {
   ok: boolean;
-  status: "sent" | "invalid-email" | "unknown-user-disabled" | "error";
+  status: "sent" | "invalid-email" | "unknown-user-disabled" | "deleted-user" | "error";
 };
 
 export async function sendMagicLink(locale: Locale, formData: FormData) {
@@ -32,14 +32,18 @@ export async function sendMagicLinkInline(
 
   const origin = getClientEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
   const supabase = await createSupabaseServerClient();
-  const magicLinkPolicy = await getMagicLinkLoginPolicy(parsed.data.email);
+  const email = parsed.data.email.toLowerCase();
+  const magicLinkPolicy = await getMagicLinkLoginPolicy(email);
 
   if (!magicLinkPolicy.isAllowed) {
-    return { ok: false, status: "unknown-user-disabled" };
+    return {
+      ok: false,
+      status: magicLinkPolicy.reason ?? "unknown-user-disabled",
+    };
   }
 
   const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.data.email,
+    email,
     options: {
       emailRedirectTo: `${origin}/${locale}/auth/callback?locale=${locale}`,
       shouldCreateUser: magicLinkPolicy.shouldCreateUser,

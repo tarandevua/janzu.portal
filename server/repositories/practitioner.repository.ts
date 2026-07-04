@@ -1,4 +1,5 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
+import { listUserRoles } from "@/server/repositories/rbac.repository";
 import type { Database } from "@/types/database";
 import type {
   PractitionerProfile,
@@ -41,6 +42,10 @@ type PractitionerLocationRow = {
 };
 
 type UserDisplayRow = Pick<Database["public"]["Tables"]["users"]["Row"], "full_name">;
+type CertificationStatusRow = Pick<
+  Database["public"]["Tables"]["certification_progress"]["Row"],
+  "status"
+>;
 
 type PublicPractitionerRpcClient = {
   rpc(
@@ -107,6 +112,36 @@ function toProfile(
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+async function getPractitionerPublicGroup(
+  supabase: SupabaseServerClient,
+  practitionerId: string,
+  userId: string
+): Promise<PublicPractitionerGroup> {
+  const roles = await listUserRoles(supabase, userId);
+
+  if (roles.includes("facilitator")) {
+    return "facilitator";
+  }
+
+  if (roles.includes("practitioner")) {
+    return "participant";
+  }
+
+  const { data, error } = await supabase
+    .from("certification_progress")
+    .select("status")
+    .eq("practitioner_id", practitionerId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data as CertificationStatusRow | null)?.status === "approved"
+    ? "participant"
+    : "apprentice";
 }
 
 async function listPracticeLocationsByPractitionerIds(
@@ -188,9 +223,11 @@ export async function getPractitionerProfileByUserId(
   }
 
   const practitioner = data as PractitionerRow;
+  const publicGroup = await getPractitionerPublicGroup(supabase, practitioner.id, userId);
   const [profile] = await attachPracticeLocations(supabase, [
     {
       ...practitioner,
+      public_group: publicGroup,
       display_name: await getUserFullName(supabase, userId),
     },
   ]);

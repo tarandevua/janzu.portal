@@ -2,6 +2,7 @@ import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SessionRequestList } from "@/features/session-requests/components/session-request-list";
 import { AdminSessionList } from "@/features/sessions/components/admin-session-list";
 import { SessionAvailabilityManager } from "@/features/sessions/components/session-availability-manager";
@@ -22,7 +23,7 @@ import {
   listSessionsByPractitionerIdPage,
 } from "@/server/repositories/session.repository";
 import { findFeedbackForSessions } from "@/server/services/feedback.service";
-import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/services/rbac.service";
+import { getPrimaryRole, getRoleAccessList, hasPermission, hasRole } from "@/server/services/rbac.service";
 import type { AdminSessionFilters, SessionValidationFilter } from "@/server/models/session.model";
 
 const PAGE_SIZE = 10;
@@ -148,6 +149,26 @@ function buildTabHref(
   return buildRequestsHref(locale, sessionsPage, requestsPage, tab, allSessionsPage, adminFilters);
 }
 
+function PublicProfileRequiredMessage({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default async function SessionsPage({ params, searchParams }: SessionsPageProps) {
   const [{ locale }, search] = await Promise.all([params, searchParams]);
   const { status } = search;
@@ -175,7 +196,9 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
   const primaryRole = getPrimaryRole(roles);
   const canReviewAllSessions = hasPermission(roles, "users:manage");
   const parsedTab = parseTab(search.tab);
-  const activeTab = parsedTab === "all" && !canReviewAllSessions ? "history" : parsedTab;
+  const canUseSessionHistory =
+    hasRole(roles, "apprentice") || hasRole(roles, "practitioner") || hasRole(roles, "facilitator");
+  const canUsePublicSessionTools = hasRole(roles, "practitioner") || hasRole(roles, "facilitator");
 
   if (!primaryRole) {
     redirect(`/${locale}/dashboard`);
@@ -184,6 +207,16 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
   if (!practitioner && !canReviewAllSessions) {
     redirect(`/${locale}/dashboard/profile`);
   }
+
+  const availableTabValues: SessionDashboardTab[] = [
+    ...(canUseSessionHistory && practitioner ? (["history"] as const) : []),
+    ...(canUsePublicSessionTools && practitioner ? (["requests", "availability"] as const) : []),
+    ...(canReviewAllSessions ? (["all"] as const) : []),
+  ];
+  const activeTab = availableTabValues.includes(parsedTab)
+    ? parsedTab
+    : availableTabValues[0] ?? "history";
+  const isPublicProfile = practitioner?.isPublic === true;
 
   const [
     clients,
@@ -260,55 +293,73 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
           <SessionDashboardTabs
             activeTab={activeTab}
             tabs={{
-              history: {
-                label: dictionary.sessions.listTitle,
-                href: buildTabHref(locale, "history", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
-                content: (
-                  <SessionList
-                    locale={locale}
-                    sessions={sessions}
-                    clients={clients}
-                    feedbackLinks={feedbackLinks}
-                    siteUrl={siteUrl.replace(/\/$/, "")}
-                    page={sessionsPage}
-                    pageSize={PAGE_SIZE}
-                    totalCount={sessionsPageData.totalCount}
-                    previousHref={buildSessionsHref(locale, sessionsPage - 1, requestsPage, "history", allSessionsPage, adminFilters)}
-                    nextHref={buildSessionsHref(locale, sessionsPage + 1, requestsPage, "history", allSessionsPage, adminFilters)}
-                    dictionary={dictionary.sessions}
-                    feedbackDictionary={dictionary.feedback}
-                  />
-                ),
-              },
-              requests: {
-                label: dictionary.sessionRequests.listTitle,
-                href: buildTabHref(locale, "requests", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
-                content: (
-                  <SessionRequestList
-                    locale={locale}
-                    requests={sessionRequests}
-                    page={requestsPage}
-                    pageSize={PAGE_SIZE}
-                    totalCount={sessionRequestsPageData.totalCount}
-                    previousHref={buildRequestsHref(locale, sessionsPage, requestsPage - 1, "requests", allSessionsPage, adminFilters)}
-                    nextHref={buildRequestsHref(locale, sessionsPage, requestsPage + 1, "requests", allSessionsPage, adminFilters)}
-                    status={status}
-                    dictionary={dictionary.sessionRequests}
-                  />
-                ),
-              },
-              availability: {
-                label: dictionary.sessions.availabilityTitle,
-                href: buildTabHref(locale, "availability", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
-                content: (
-                  <SessionAvailabilityManager
-                    locale={locale}
-                    slots={availabilitySlots}
-                    status={status}
-                    dictionary={dictionary.sessions}
-                  />
-                ),
-              },
+              ...(canUseSessionHistory && practitioner
+                ? {
+                    history: {
+                      label: dictionary.sessions.listTitle,
+                      href: buildTabHref(locale, "history", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
+                      content: (
+                        <SessionList
+                          locale={locale}
+                          sessions={sessions}
+                          clients={clients}
+                          feedbackLinks={feedbackLinks}
+                          siteUrl={siteUrl.replace(/\/$/, "")}
+                          page={sessionsPage}
+                          pageSize={PAGE_SIZE}
+                          totalCount={sessionsPageData.totalCount}
+                          previousHref={buildSessionsHref(locale, sessionsPage - 1, requestsPage, "history", allSessionsPage, adminFilters)}
+                          nextHref={buildSessionsHref(locale, sessionsPage + 1, requestsPage, "history", allSessionsPage, adminFilters)}
+                          dictionary={dictionary.sessions}
+                          feedbackDictionary={dictionary.feedback}
+                        />
+                      ),
+                    },
+                  }
+                : {}),
+              ...(canUsePublicSessionTools && practitioner
+                ? {
+                    requests: {
+                      label: dictionary.sessionRequests.listTitle,
+                      href: buildTabHref(locale, "requests", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
+                      content: isPublicProfile ? (
+                        <SessionRequestList
+                          locale={locale}
+                          requests={sessionRequests}
+                          page={requestsPage}
+                          pageSize={PAGE_SIZE}
+                          totalCount={sessionRequestsPageData.totalCount}
+                          previousHref={buildRequestsHref(locale, sessionsPage, requestsPage - 1, "requests", allSessionsPage, adminFilters)}
+                          nextHref={buildRequestsHref(locale, sessionsPage, requestsPage + 1, "requests", allSessionsPage, adminFilters)}
+                          status={status}
+                          dictionary={dictionary.sessionRequests}
+                        />
+                      ) : (
+                        <PublicProfileRequiredMessage
+                          title={dictionary.sessionRequests.listTitle}
+                          description={dictionary.sessions.publicProfileRequired}
+                        />
+                      ),
+                    },
+                    availability: {
+                      label: dictionary.sessions.availabilityTitle,
+                      href: buildTabHref(locale, "availability", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
+                      content: isPublicProfile ? (
+                        <SessionAvailabilityManager
+                          locale={locale}
+                          slots={availabilitySlots}
+                          status={status}
+                          dictionary={dictionary.sessions}
+                        />
+                      ) : (
+                        <PublicProfileRequiredMessage
+                          title={dictionary.sessions.availabilityTitle}
+                          description={dictionary.sessions.publicProfileRequired}
+                        />
+                      ),
+                    },
+                  }
+                : {}),
               ...(canReviewAllSessions
                 ? {
                     all: {

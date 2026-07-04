@@ -10,7 +10,7 @@ type PlatformSettingRow = Pick<
   "value"
 >;
 type PlatformSettingUpdate = Database["public"]["Tables"]["platform_settings"]["Update"];
-type UserIdRow = Pick<Database["public"]["Tables"]["users"]["Row"], "id">;
+type UserLoginRow = Pick<Database["public"]["Tables"]["users"]["Row"], "id" | "is_deleted">;
 type QueryError = { message: string } | null;
 
 type PlatformSettingsClient = {
@@ -28,9 +28,9 @@ type PlatformSettingsClient = {
 
 type UserLookupClient = {
   from(table: "users"): {
-    select(columns: "id"): {
+    select(columns: "id, is_deleted"): {
       eq(column: "email", value: string): {
-        maybeSingle(): Promise<{ data: UserIdRow | null; error: QueryError }>;
+        maybeSingle(): Promise<{ data: UserLoginRow | null; error: QueryError }>;
       };
     };
   };
@@ -82,14 +82,14 @@ export async function updateAuthSettings(
   }
 }
 
-export async function userEmailExists(
+export async function getUserLoginRecordByEmail(
   supabase: SupabaseAdminClient,
   email: string
 ) {
   const queryClient = supabase as unknown as UserLookupClient;
   const { data, error } = await queryClient
     .from("users")
-    .select("id")
+    .select("id, is_deleted")
     .eq("email", email)
     .maybeSingle();
 
@@ -97,5 +97,10 @@ export async function userEmailExists(
     throw new Error(error.message);
   }
 
-  return Boolean(data);
+  return data
+    ? {
+        id: data.id,
+        isDeleted: data.is_deleted,
+      }
+    : null;
 }

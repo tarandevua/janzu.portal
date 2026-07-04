@@ -4,8 +4,8 @@ import type { AuthSettings } from "@/server/models/platform-settings.model";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import {
   getAuthSettings,
+  getUserLoginRecordByEmail,
   updateAuthSettings,
-  userEmailExists,
 } from "@/server/repositories/platform-settings.repository";
 import { hasAnyRole } from "@/server/services/rbac.service";
 
@@ -39,16 +39,35 @@ export async function updateAdminAuthSettings(
 export async function getMagicLinkLoginPolicy(email: string) {
   const admin = createSupabaseAdminClient();
   const settings = await getAuthSettings(admin);
+  const existingUser = await getUserLoginRecordByEmail(admin, email);
+
+  if (existingUser?.isDeleted) {
+    return {
+      isAllowed: false,
+      shouldCreateUser: false,
+      reason: "deleted-user" as const,
+    };
+  }
+
+  if (existingUser) {
+    return {
+      isAllowed: true,
+      shouldCreateUser: false,
+      reason: null,
+    };
+  }
 
   if (settings.allowUnknownMagicLinkLogin) {
     return {
       isAllowed: true,
       shouldCreateUser: true,
+      reason: null,
     };
   }
 
   return {
-    isAllowed: await userEmailExists(admin, email),
+    isAllowed: false,
     shouldCreateUser: false,
+    reason: "unknown-user-disabled" as const,
   };
 }

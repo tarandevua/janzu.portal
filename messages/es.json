@@ -15,7 +15,8 @@
       "authRequired": "Inicia sesion para continuar.",
       "invalidLink": "Ese enlace de acceso no es valido o expiro.",
       "signedOut": "Has cerrado sesion.",
-      "unknownUserDisabled": "Este correo no esta registrado. Pide a un administrador que te invite antes de iniciar sesion."
+      "unknownUserDisabled": "Este correo no esta registrado. Pide a un administrador que te invite antes de iniciar sesion.",
+      "deletedUser": "Esta cuenta fue desactivada. Contacta a un administrador si necesitas restaurar el acceso."
     }
   },
   "common": {
@@ -257,7 +258,7 @@
       "backToPortal": "Volver al portal",
       "backToList": "Volver a practicantes",
       "apprenticePin": "Aprendiz",
-      "participantPin": "Profesional certificado",
+      "participantPin": "Profesional Certificado",
       "facilitatorPin": "Facilitador",
       "emptyGroup": "Aun no hay perfiles publicos disponibles en este grupo.",
       "viewDetails": "Ver detalles"
@@ -317,6 +318,7 @@
     "page": "Pagina",
     "feedbackCreated": "Enlace de feedback creado.",
     "feedbackInvalid": "No se pudo crear el enlace de feedback.",
+    "publicProfileRequired": "Tu perfil publico aun no esta visible. Contacta a un administrador o gestor para hacerlo publico antes de usar esta seccion.",
     "allSessionsTitle": "Sesiones de todos los usuarios",
     "allSessionsDescription": "Revisa sesiones de todos los practicantes y filtra por participante o estado de validacion.",
     "emptyAllSessions": "No hay sesiones con estos filtros.",
@@ -644,6 +646,7 @@
     "createdAt": "Creada",
     "action": "Accion",
     "view": "Ver",
+    "viewMore": "Ver mas",
     "markRead": "Marcar como leida",
     "invalid": "No se pudo actualizar esa notificacion."
   },
@@ -667,6 +670,8 @@
     "assignRole": "Asignar rol",
     "removeRole": "Quitar rol",
     "viewDetails": "Detalles",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
     "detailsTitle": "Detalles del usuario",
     "detailsDescription": "Revisa la cuenta, perfil y resumen de actividad de este usuario del portal.",
     "userId": "ID de usuario",

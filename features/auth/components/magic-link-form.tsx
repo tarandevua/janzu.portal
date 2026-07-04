@@ -22,6 +22,7 @@ type MagicLinkDictionary = {
   invalidLink: string;
   signedOut: string;
   unknownUserDisabled: string;
+  deletedUser: string;
 };
 
 type MagicLinkFormProps = {
@@ -38,6 +39,7 @@ const statusCopy: Record<string, keyof MagicLinkDictionary> = {
   "invalid-link": "invalidLink",
   "signed-out": "signedOut",
   "unknown-user-disabled": "unknownUserDisabled",
+  "deleted-user": "deletedUser",
 };
 
 export function MagicLinkForm({ dictionary, locale, status }: MagicLinkFormProps) {

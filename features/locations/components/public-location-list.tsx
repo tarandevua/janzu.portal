@@ -11,6 +11,7 @@ import type { MapMarker } from "@/features/maps/types";
 import { formatCoordinate } from "@/features/maps/utils";
 import { LocationImageGallery } from "@/features/locations/components/location-image-gallery";
 import { LocationTemperatureDisplay } from "@/features/locations/components/location-temperature-display";
+import { LanguageSelector } from "@/components/language-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -136,6 +137,7 @@ export function PublicLocationList({
         ) : null}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
+          <LanguageSelector locale={locale} />
         </div>
         <p className="max-w-3xl text-muted-foreground">{dictionary.publicDescription}</p>
       </div>

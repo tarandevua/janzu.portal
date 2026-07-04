@@ -2,12 +2,13 @@ import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ClusteredMap } from "@/features/maps/components/clustered-map";
-import type { MapMarker } from "@/features/maps/types";
+import type { MapMarker, PractitionerMarkerGroup } from "@/features/maps/types";
 import { formatCoordinate, hasValidCoordinates } from "@/features/maps/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LanguageSelector } from "@/components/language-selector";
 import { SessionRequestForm } from "@/features/session-requests/components/session-request-form";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
@@ -18,6 +19,12 @@ import { findPublicPractitionerProfile } from "@/server/services/practitioner.se
 type PractitionerPublicProfilePageProps = {
   params: Promise<{ locale: Locale; id: string }>;
   searchParams: Promise<{ status?: string }>;
+};
+
+const groupColorClassName: Record<PractitionerMarkerGroup, string> = {
+  apprentice: "bg-[#d97706]",
+  participant: "bg-primary",
+  facilitator: "bg-[#4f46e5]",
 };
 
 function getPractitionerName(profile: { displayName?: string | null; city: string | null }, fallback: string) {
@@ -105,19 +112,25 @@ export default async function PractitionerPublicProfilePage({
     }),
   }));
   const availableSlots = await listPublicAvailableSlotsByPractitionerId(supabase, profile.id);
+  const hasAvailableSlots = availableSlots.length > 0;
   const profileLinks = getProfileLinks(profile);
 
   return (
     <main className="min-h-screen bg-muted/40 p-6">
-      <div className="mx-auto grid max-w-5xl gap-4">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost" className="w-fit">
           <Link href={`/${locale}/practitioners`}>
             <ArrowLeftIcon className="size-4" />
             {dictionary.practitioners.public.backToList}
           </Link>
         </Button>
+        <LanguageSelector locale={locale} />
       </div>
-      <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_360px]">
+      <div
+        className={`mx-auto grid max-w-5xl gap-6 ${
+          hasAvailableSlots ? "lg:grid-cols-[1fr_360px]" : ""
+        }`}
+      >
         <Card>
           <CardHeader>
             <div className="flex items-start gap-4">
@@ -132,7 +145,7 @@ export default async function PractitionerPublicProfilePage({
                 <p className="mt-1 text-sm text-muted-foreground">
                   {[profile.country, profile.city].filter(Boolean).join(", ")}
                 </p>
-                <Badge variant="secondary" className="mt-2">
+                <Badge className={`mt-2 ${groupColorClassName[profile.publicGroup]}`}>
                   {dictionary.practitioners.public[`${profile.publicGroup}Pin`]}
                 </Badge>
                 <div className="space-y-3">
@@ -196,13 +209,15 @@ export default async function PractitionerPublicProfilePage({
             ) : null}
           </CardContent>
         </Card>
-        <SessionRequestForm
-          locale={locale}
-          practitionerId={profile.id}
-          availableSlots={availableSlots}
-          status={status}
-          dictionary={dictionary.sessionRequests}
-        />
+        {hasAvailableSlots ? (
+          <SessionRequestForm
+            locale={locale}
+            practitionerId={profile.id}
+            availableSlots={availableSlots}
+            status={status}
+            dictionary={dictionary.sessionRequests}
+          />
+        ) : null}
       </div>
     </main>
   );
