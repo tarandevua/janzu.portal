@@ -32,6 +32,10 @@ function getMarkerClassName(marker: MapMarker) {
 }
 
 function getMarkerLabel(marker: MapMarker) {
+  if (marker.label) {
+    return marker.label;
+  }
+
   if (marker.kind === "location") {
     return "L";
   }

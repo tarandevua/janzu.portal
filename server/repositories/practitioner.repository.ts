@@ -19,6 +19,10 @@ type PractitionerRow = {
   longitude: number | null;
   languages: string[];
   website: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  tiktok_url: string | null;
   profile_image_url: string | null;
   is_public: boolean;
   created_at: string;
@@ -30,6 +34,8 @@ type PractitionerLocationRow = {
   practitioner_id: string;
   latitude: number;
   longitude: number;
+  city: string | null;
+  country: string | null;
   note: string | null;
   sort_order: number;
 };
@@ -51,6 +57,8 @@ function toPracticeLocation(row: PractitionerLocationRow): PractitionerPracticeL
     id: row.id,
     latitude: row.latitude,
     longitude: row.longitude,
+    city: row.city,
+    country: row.country,
     note: row.note,
     sortOrder: row.sort_order,
   };
@@ -65,6 +73,8 @@ function getFallbackPracticeLocations(row: PractitionerRow): PractitionerPractic
     {
       latitude: row.latitude,
       longitude: row.longitude,
+      city: row.city,
+      country: row.country,
       note: null,
       sortOrder: 0,
     },
@@ -88,6 +98,10 @@ function toProfile(
     practiceLocations,
     languages: row.languages,
     website: row.website,
+    instagramUrl: row.instagram_url,
+    facebookUrl: row.facebook_url,
+    youtubeUrl: row.youtube_url,
+    tiktokUrl: row.tiktok_url,
     profileImageUrl: row.profile_image_url,
     isPublic: row.is_public,
     createdAt: row.created_at,
@@ -235,6 +249,10 @@ export async function upsertPractitionerProfile(
     longitude: primaryLocation?.longitude ?? input.longitude ?? null,
     languages: input.languages ?? [],
     website: input.website ?? null,
+    instagram_url: input.instagramUrl ?? null,
+    facebook_url: input.facebookUrl ?? null,
+    youtube_url: input.youtubeUrl ?? null,
+    tiktok_url: input.tiktokUrl ?? null,
     profile_image_url: input.profileImageUrl ?? null,
     is_public: input.isPublic ?? false,
   } satisfies Database["public"]["Tables"]["practitioners"]["Insert"];
@@ -268,6 +286,8 @@ export async function upsertPractitionerProfile(
           practitioner_id: profile.id,
           latitude: location.latitude,
           longitude: location.longitude,
+          city: location.city ?? null,
+          country: location.country ?? null,
           note: location.note ?? null,
           sort_order: index,
         })) as never

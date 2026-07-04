@@ -11,6 +11,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ClusteredMap } from "@/features/maps/components/clustered-map";
 import type { MapMarker, PractitionerMarkerGroup } from "@/features/maps/types";
 import { hasValidCoordinates } from "@/features/maps/utils";
+import { stripRichTextHtml } from "@/features/practitioners/utils/profile-text";
 import type { Locale } from "@/lib/i18n/config";
 import type { PractitionerProfile } from "@/server/models/practitioner.model";
 
@@ -74,14 +75,14 @@ export function PublicPractitionerDirectory({
           kind: "practitioner" as const,
           practitionerGroup: profile.publicGroup,
           title: getPractitionerName(profile, dictionary.unknownCity),
-          description: profile.bio,
+          description: stripRichTextHtml(profile.bio),
           imageUrl: profile.profileImageUrl,
           fallbackText: getAvatarFallback(getPractitionerName(profile, dictionary.unknownCity)),
           note: location.note,
           latitude: location.latitude,
           longitude: location.longitude,
           href: `/${locale}/practitioners/${profile.id}`,
-          meta: [profile.country, profile.city].filter(Boolean).join(", "),
+          meta: [location.country ?? profile.country, location.city ?? profile.city].filter(Boolean).join(", "),
         }))
       ),
     [dictionary.unknownCity, filteredProfiles, locale]
@@ -121,6 +122,7 @@ export function PublicPractitionerDirectory({
         ) : filteredProfiles.map((profile) => {
           const practitionerName = getPractitionerName(profile, dictionary.unknownCity);
           const profileHref = `/${locale}/practitioners/${profile.id}` as Route;
+          const bioPreview = stripRichTextHtml(profile.bio);
 
           return (
             <Card key={profile.id} className="flex h-full flex-col transition-colors hover:bg-accent/40">
@@ -148,7 +150,7 @@ export function PublicPractitionerDirectory({
                 </div>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col space-y-3">
-                <p className="line-clamp-3 text-sm text-muted-foreground min-h-[100px]">{profile.bio}</p>
+                <p className="line-clamp-3 min-h-[100px] text-sm text-muted-foreground">{bioPreview}</p>
                 <div className="flex flex-wrap gap-2">
                   {profile.languages.map((language) => (
                     <Badge key={language} variant="secondary">

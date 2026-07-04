@@ -51,6 +51,16 @@ function getProfileLocationCompletion(profile: PractitionerProfile | null) {
   };
 }
 
+function hasOnlinePresence(profile: PractitionerProfile | null) {
+  return Boolean(
+    profile?.website ||
+      profile?.instagramUrl ||
+      profile?.facebookUrl ||
+      profile?.youtubeUrl ||
+      profile?.tiktokUrl
+  );
+}
+
 function getProfileCompletion(profile: PractitionerProfile | null) {
   const locationCompletion = getProfileLocationCompletion(profile);
   const fields = [
@@ -61,7 +71,7 @@ function getProfileCompletion(profile: PractitionerProfile | null) {
     hasValidCoordinate(locationCompletion.latitude, -90, 90) ? locationCompletion.latitude : null,
     hasValidCoordinate(locationCompletion.longitude, -180, 180) ? locationCompletion.longitude : null,
     profile?.languages.length ? profile.languages : null,
-    profile?.website,
+    hasOnlinePresence(profile) ? "online" : null,
     profile?.profileImageUrl,
   ];
   const completedFields = fields.filter((field) => field !== null && field !== undefined && field !== "").length;

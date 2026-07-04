@@ -3,6 +3,8 @@ create table public.practitioner_locations (
   practitioner_id uuid not null references public.practitioners(id) on delete cascade,
   latitude double precision not null,
   longitude double precision not null,
+  city text,
+  country text,
   note text,
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),

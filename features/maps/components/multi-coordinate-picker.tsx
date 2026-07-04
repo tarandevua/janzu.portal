@@ -16,6 +16,8 @@ type LeafletModule = typeof import("leaflet") & {
 type Coordinates = {
   latitude: number;
   longitude: number;
+  city: string | null;
+  country: string | null;
   note: string | null;
   sortOrder: number;
 };
@@ -49,9 +51,65 @@ function normalizeLocations(locations: Coordinates[]) {
   return locations.map((location, index) => ({
     latitude: location.latitude,
     longitude: location.longitude,
+    city: location.city ?? null,
+    country: location.country ?? null,
     note: location.note ?? null,
     sortOrder: index,
   }));
+}
+
+type ReverseGeocodeResponse = {
+  address?: {
+    city?: string;
+    town?: string;
+    village?: string;
+    municipality?: string;
+    hamlet?: string;
+    county?: string;
+    state?: string;
+    country?: string;
+  };
+};
+
+function getGeocodeKey(latitude: number, longitude: number) {
+  return `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+}
+
+async function reverseGeocode(latitude: number, longitude: number) {
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(
+      latitude
+    )}&lon=${encodeURIComponent(longitude)}&zoom=10&addressdetails=1`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data = (await response.json()) as ReverseGeocodeResponse;
+  const address = data.address;
+
+  if (!address) {
+    return null;
+  }
+
+  return {
+    city:
+      address.city ??
+      address.town ??
+      address.village ??
+      address.municipality ??
+      address.hamlet ??
+      address.county ??
+      address.state ??
+      null,
+    country: address.country ?? null,
+  };
 }
 
 function createIcon(
@@ -77,8 +135,52 @@ export function MultiCoordinatePicker({
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRefs = useRef<Marker[]>([]);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
+  const locationsRef = useRef<Coordinates[]>([]);
+  const geocodeRequestsRef = useRef(new Set<string>());
   const [locations, setLocations] = useState<Coordinates[]>(() => normalizeLocations(defaultLocations));
   const [isMapReady, setIsMapReady] = useState(false);
+
+  useEffect(() => {
+    locationsRef.current = locations;
+  }, [locations]);
+
+  function resolveLocationLabel(locationIndex: number, latitude: number, longitude: number) {
+    const geocodeKey = getGeocodeKey(latitude, longitude);
+
+    if (geocodeRequestsRef.current.has(geocodeKey)) {
+      return;
+    }
+
+    geocodeRequestsRef.current.add(geocodeKey);
+    void reverseGeocode(latitude, longitude)
+      .then((result) => {
+        if (!result) {
+          return;
+        }
+
+        setLocations((currentLocations) =>
+          normalizeLocations(
+            currentLocations.map((currentLocation, index) => {
+              if (
+                index !== locationIndex ||
+                getGeocodeKey(currentLocation.latitude, currentLocation.longitude) !== geocodeKey
+              ) {
+                return currentLocation;
+              }
+
+              return {
+                ...currentLocation,
+                city: result.city,
+                country: result.country,
+              };
+            })
+          )
+        );
+      })
+      .catch((error: unknown) => {
+        console.error("Janzu practice pin reverse geocoding failed", error);
+      });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -115,17 +217,22 @@ export function MultiCoordinatePicker({
       }).addTo(map);
 
       map.on("click", (event: LeafletMouseEvent) => {
+        const nextIndex = locationsRef.current.length;
+
         setLocations((currentLocations) =>
           normalizeLocations([
             ...currentLocations,
             {
               latitude: event.latlng.lat,
               longitude: event.latlng.lng,
+              city: null,
+              country: null,
               note: null,
               sortOrder: currentLocations.length,
             },
           ])
         );
+        resolveLocationLabel(nextIndex, event.latlng.lat, event.latlng.lng);
       });
 
       mapRef.current = map;
@@ -172,21 +279,62 @@ export function MultiCoordinatePicker({
             currentLocations.map((currentLocation, locationIndex) =>
               locationIndex === index
                 ? {
-                    ...currentLocation,
-                    latitude: nextCoordinates.lat,
-                    longitude: nextCoordinates.lng,
-                  }
+                  ...currentLocation,
+                  latitude: nextCoordinates.lat,
+                  longitude: nextCoordinates.lng,
+                  city: null,
+                  country: null,
+                }
                 : currentLocation
             )
           )
         );
+        resolveLocationLabel(index, nextCoordinates.lat, nextCoordinates.lng);
       });
 
       return marker;
     });
   }, [isMapReady, locations, markerGroup]);
 
+  useEffect(() => {
+    locations.forEach((location, index) => {
+      if (!location.city || !location.country) {
+        resolveLocationLabel(index, location.latitude, location.longitude);
+      }
+    });
+  }, [locations]);
+
+  const coordinateSignature = useMemo(
+    () =>
+      locations
+        .map((location) => `${location.latitude.toFixed(7)},${location.longitude.toFixed(7)}`)
+        .join("|"),
+    [locations]
+  );
   const serializedLocations = useMemo(() => JSON.stringify(locations), [locations]);
+
+  useEffect(() => {
+    const L = leafletRef.current;
+    const map = mapRef.current;
+
+    if (!isMapReady || !L || !map || !coordinateSignature.includes("|")) {
+      return;
+    }
+
+    const bounds = L.latLngBounds(
+      coordinateSignature.split("|").map((coordinate) => {
+        const [latitude, longitude] = coordinate.split(",").map(Number);
+
+        return [latitude, longitude] as [number, number];
+      })
+    );
+
+    map.fitBounds(bounds, {
+      animate: true,
+      maxZoom: 12,
+      padding: [40, 40],
+    });
+  }, [coordinateSignature, isMapReady]);
 
   return (
     <div className="grid min-w-0 gap-2">
@@ -225,6 +373,14 @@ export function MultiCoordinatePicker({
                     <span className="min-w-0 break-words">
                       {index + 1}. {dictionary.latitude} {formatCoordinate(location.latitude)},{" "}
                       {dictionary.longitude} {formatCoordinate(location.longitude)}
+                      {location.city || location.country ? (
+                        <>
+                          <br />
+                          <span className="text-muted-foreground">
+                            {[location.city, location.country].filter(Boolean).join(", ")}
+                          </span>
+                        </>
+                      ) : null}
                     </span>
                     <Button
                       type="button"

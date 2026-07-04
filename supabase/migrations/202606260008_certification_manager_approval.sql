@@ -69,7 +69,7 @@ begin
     certification_progress.id,
     certification_progress.practitioner_id,
     practitioners.user_id,
-    coalesce(users.full_name, users.email) as practitioner_name,
+    coalesce(users.official_full_name, users.full_name, users.email) as practitioner_name,
     users.email as practitioner_email,
     practitioners.country,
     practitioners.city,

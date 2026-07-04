@@ -5,6 +5,8 @@ export type MapMarker = {
   id: string;
   kind: MapMarkerKind;
   practitionerGroup?: PractitionerMarkerGroup;
+  label?: string;
+  popupVariant?: "default" | "practice-location";
   title: string;
   description?: string | null;
   imageUrl?: string | null;

@@ -13,6 +13,11 @@ type ProfilePageProps = {
   searchParams: Promise<{ status?: string }>;
 };
 
+type AppUserNames = {
+  full_name: string | null;
+  official_full_name: string | null;
+};
+
 export default async function ProfilePage({ params, searchParams }: ProfilePageProps) {
   const [{ locale }, { status }] = await Promise.all([params, searchParams]);
   const supabase = await createSupabaseServerClient();
@@ -29,7 +34,15 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
     getMyPractitionerProfile(supabase, data.user.id),
     listUserRoles(supabase, data.user.id),
   ]);
+  const { data: appUser } = await supabase
+    .from("users")
+    .select("full_name, official_full_name")
+    .eq("id", data.user.id)
+    .maybeSingle();
   const primaryRole = getPrimaryRole(roles);
+  const appUserNames = appUser as AppUserNames | null;
+  const desiredName = appUserNames?.full_name ?? data.user.user_metadata.full_name ?? data.user.email ?? "";
+  const officialFullName = appUserNames?.official_full_name ?? "";
 
   if (!primaryRole) {
     redirect(`/${locale}/dashboard`);
@@ -52,7 +65,8 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
         <PractitionerProfileForm
           locale={locale}
           profile={profile}
-          fullName={data.user.user_metadata.full_name ?? data.user.email ?? ""}
+          fullName={desiredName}
+          officialFullName={officialFullName}
           dictionary={dictionary.practitioners.form}
           status={status}
         />

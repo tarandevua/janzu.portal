@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { CircleHelpIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { Locale } from "@/lib/i18n/config";
 import type { PractitionerProfile } from "@/server/models/practitioner.model";
@@ -9,23 +10,36 @@ import {
   savePractitionerProfileInline,
   type PractitionerProfileActionResult,
 } from "@/features/practitioners/actions";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import { MultiCoordinatePicker } from "@/features/maps/components/multi-coordinate-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type PractitionerProfileFormProps = {
   locale: Locale;
   profile: PractitionerProfile | null;
   fullName: string;
+  officialFullName: string;
   dictionary: {
     title: string;
     description: string;
     fullName: string;
+    officialFullName: string;
+    officialFullNameHelp: string;
     bio: string;
+    bold: string;
+    underline: string;
+    link: string;
+    linkPrompt: string;
     country: string;
     city: string;
     latitude: string;
@@ -38,6 +52,10 @@ type PractitionerProfileFormProps = {
     locationNotePlaceholder: string;
     languages: string;
     website: string;
+    instagram: string;
+    facebook: string;
+    youtube: string;
+    tiktok: string;
     profileImageUrl: string;
     profileImageUpload: string;
     profileImageUploadHelp: string;
@@ -89,6 +107,7 @@ export function PractitionerProfileForm({
   locale,
   profile,
   fullName,
+  officialFullName,
   dictionary,
   status,
 }: PractitionerProfileFormProps) {
@@ -144,15 +163,73 @@ export function PractitionerProfileForm({
       </CardHeader>
       <CardContent>
         <form ref={formRef} onSubmit={handleSubmit} encType="multipart/form-data" className="grid gap-5">
-          <div className="grid gap-2">
-            <Label htmlFor="fullName">{dictionary.fullName}</Label>
-            <Input id="fullName" name="fullName" defaultValue={fullName} />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="avatarImage">{dictionary.profileImageUpload}</Label>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-24 w-24 shrink-0 rounded-lg">
+                  <AvatarImage src={profile?.profileImageUrl ?? ""} alt={fullName} className="object-cover" />
+                  <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 gap-1">
+                  <input
+                    type="hidden"
+                    id="profileImageUrl"
+                    name="profileImageUrl"
+                    value={profile?.profileImageUrl ?? ""}
+                  />
+                  <Input
+                    id="avatarImage"
+                    name="avatarImage"
+                    type="file"
+                    accept="image/jpeg,.jpg,.jpeg"
+                  />
+                  <p className="text-xs text-muted-foreground">{dictionary.profileImageUploadHelp}</p>
+                </div>
+              </div>
+              <Label className="sr-only" htmlFor="profileImageUrl">
+                {dictionary.profileImageUrl}
+              </Label>
+            </div>
+            <div></div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="fullName">{dictionary.fullName}</Label>
+              <Input id="fullName" name="fullName" defaultValue={fullName} />
+            </div>
+
+            <div className="grid gap-2">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="officialFullName">{dictionary.officialFullName}</Label>
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex text-muted-foreground transition-colors hover:text-foreground"
+                        aria-label={dictionary.officialFullNameHelp}
+                      >
+                        <CircleHelpIcon className="size-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-72">
+                      <p>{dictionary.officialFullNameHelp}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <Input id="officialFullName" name="officialFullName" defaultValue={officialFullName} />
+            </div>
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="bio">{dictionary.bio}</Label>
-            <Textarea id="bio" name="bio" defaultValue={profile?.bio ?? ""} rows={5} />
-          </div>
+          <RichTextEditor
+            id="bio"
+            name="bio"
+            label={dictionary.bio}
+            defaultValue={profile?.bio}
+            dictionary={dictionary}
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="grid gap-2">
@@ -183,32 +260,46 @@ export function PractitionerProfileForm({
               <Input id="website" name="website" type="url" defaultValue={profile?.website ?? ""} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="avatarImage">{dictionary.profileImageUpload}</Label>
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 shrink-0 rounded-lg">
-                  <AvatarImage src={profile?.profileImageUrl ?? ""} alt={fullName} className="object-cover" />
-                  <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 gap-1">
-                  <input
-                    type="hidden"
-                    id="profileImageUrl"
-                    name="profileImageUrl"
-                    value={profile?.profileImageUrl ?? ""}
-                  />
-                  <Input
-                    id="avatarImage"
-                    name="avatarImage"
-                    type="file"
-                    accept="image/jpeg,.jpg,.jpeg"
-                  />
-                  <p className="text-xs text-muted-foreground">{dictionary.profileImageUploadHelp}</p>
-                </div>
-              </div>
-              <Label className="sr-only" htmlFor="profileImageUrl">
-                {dictionary.profileImageUrl}
-              </Label>
+              <Label htmlFor="instagramUrl">{dictionary.instagram}</Label>
+              <Input
+                id="instagramUrl"
+                name="instagramUrl"
+                autoCapitalize="none"
+                autoCorrect="off"
+                defaultValue={profile?.instagramUrl ?? ""}
+              />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="facebookUrl">{dictionary.facebook}</Label>
+              <Input
+                id="facebookUrl"
+                name="facebookUrl"
+                autoCapitalize="none"
+                autoCorrect="off"
+                defaultValue={profile?.facebookUrl ?? ""}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="youtubeUrl">{dictionary.youtube}</Label>
+              <Input
+                id="youtubeUrl"
+                name="youtubeUrl"
+                autoCapitalize="none"
+                autoCorrect="off"
+                defaultValue={profile?.youtubeUrl ?? ""}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="tiktokUrl">{dictionary.tiktok}</Label>
+              <Input
+                id="tiktokUrl"
+                name="tiktokUrl"
+                autoCapitalize="none"
+                autoCorrect="off"
+                defaultValue={profile?.tiktokUrl ?? ""}
+              />
+            </div>
+            
           </div>
 
           <Button type="submit" className="w-fit" disabled={isPending}>

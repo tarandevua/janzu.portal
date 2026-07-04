@@ -8,6 +8,7 @@ export type Database = {
           id: string;
           email: string;
           full_name: string | null;
+          official_full_name: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -15,6 +16,7 @@ export type Database = {
           id: string;
           email: string;
           full_name?: string | null;
+          official_full_name?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -22,6 +24,7 @@ export type Database = {
           id?: string;
           email?: string;
           full_name?: string | null;
+          official_full_name?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -110,6 +113,10 @@ export type Database = {
           longitude: number | null;
           languages: string[];
           website: string | null;
+          instagram_url: string | null;
+          facebook_url: string | null;
+          youtube_url: string | null;
+          tiktok_url: string | null;
           profile_image_url: string | null;
           is_public: boolean;
           created_at: string;
@@ -125,6 +132,10 @@ export type Database = {
           longitude?: number | null;
           languages?: string[];
           website?: string | null;
+          instagram_url?: string | null;
+          facebook_url?: string | null;
+          youtube_url?: string | null;
+          tiktok_url?: string | null;
           profile_image_url?: string | null;
           is_public?: boolean;
           created_at?: string;
@@ -140,6 +151,10 @@ export type Database = {
           longitude?: number | null;
           languages?: string[];
           website?: string | null;
+          instagram_url?: string | null;
+          facebook_url?: string | null;
+          youtube_url?: string | null;
+          tiktok_url?: string | null;
           profile_image_url?: string | null;
           is_public?: boolean;
           created_at?: string;
@@ -153,6 +168,8 @@ export type Database = {
           practitioner_id: string;
           latitude: number;
           longitude: number;
+          city: string | null;
+          country: string | null;
           note: string | null;
           sort_order: number;
           created_at: string;
@@ -163,6 +180,8 @@ export type Database = {
           practitioner_id: string;
           latitude: number;
           longitude: number;
+          city?: string | null;
+          country?: string | null;
           note?: string | null;
           sort_order?: number;
           created_at?: string;
@@ -173,6 +192,8 @@ export type Database = {
           practitioner_id?: string;
           latitude?: number;
           longitude?: number;
+          city?: string | null;
+          country?: string | null;
           note?: string | null;
           sort_order?: number;
           created_at?: string;
@@ -836,6 +857,7 @@ export type Database = {
         Args: {
           target_user_id: string;
           target_full_name: string | null;
+          target_official_full_name?: string | null;
         };
         Returns: Database["public"]["Tables"]["users"]["Row"];
       };

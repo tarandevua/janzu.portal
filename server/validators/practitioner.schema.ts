@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { emptyRichTextToNull, sanitizeRichText } from "@/server/validators/rich-text.schema";
 
 const emptyToNull = (value: unknown) => {
   if (typeof value === "string" && value.trim() === "") {
@@ -11,6 +12,40 @@ const emptyToNull = (value: unknown) => {
 const optionalUrl = z.preprocess(
   emptyToNull,
   z.string().trim().url().nullable().optional()
+);
+
+function normalizeSocialUsername(value: unknown) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const lastPart = pathParts.at(-1);
+
+    return lastPart?.replace(/^@/, "") || null;
+  } catch {
+    return trimmed.replace(/^@/, "");
+  }
+}
+
+const optionalSocialUsername = z.preprocess(
+  normalizeSocialUsername,
+  z
+    .string()
+    .trim()
+    .min(1)
+    .max(80)
+    .regex(/^[A-Za-z0-9._-]+$/)
+    .nullable()
+    .optional()
 );
 
 const optionalProfileImageReference = z.preprocess(
@@ -29,8 +64,8 @@ const optionalProfileImageReference = z.preprocess(
 );
 
 const optionalText = z.preprocess(
-  emptyToNull,
-  z.string().trim().max(5000).nullable().optional()
+  emptyRichTextToNull,
+  z.string().trim().max(5000).transform(sanitizeRichText).nullable().optional()
 );
 
 const coordinate = (minimum: number, maximum: number) =>
@@ -39,17 +74,22 @@ const coordinate = (minimum: number, maximum: number) =>
 const practiceLocationSchema = z.object({
   latitude: z.coerce.number().min(-90).max(90),
   longitude: z.coerce.number().min(-180).max(180),
+  city: z.preprocess(emptyToNull, z.string().trim().max(120).nullable().optional()),
+  country: z.preprocess(emptyToNull, z.string().trim().max(120).nullable().optional()),
   note: z.preprocess(emptyToNull, z.string().trim().max(500).nullable().optional()),
   sortOrder: z.coerce.number().int().min(0),
 });
 
 const normalizedPracticeLocationSchema = practiceLocationSchema.transform((location) => ({
   ...location,
+  city: location.city ?? null,
+  country: location.country ?? null,
   note: location.note ?? null,
 }));
 
 export const practitionerProfileSchema = z.object({
   fullName: z.preprocess(emptyToNull, z.string().trim().max(160).nullable().optional()),
+  officialFullName: z.preprocess(emptyToNull, z.string().trim().max(160).nullable().optional()),
   bio: optionalText,
   country: z.preprocess(emptyToNull, z.string().trim().max(120).nullable().optional()),
   city: z.preprocess(emptyToNull, z.string().trim().max(120).nullable().optional()),
@@ -61,6 +101,10 @@ export const practitionerProfileSchema = z.object({
     .max(20)
     .default([]),
   website: optionalUrl,
+  instagramUrl: optionalSocialUsername,
+  facebookUrl: optionalSocialUsername,
+  youtubeUrl: optionalSocialUsername,
+  tiktokUrl: optionalSocialUsername,
   profileImageUrl: optionalProfileImageReference,
   isPublic: z.boolean().default(false),
 });
@@ -89,6 +133,8 @@ export function parsePracticeLocations(value: FormDataEntryValue | null) {
   return parsed.data.map((location, index) => ({
     latitude: location.latitude,
     longitude: location.longitude,
+    city: location.city ?? null,
+    country: location.country ?? null,
     note: location.note ?? null,
     sortOrder: index,
   }));

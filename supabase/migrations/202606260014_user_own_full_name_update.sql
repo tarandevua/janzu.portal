@@ -1,6 +1,7 @@
 create or replace function public.update_current_user_full_name(
   target_user_id uuid,
-  target_full_name text
+  target_full_name text,
+  target_official_full_name text default null
 )
 returns public.users
 language plpgsql
@@ -15,7 +16,8 @@ begin
   end if;
 
   update public.users
-  set full_name = nullif(trim(target_full_name), '')
+  set full_name = nullif(trim(target_full_name), ''),
+      official_full_name = nullif(trim(target_official_full_name), '')
   where id = target_user_id
   returning * into updated_user;
 

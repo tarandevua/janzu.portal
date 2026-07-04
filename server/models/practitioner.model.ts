@@ -4,6 +4,8 @@ export type PractitionerPracticeLocation = {
   id?: string;
   latitude: number;
   longitude: number;
+  city: string | null;
+  country: string | null;
   note: string | null;
   sortOrder: number;
 };
@@ -21,6 +23,10 @@ export type PractitionerProfile = {
   practiceLocations: PractitionerPracticeLocation[];
   languages: string[];
   website: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  youtubeUrl: string | null;
+  tiktokUrl: string | null;
   profileImageUrl: string | null;
   isPublic: boolean;
   createdAt: string;
@@ -36,6 +42,10 @@ export type PractitionerProfileInput = {
   practiceLocations?: PractitionerPracticeLocation[];
   languages?: string[];
   website?: string | null;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
+  youtubeUrl?: string | null;
+  tiktokUrl?: string | null;
   profileImageUrl?: string | null;
   isPublic?: boolean;
 };

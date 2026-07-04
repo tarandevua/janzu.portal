@@ -68,6 +68,17 @@ export function createMarkerPopupHtml(marker: MapMarker) {
   const description = marker.description ? escapeHtml(truncateText(marker.description, 150)) : "";
   const note = marker.note ? escapeHtml(truncateText(marker.note, 120)) : "";
   const meta = marker.meta ? escapeHtml(marker.meta) : "";
+
+  if (marker.popupVariant === "practice-location") {
+    return `
+      <div class="janzu-map-popup">
+        <strong>${title}</strong>
+        ${meta ? `<span>${meta}</span>` : ""}
+        ${note ? `<p>${note}</p>` : ""}
+      </div>
+    `;
+  }
+
   const fallbackText = escapeHtml(marker.fallbackText ?? marker.title.slice(0, 2).toUpperCase());
   const avatar = marker.imageUrl
     ? `<img class="janzu-map-popup-avatar" src="${escapeHtml(marker.imageUrl)}" alt="${title}" loading="lazy" />`

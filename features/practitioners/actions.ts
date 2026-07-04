@@ -82,6 +82,7 @@ export async function savePractitionerProfileInline(
   const primaryLocation = practiceLocations[0] ?? null;
   const parsed = practitionerProfileSchema.safeParse({
     fullName: formData.get("fullName"),
+    officialFullName: formData.get("officialFullName"),
     bio: formData.get("bio"),
     country: formData.get("country"),
     city: formData.get("city"),
@@ -90,6 +91,10 @@ export async function savePractitionerProfileInline(
     practiceLocations,
     languages: parseLanguages(formData.get("languages")),
     website: formData.get("website"),
+    instagramUrl: formData.get("instagramUrl"),
+    facebookUrl: formData.get("facebookUrl"),
+    youtubeUrl: formData.get("youtubeUrl"),
+    tiktokUrl: formData.get("tiktokUrl"),
     profileImageUrl,
     isPublic: currentProfile?.isPublic ?? false,
   });
@@ -99,6 +104,7 @@ export async function savePractitionerProfileInline(
   }
 
   const fullName = parsed.data.fullName ?? null;
+  const officialFullName = parsed.data.officialFullName ?? null;
 
   await supabase.auth.updateUser({
     data: {
@@ -111,6 +117,7 @@ export async function savePractitionerProfileInline(
   const { error: userUpdateError } = await fullNameRpcClient.rpc("update_current_user_full_name", {
     target_user_id: user.id,
     target_full_name: fullName,
+    target_official_full_name: officialFullName,
   });
 
   if (userUpdateError) {

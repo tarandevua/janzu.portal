@@ -10,15 +10,17 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.users (id, email, full_name)
+  insert into public.users (id, email, full_name, official_full_name)
   values (
     new.id,
     coalesce(new.email, ''),
+    new.raw_user_meta_data ->> 'full_name',
     new.raw_user_meta_data ->> 'full_name'
   )
   on conflict (id) do update
     set email = excluded.email,
-        full_name = coalesce(excluded.full_name, public.users.full_name);
+        full_name = coalesce(excluded.full_name, public.users.full_name),
+        official_full_name = coalesce(excluded.official_full_name, public.users.official_full_name);
 
   insert into public.user_roles (user_id, role_id)
   select new.id, roles.id

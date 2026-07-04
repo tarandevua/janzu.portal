@@ -1,3 +1,12 @@
+alter table public.practitioners
+add column if not exists instagram_url text,
+add column if not exists facebook_url text,
+add column if not exists youtube_url text,
+add column if not exists tiktok_url text;
+
+drop function if exists public.get_public_practitioner_profile(uuid);
+drop function if exists public.list_public_practitioner_profiles();
+
 create or replace function public.list_public_practitioner_profiles()
 returns table (
   id uuid,

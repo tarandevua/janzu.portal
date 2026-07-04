@@ -4,7 +4,7 @@ import { createEvent, updateEvent } from "@/features/events/actions";
 import { EventDateRangePicker } from "@/features/events/components/event-date-range-picker";
 import { EventImageManager } from "@/features/events/components/event-image-manager";
 import { LocationCoordinatePicker } from "@/features/locations/components/location-coordinate-picker";
-import { RichTextEditor } from "@/features/events/components/rich-text-editor";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

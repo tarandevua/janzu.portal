@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sanitizeRichText } from "@/server/validators/rich-text.schema";
 
 const emptyToNull = (value: unknown) => {
   if (typeof value === "string" && value.trim() === "") {
@@ -21,25 +22,6 @@ const coordinate = (min: number, max: number) =>
 
 export const eventTypes = ["retreat", "training", "community_gathering"] as const;
 export const eventStatuses = ["draft", "published", "cancelled"] as const;
-
-function sanitizeRichText(value: string) {
-  return value
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
-    .replace(/\son\w+="[^"]*"/gi, "")
-    .replace(/\son\w+='[^']*'/gi, "")
-    .replace(/<(?!\/?(?:p|div|br|strong|b|u|a)(?:\s|>|\/))/gi, "&lt;")
-    .replace(/<a\b([^>]*)>/gi, (_match, attrs: string) => {
-      const hrefMatch = attrs.match(/\shref=(?:"([^"]*)"|'([^']*)')/i);
-      const href = (hrefMatch?.[1] ?? hrefMatch?.[2] ?? "").trim();
-
-      if (!/^https?:\/\//i.test(href) && !href.startsWith("mailto:")) {
-        return "<a>";
-      }
-
-      return `<a href="${href.replace(/"/g, "&quot;")}" target="_blank" rel="noopener noreferrer">`;
-    });
-}
 
 export const eventSchema = z
   .object({
