@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { SessionRequestList } from "@/features/session-requests/components/session-request-list";
+import { AdminSessionList } from "@/features/sessions/components/admin-session-list";
 import { SessionAvailabilityManager } from "@/features/sessions/components/session-availability-manager";
 import { SessionDashboardTabs, type SessionDashboardTab } from "@/features/sessions/components/session-dashboard-tabs";
 import { SessionForm } from "@/features/sessions/components/session-form";
@@ -15,12 +16,18 @@ import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 import { listUpcomingAvailabilitySlotsByPractitionerId } from "@/server/repositories/session-availability.repository";
 import { listSessionRequestsByPractitionerIdPage } from "@/server/repositories/session-request.repository";
-import { listSessionsByPractitionerIdPage } from "@/server/repositories/session.repository";
+import {
+  listAdminSessionParticipants,
+  listAdminSessionsPage,
+  listSessionsByPractitionerIdPage,
+} from "@/server/repositories/session.repository";
 import { findFeedbackForSessions } from "@/server/services/feedback.service";
-import { getPrimaryRole, getRoleAccessList } from "@/server/services/rbac.service";
+import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/services/rbac.service";
+import type { AdminSessionFilters, SessionValidationFilter } from "@/server/models/session.model";
 
 const PAGE_SIZE = 10;
-const sessionTabs = ["history", "requests", "availability"] as const;
+const sessionTabs = ["history", "requests", "availability", "all"] as const;
+const validationFilters = ["all", "validated", "pending"] as const;
 
 type SessionsPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -28,7 +35,10 @@ type SessionsPageProps = {
     status?: string;
     sessionsPage?: string;
     requestsPage?: string;
+    allSessionsPage?: string;
     tab?: string;
+    participantId?: string;
+    validation?: string;
   }>;
 };
 
@@ -41,6 +51,12 @@ function parseTab(value: string | undefined): SessionDashboardTab {
   return sessionTabs.includes(value as SessionDashboardTab) ? value as SessionDashboardTab : "history";
 }
 
+function parseValidationFilter(value: string | undefined): SessionValidationFilter {
+  return validationFilters.includes(value as SessionValidationFilter)
+    ? value as SessionValidationFilter
+    : "all";
+}
+
 function setTabParam(params: URLSearchParams, tab: SessionDashboardTab) {
   if (tab !== "history") {
     params.set("tab", tab);
@@ -51,7 +67,9 @@ function buildSessionsHref(
   locale: Locale,
   nextSessionsPage: number,
   requestsPage: number,
-  tab: SessionDashboardTab
+  tab: SessionDashboardTab,
+  allSessionsPage = 1,
+  adminFilters: AdminSessionFilters = {}
 ) {
   const params = new URLSearchParams();
   setTabParam(params, tab);
@@ -64,6 +82,18 @@ function buildSessionsHref(
     params.set("requestsPage", String(requestsPage));
   }
 
+  if (allSessionsPage > 1) {
+    params.set("allSessionsPage", String(allSessionsPage));
+  }
+
+  if (adminFilters.practitionerId) {
+    params.set("participantId", adminFilters.practitionerId);
+  }
+
+  if (adminFilters.validation && adminFilters.validation !== "all") {
+    params.set("validation", adminFilters.validation);
+  }
+
   const query = params.toString();
   return `/${locale}/dashboard/sessions${query ? `?${query}` : ""}`;
 }
@@ -72,7 +102,9 @@ function buildRequestsHref(
   locale: Locale,
   sessionsPage: number,
   nextRequestsPage: number,
-  tab: SessionDashboardTab
+  tab: SessionDashboardTab,
+  allSessionsPage = 1,
+  adminFilters: AdminSessionFilters = {}
 ) {
   const params = new URLSearchParams();
   setTabParam(params, tab);
@@ -85,6 +117,18 @@ function buildRequestsHref(
     params.set("requestsPage", String(nextRequestsPage));
   }
 
+  if (allSessionsPage > 1) {
+    params.set("allSessionsPage", String(allSessionsPage));
+  }
+
+  if (adminFilters.practitionerId) {
+    params.set("participantId", adminFilters.practitionerId);
+  }
+
+  if (adminFilters.validation && adminFilters.validation !== "all") {
+    params.set("validation", adminFilters.validation);
+  }
+
   const query = params.toString();
   return `/${locale}/dashboard/sessions${query ? `?${query}` : ""}`;
 }
@@ -93,13 +137,15 @@ function buildTabHref(
   locale: Locale,
   tab: SessionDashboardTab,
   sessionsPage: number,
-  requestsPage: number
+  requestsPage: number,
+  allSessionsPage: number,
+  adminFilters: AdminSessionFilters
 ) {
   if (tab === "history") {
-    return buildSessionsHref(locale, sessionsPage, requestsPage, tab);
+    return buildSessionsHref(locale, sessionsPage, requestsPage, tab, allSessionsPage, adminFilters);
   }
 
-  return buildRequestsHref(locale, sessionsPage, requestsPage, tab);
+  return buildRequestsHref(locale, sessionsPage, requestsPage, tab, allSessionsPage, adminFilters);
 }
 
 export default async function SessionsPage({ params, searchParams }: SessionsPageProps) {
@@ -107,7 +153,11 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
   const { status } = search;
   const sessionsPage = parsePage(search.sessionsPage);
   const requestsPage = parsePage(search.requestsPage);
-  const activeTab = parseTab(search.tab);
+  const allSessionsPage = parsePage(search.allSessionsPage);
+  const adminFilters: AdminSessionFilters = {
+    practitionerId: search.participantId || undefined,
+    validation: parseValidationFilter(search.validation),
+  };
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
     supabase.auth.getUser(),
@@ -123,31 +173,52 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
     getPractitionerProfileByUserId(supabase, data.user.id),
   ]);
   const primaryRole = getPrimaryRole(roles);
+  const canReviewAllSessions = hasPermission(roles, "users:manage");
+  const parsedTab = parseTab(search.tab);
+  const activeTab = parsedTab === "all" && !canReviewAllSessions ? "history" : parsedTab;
 
   if (!primaryRole) {
     redirect(`/${locale}/dashboard`);
   }
 
-  if (!practitioner) {
+  if (!practitioner && !canReviewAllSessions) {
     redirect(`/${locale}/dashboard/profile`);
   }
 
-  const [clients, sessionsPageData, sessionRequestsPageData, availabilitySlots] = await Promise.all([
-    listClientsByPractitionerId(supabase, practitioner.id),
-    listSessionsByPractitionerIdPage(supabase, practitioner.id, sessionsPage, PAGE_SIZE),
-    listSessionRequestsByPractitionerIdPage(
-      supabase,
-      practitioner.id,
-      requestsPage,
-      PAGE_SIZE
-    ),
-    listUpcomingAvailabilitySlotsByPractitionerId(supabase, practitioner.id, 200),
+  const [
+    clients,
+    sessionsPageData,
+    sessionRequestsPageData,
+    availabilitySlots,
+    adminSessionsPageData,
+    adminSessionParticipants,
+  ] = await Promise.all([
+    practitioner ? listClientsByPractitionerId(supabase, practitioner.id) : Promise.resolve([]),
+    practitioner
+      ? listSessionsByPractitionerIdPage(supabase, practitioner.id, sessionsPage, PAGE_SIZE)
+      : Promise.resolve({ items: [], totalCount: 0 }),
+    practitioner
+      ? listSessionRequestsByPractitionerIdPage(
+          supabase,
+          practitioner.id,
+          requestsPage,
+          PAGE_SIZE
+        )
+      : Promise.resolve({ items: [], totalCount: 0 }),
+    practitioner
+      ? listUpcomingAvailabilitySlotsByPractitionerId(supabase, practitioner.id, 200)
+      : Promise.resolve([]),
+    canReviewAllSessions
+      ? listAdminSessionsPage(supabase, allSessionsPage, PAGE_SIZE, adminFilters)
+      : Promise.resolve({ items: [], totalCount: 0 }),
+    canReviewAllSessions ? listAdminSessionParticipants(supabase) : Promise.resolve([]),
   ]);
   const sessions = sessionsPageData.items;
+  const adminSessions = adminSessionsPageData.items;
   const sessionRequests = sessionRequestsPageData.items;
   const feedbackLinks = await findFeedbackForSessions(
     supabase,
-    sessions.map((session) => session.id)
+    [...new Set([...sessions.map((session) => session.id), ...adminSessions.map((session) => session.id)])]
   );
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000";
   const shouldOpenCreateDrawer = status === "invalid";
@@ -166,30 +237,32 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          <div className="flex justify-end">
-            <DashboardActionDrawer
-              title={dictionary.sessions.formTitle}
-              description={dictionary.sessions.formDescription}
-              triggerLabel={dictionary.sessions.formTitle}
-              cancelLabel={dictionary.common.cancel}
-              closeLabel={dictionary.common.close}
-              defaultOpen={shouldOpenCreateDrawer}
-            >
-              <SessionForm
-                locale={locale}
-                clients={clients}
-                status={status}
-                variant="plain"
-                dictionary={dictionary.sessions}
-              />
-            </DashboardActionDrawer>
-          </div>
+          {practitioner ? (
+            <div className="flex justify-end">
+              <DashboardActionDrawer
+                title={dictionary.sessions.formTitle}
+                description={dictionary.sessions.formDescription}
+                triggerLabel={dictionary.sessions.formTitle}
+                cancelLabel={dictionary.common.cancel}
+                closeLabel={dictionary.common.close}
+                defaultOpen={shouldOpenCreateDrawer}
+              >
+                <SessionForm
+                  locale={locale}
+                  clients={clients}
+                  status={status}
+                  variant="plain"
+                  dictionary={dictionary.sessions}
+                />
+              </DashboardActionDrawer>
+            </div>
+          ) : null}
           <SessionDashboardTabs
             activeTab={activeTab}
             tabs={{
               history: {
                 label: dictionary.sessions.listTitle,
-                href: buildTabHref(locale, "history", sessionsPage, requestsPage) as Route,
+                href: buildTabHref(locale, "history", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
                 content: (
                   <SessionList
                     locale={locale}
@@ -200,15 +273,16 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
                     page={sessionsPage}
                     pageSize={PAGE_SIZE}
                     totalCount={sessionsPageData.totalCount}
-                    previousHref={buildSessionsHref(locale, sessionsPage - 1, requestsPage, "history")}
-                    nextHref={buildSessionsHref(locale, sessionsPage + 1, requestsPage, "history")}
+                    previousHref={buildSessionsHref(locale, sessionsPage - 1, requestsPage, "history", allSessionsPage, adminFilters)}
+                    nextHref={buildSessionsHref(locale, sessionsPage + 1, requestsPage, "history", allSessionsPage, adminFilters)}
                     dictionary={dictionary.sessions}
+                    feedbackDictionary={dictionary.feedback}
                   />
                 ),
               },
               requests: {
                 label: dictionary.sessionRequests.listTitle,
-                href: buildTabHref(locale, "requests", sessionsPage, requestsPage) as Route,
+                href: buildTabHref(locale, "requests", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
                 content: (
                   <SessionRequestList
                     locale={locale}
@@ -216,8 +290,8 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
                     page={requestsPage}
                     pageSize={PAGE_SIZE}
                     totalCount={sessionRequestsPageData.totalCount}
-                    previousHref={buildRequestsHref(locale, sessionsPage, requestsPage - 1, "requests")}
-                    nextHref={buildRequestsHref(locale, sessionsPage, requestsPage + 1, "requests")}
+                    previousHref={buildRequestsHref(locale, sessionsPage, requestsPage - 1, "requests", allSessionsPage, adminFilters)}
+                    nextHref={buildRequestsHref(locale, sessionsPage, requestsPage + 1, "requests", allSessionsPage, adminFilters)}
                     status={status}
                     dictionary={dictionary.sessionRequests}
                   />
@@ -225,7 +299,7 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
               },
               availability: {
                 label: dictionary.sessions.availabilityTitle,
-                href: buildTabHref(locale, "availability", sessionsPage, requestsPage) as Route,
+                href: buildTabHref(locale, "availability", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
                 content: (
                   <SessionAvailabilityManager
                     locale={locale}
@@ -235,6 +309,31 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
                   />
                 ),
               },
+              ...(canReviewAllSessions
+                ? {
+                    all: {
+                      label: dictionary.sessions.allSessionsTitle,
+                      href: buildTabHref(locale, "all", sessionsPage, requestsPage, allSessionsPage, adminFilters) as Route,
+                      content: (
+                        <AdminSessionList
+                          locale={locale}
+                          sessions={adminSessions}
+                          feedbackLinks={feedbackLinks}
+                          participants={adminSessionParticipants}
+                          filters={adminFilters}
+                          page={allSessionsPage}
+                          pageSize={PAGE_SIZE}
+                          totalCount={adminSessionsPageData.totalCount}
+                          resetHref={buildTabHref(locale, "all", sessionsPage, requestsPage, 1, {})}
+                          previousHref={buildSessionsHref(locale, sessionsPage, requestsPage, "all", allSessionsPage - 1, adminFilters)}
+                          nextHref={buildSessionsHref(locale, sessionsPage, requestsPage, "all", allSessionsPage + 1, adminFilters)}
+                          dictionary={dictionary.sessions}
+                          feedbackDictionary={dictionary.feedback}
+                        />
+                      ),
+                    },
+                  }
+                : {}),
             }}
           />
         </div>

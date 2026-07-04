@@ -202,7 +202,7 @@ export function AdminDashboard({
                   <CardDescription>{dictionary.recentSessionsDescription}</CardDescription>
                 </div>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/${locale}/dashboard/sessions`}>{dictionary.viewAll}</Link>
+                  <Link href={`/${locale}/dashboard/sessions?tab=all`}>{dictionary.viewAll}</Link>
                 </Button>
               </CardHeader>
               <CardContent>

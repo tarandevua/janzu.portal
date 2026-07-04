@@ -7,13 +7,27 @@ import { getClientEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMagicLinkLoginPolicy } from "@/server/services/platform-settings.service";
 
+export type MagicLinkActionResult = {
+  ok: boolean;
+  status: "sent" | "invalid-email" | "unknown-user-disabled" | "error";
+};
+
 export async function sendMagicLink(locale: Locale, formData: FormData) {
+  const result = await sendMagicLinkInline(locale, formData);
+
+  redirect(`/${locale}/login?status=${result.status}`);
+}
+
+export async function sendMagicLinkInline(
+  locale: Locale,
+  formData: FormData
+): Promise<MagicLinkActionResult> {
   const parsed = magicLinkSchema.safeParse({
     email: formData.get("email")
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/login?status=invalid-email`);
+    return { ok: false, status: "invalid-email" };
   }
 
   const origin = getClientEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
@@ -21,7 +35,7 @@ export async function sendMagicLink(locale: Locale, formData: FormData) {
   const magicLinkPolicy = await getMagicLinkLoginPolicy(parsed.data.email);
 
   if (!magicLinkPolicy.isAllowed) {
-    redirect(`/${locale}/login?status=unknown-user-disabled`);
+    return { ok: false, status: "unknown-user-disabled" };
   }
 
   const { error } = await supabase.auth.signInWithOtp({
@@ -33,10 +47,10 @@ export async function sendMagicLink(locale: Locale, formData: FormData) {
   });
 
   if (error) {
-    redirect(`/${locale}/login?status=error`);
+    return { ok: false, status: "error" };
   }
 
-  redirect(`/${locale}/login?status=sent`);
+  return { ok: true, status: "sent" };
 }
 
 export async function signOut(locale: Locale) {

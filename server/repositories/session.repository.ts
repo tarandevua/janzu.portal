@@ -1,8 +1,32 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
-import type { Session, SessionInput } from "@/server/models/session.model";
+import type {
+  AdminSession,
+  AdminSessionFilters,
+  AdminSessionParticipant,
+  Session,
+  SessionInput,
+} from "@/server/models/session.model";
 
 type SessionRow = Database["public"]["Tables"]["sessions"]["Row"];
+type AdminSessionRow = SessionRow & {
+  clients: { name: string | null } | null;
+  practitioners: {
+    user_id: string | null;
+    users: {
+      email: string | null;
+      full_name: string | null;
+    } | null;
+  } | null;
+};
+type AdminSessionParticipantRow = {
+  id: string;
+  user_id: string | null;
+  users: {
+    email: string | null;
+    full_name: string | null;
+  } | null;
+};
 
 function toSession(row: SessionRow): Session {
   return {
@@ -16,6 +40,33 @@ function toSession(row: SessionRow): Session {
     isValidated: row.is_validated,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+function getPractitionerName(
+  user: { email: string | null; full_name: string | null } | null | undefined
+) {
+  return user?.full_name ?? user?.email ?? "";
+}
+
+function toAdminSession(row: AdminSessionRow): AdminSession {
+  return {
+    ...toSession(row),
+    practitionerUserId: row.practitioners?.user_id ?? null,
+    practitionerName: getPractitionerName(row.practitioners?.users),
+    practitionerEmail: row.practitioners?.users?.email ?? "",
+    clientName: row.clients?.name ?? null,
+  };
+}
+
+function toAdminSessionParticipant(row: AdminSessionParticipantRow): AdminSessionParticipant {
+  const email = row.users?.email ?? "";
+
+  return {
+    practitionerId: row.id,
+    userId: row.user_id ?? "",
+    displayName: row.users?.full_name ?? email,
+    email,
   };
 }
 
@@ -61,6 +112,62 @@ export async function listSessionsByPractitionerIdPage(
     items: (data ?? []).map(toSession),
     totalCount: count ?? 0,
   };
+}
+
+export async function listAdminSessionsPage(
+  supabase: SupabaseServerClient,
+  page: number,
+  pageSize: number,
+  filters: AdminSessionFilters = {}
+) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  let query = supabase
+    .from("sessions")
+    .select("*, clients(name), practitioners(user_id, users(email, full_name))", { count: "exact" });
+
+  if (filters.practitionerId) {
+    query = query.eq("practitioner_id", filters.practitionerId);
+  }
+
+  if (filters.validation === "validated") {
+    query = query.eq("is_validated", true);
+  }
+
+  if (filters.validation === "pending") {
+    query = query.eq("is_validated", false);
+  }
+
+  const { data, error, count } = await query
+    .order("session_date", { ascending: false })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    items: ((data ?? []) as AdminSessionRow[]).map(toAdminSession),
+    totalCount: count ?? 0,
+  };
+}
+
+export async function listAdminSessionParticipants(
+  supabase: SupabaseServerClient
+) {
+  const { data, error } = await supabase
+    .from("practitioners")
+    .select("id, user_id, users(email, full_name)")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as AdminSessionParticipantRow[])
+    .map(toAdminSessionParticipant)
+    .filter((participant) => participant.practitionerId && participant.userId);
 }
 
 export async function createSessionForPractitioner(

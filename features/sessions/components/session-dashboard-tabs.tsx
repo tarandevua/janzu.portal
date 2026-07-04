@@ -8,29 +8,17 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const sessionTabs = ["history", "requests", "availability"] as const;
+const sessionTabs = ["history", "requests", "availability", "all"] as const;
 
 export type SessionDashboardTab = (typeof sessionTabs)[number];
 
 type SessionDashboardTabsProps = {
   activeTab: SessionDashboardTab;
-  tabs: {
-    history: {
-      label: string;
-      href: Route;
-      content: ReactNode;
-    };
-    requests: {
-      label: string;
-      href: Route;
-      content: ReactNode;
-    };
-    availability: {
-      label: string;
-      href: Route;
-      content: ReactNode;
-    };
-  };
+  tabs: Partial<Record<SessionDashboardTab, {
+    label: string;
+    href: Route;
+    content: ReactNode;
+  }>>;
 };
 
 function LoadingSkeleton() {
@@ -64,19 +52,27 @@ export function SessionDashboardTabs({ activeTab, tabs }: SessionDashboardTabsPr
     }
 
     const tab = nextTab as SessionDashboardTab;
+    const tabConfig = tabs[tab];
+
+    if (!tabConfig) {
+      return;
+    }
+
     setSelectedTab(tab);
     startTransition(() => {
-      router.push(tabs[tab].href);
+      router.push(tabConfig.href);
     });
   }
+
+  const visibleTabs = sessionTabs.filter((tab) => Boolean(tabs[tab]));
 
   return (
     <Tabs value={selectedTab} className="grid gap-4">
       <TabsList className="h-auto w-full justify-start overflow-x-auto">
-        {sessionTabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <TabsTrigger key={tab} value={tab} asChild>
             <Link
-              href={tabs[tab].href}
+              href={tabs[tab]!.href}
               onClick={(event) => {
                 if (tab === selectedTab) {
                   return;
@@ -86,14 +82,14 @@ export function SessionDashboardTabs({ activeTab, tabs }: SessionDashboardTabsPr
                 handleTabChange(tab);
               }}
             >
-              {tabs[tab].label}
+              {tabs[tab]!.label}
             </Link>
           </TabsTrigger>
         ))}
       </TabsList>
-      {sessionTabs.map((tab) => (
+      {visibleTabs.map((tab) => (
         <TabsContent key={tab} value={tab} className="mt-0">
-          {isPending && selectedTab === tab && activeTab !== tab ? <LoadingSkeleton /> : tabs[tab].content}
+          {isPending && selectedTab === tab && activeTab !== tab ? <LoadingSkeleton /> : tabs[tab]!.content}
         </TabsContent>
       ))}
     </Tabs>

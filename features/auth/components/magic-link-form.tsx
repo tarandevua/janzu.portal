@@ -1,7 +1,11 @@
+"use client";
+
+import { useEffect, useRef, useTransition, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
-import { sendMagicLink } from "@/features/auth/actions";
+import { toast } from "sonner";
+import { sendMagicLinkInline } from "@/features/auth/actions";
 import type { Locale } from "@/lib/i18n/config";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +14,7 @@ type MagicLinkDictionary = {
   emailLabel: string;
   emailPlaceholder: string;
   submit: string;
+  sending: string;
   success: string;
   invalidEmail: string;
   genericError: string;
@@ -36,19 +41,57 @@ const statusCopy: Record<string, keyof MagicLinkDictionary> = {
 };
 
 export function MagicLinkForm({ dictionary, locale, status }: MagicLinkFormProps) {
-  const messageKey = status ? statusCopy[status] : undefined;
-  const message = messageKey ? dictionary[messageKey] : undefined;
-  const isError = status ? !["sent", "signed-out"].includes(status) : false;
-  const action = sendMagicLink.bind(null, locale);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const handledStatusRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!status || handledStatusRef.current === status) {
+      return;
+    }
+
+    handledStatusRef.current = status;
+    const messageKey = statusCopy[status];
+
+    if (!messageKey) {
+      return;
+    }
+
+    if (["sent", "signed-out"].includes(status)) {
+      toast.success(dictionary[messageKey]);
+    } else {
+      toast.error(dictionary[messageKey]);
+    }
+
+    router.replace(`/${locale}/login`);
+  }, [dictionary, locale, router, status]);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const toastId = toast.loading(dictionary.sending);
+
+    startTransition(() => {
+      void sendMagicLinkInline(locale, formData)
+        .then((result) => {
+          const messageKey = statusCopy[result.status] ?? "genericError";
+
+          if (result.ok) {
+            toast.success(dictionary[messageKey], { id: toastId });
+            return;
+          }
+
+          toast.error(dictionary[messageKey], { id: toastId });
+        })
+        .catch(() => {
+          toast.error(dictionary.genericError, { id: toastId });
+        });
+    });
+  }
 
   return (
-    <form action={action} className="mt-6 space-y-4">
-      {message ? (
-        <Alert variant={isError ? "destructive" : "default"}>
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
-      ) : null}
-
+    <form onSubmit={handleSubmit} className="mt-6 space-y-4">
       <div className="space-y-2">
         <Label htmlFor="email">{dictionary.emailLabel}</Label>
         <Input
@@ -57,13 +100,14 @@ export function MagicLinkForm({ dictionary, locale, status }: MagicLinkFormProps
           type="email"
           placeholder={dictionary.emailPlaceholder}
           autoComplete="email"
+          disabled={isPending}
           required
         />
       </div>
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full" disabled={isPending}>
         <Send className="h-4 w-4" aria-hidden="true" />
-        {dictionary.submit}
+        {isPending ? dictionary.sending : dictionary.submit}
       </Button>
     </form>
   );

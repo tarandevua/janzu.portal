@@ -1,9 +1,11 @@
 import type { Client } from "@/server/models/client.model";
+import type { ComponentProps } from "react";
 import type { SessionFeedback } from "@/server/models/feedback.model";
 import type { Session } from "@/server/models/session.model";
 import type { Locale } from "@/lib/i18n/config";
 import { PaginationControls } from "@/components/dashboard/pagination-controls";
 import { CopyFeedbackLinkButton } from "@/features/feedback/components/copy-feedback-link-button";
+import { SessionFeedbackDrawer } from "@/features/sessions/components/session-feedback-drawer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -45,6 +47,7 @@ type SessionListProps = {
     next: string;
     page: string;
   };
+  feedbackDictionary: ComponentProps<typeof SessionFeedbackDrawer>["dictionary"];
 };
 
 export function SessionList({
@@ -59,6 +62,7 @@ export function SessionList({
   previousHref,
   nextHref,
   dictionary,
+  feedbackDictionary,
 }: SessionListProps) {
   const clientNames = new Map(clients.map((client) => [client.id, client.name]));
   const feedbackBySessionId = new Map(feedbackLinks.map((feedback) => [feedback.sessionId, feedback]));
@@ -98,7 +102,13 @@ export function SessionList({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {feedbackBySessionId.has(session.id) ? (
+                      {feedbackBySessionId.get(session.id)?.submittedAt ? (
+                        <SessionFeedbackDrawer
+                          locale={locale}
+                          feedback={feedbackBySessionId.get(session.id)!}
+                          dictionary={feedbackDictionary}
+                        />
+                      ) : feedbackBySessionId.has(session.id) ? (
                         <CopyFeedbackLinkButton
                           url={`${siteUrl}/${locale}/feedback/${feedbackBySessionId.get(session.id)?.token}`}
                           label={dictionary.copyFeedback}
