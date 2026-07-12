@@ -4,6 +4,7 @@ import {
   createClientForPractitioner,
   deleteClientForPractitioner,
   listClientsByPractitionerId,
+  listClientsByPractitionerIdPage,
   updateClientForPractitioner,
 } from "@/server/repositories/client.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
@@ -24,6 +25,16 @@ export async function requirePractitionerId(
 export async function listMyClients(supabase: SupabaseServerClient, userId: string) {
   const practitionerId = await requirePractitionerId(supabase, userId);
   return listClientsByPractitionerId(supabase, practitionerId);
+}
+
+export async function listMyClientsPage(
+  supabase: SupabaseServerClient,
+  userId: string,
+  page = 1,
+  pageSize = 10
+) {
+  const practitionerId = await requirePractitionerId(supabase, userId);
+  return listClientsByPractitionerIdPage(supabase, practitionerId, page, pageSize);
 }
 
 export async function createMyClient(

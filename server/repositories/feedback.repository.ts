@@ -119,6 +119,18 @@ function toFeedbackParticipant(row: FeedbackParticipantRow): FeedbackParticipant
   };
 }
 
+function uniqueFeedbackParticipants(participants: FeedbackParticipant[]) {
+  const participantsByUserId = new Map<string, FeedbackParticipant>();
+
+  for (const participant of participants) {
+    if (!participantsByUserId.has(participant.userId)) {
+      participantsByUserId.set(participant.userId, participant);
+    }
+  }
+
+  return [...participantsByUserId.values()];
+}
+
 export function createFeedbackToken() {
   return randomBytes(24).toString("base64url");
 }
@@ -198,7 +210,7 @@ export async function listFeedbackParticipants(
     throw new Error(error.message);
   }
 
-  return (data ?? []).map(toFeedbackParticipant);
+  return uniqueFeedbackParticipants((data ?? []).map(toFeedbackParticipant));
 }
 
 export async function getFeedbackByToken(supabase: SupabaseServerClient, token: string) {

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { Route } from "next";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
@@ -9,6 +11,7 @@ type PaginationControlsProps = {
   totalCount: number;
   previousHref: string;
   nextHref: string;
+  onNavigate?: (href: string) => void;
   dictionary: {
     previous: string;
     next: string;
@@ -22,6 +25,7 @@ export function PaginationControls({
   totalCount,
   previousHref,
   nextHref,
+  onNavigate,
   dictionary,
 }: PaginationControlsProps) {
   const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1);
@@ -43,7 +47,7 @@ export function PaginationControls({
           </Button>
         ) : (
           <Button asChild variant="outline" size="sm">
-            <Link href={previousHref as Route}>
+            <Link href={previousHref as Route} onClick={() => onNavigate?.(previousHref)}>
               <ChevronLeftIcon className="h-4 w-4" />
               {dictionary.previous}
             </Link>
@@ -56,7 +60,7 @@ export function PaginationControls({
           </Button>
         ) : (
           <Button asChild variant="outline" size="sm">
-            <Link href={nextHref as Route}>
+            <Link href={nextHref as Route} onClick={() => onNavigate?.(nextHref)}>
               {dictionary.next}
               <ChevronRightIcon className="h-4 w-4" />
             </Link>

@@ -275,6 +275,8 @@
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
+    "country": "Country",
+    "city": "City",
     "notes": "Notes",
     "create": "Create client",
     "update": "Update client",
@@ -285,7 +287,10 @@
     "editInvalid": "Check the client fields and try again.",
     "empty": "No clients yet.",
     "private": "Private",
-    "actions": "Actions"
+    "actions": "Actions",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
   },
   "sessions": {
     "title": "Sessions",
@@ -650,7 +655,11 @@
     "view": "View",
     "viewMore": "View more",
     "markRead": "Mark read",
-    "invalid": "That notification could not be updated."
+    "markAllRead": "Mark all as read",
+    "invalid": "That notification could not be updated.",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
   },
   "userManagement": {
     "title": "User management",

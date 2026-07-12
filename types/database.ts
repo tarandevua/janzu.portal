@@ -211,6 +211,8 @@ export type Database = {
           name: string;
           email: string | null;
           phone: string | null;
+          country: string | null;
+          city: string | null;
           notes: string | null;
           created_at: string;
           updated_at: string;
@@ -221,6 +223,8 @@ export type Database = {
           name: string;
           email?: string | null;
           phone?: string | null;
+          country?: string | null;
+          city?: string | null;
           notes?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -231,6 +235,8 @@ export type Database = {
           name?: string;
           email?: string | null;
           phone?: string | null;
+          country?: string | null;
+          city?: string | null;
           notes?: string | null;
           created_at?: string;
           updated_at?: string;

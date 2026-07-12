@@ -7,6 +7,7 @@ import type {
   Session,
   SessionCreationMetadata,
   SessionInput,
+  SessionValidationFilter,
 } from "@/server/models/session.model";
 
 type SessionRow = Database["public"]["Tables"]["sessions"]["Row"];
@@ -26,6 +27,7 @@ type AdminSessionParticipantRow = {
   users: {
     email: string | null;
     full_name: string | null;
+    is_deleted: boolean;
   } | null;
 };
 
@@ -99,14 +101,25 @@ export async function listSessionsByPractitionerIdPage(
   supabase: SupabaseServerClient,
   practitionerId: string,
   page: number,
-  pageSize: number
+  pageSize: number,
+  validation: SessionValidationFilter = "all"
 ) {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
-  const { data, error, count } = await supabase
+  let query = supabase
     .from("sessions")
     .select("*", { count: "exact" })
-    .eq("practitioner_id", practitionerId)
+    .eq("practitioner_id", practitionerId);
+
+  if (validation === "validated") {
+    query = query.eq("is_validated", true);
+  }
+
+  if (validation === "pending") {
+    query = query.eq("is_validated", false);
+  }
+
+  const { data, error, count } = await query
     .order("session_date", { ascending: false })
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -165,7 +178,8 @@ export async function listAdminSessionParticipants(
 ) {
   const { data, error } = await supabase
     .from("practitioners")
-    .select("id, user_id, users(email, full_name)")
+    .select("id, user_id, users!inner(email, full_name, is_deleted)")
+    .eq("users.is_deleted", false)
     .order("created_at", { ascending: false });
 
   if (error) {

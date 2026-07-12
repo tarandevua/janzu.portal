@@ -22,4 +22,5 @@ export type Notification = {
 export type NotificationSummary = {
   notifications: Notification[];
   unreadCount: number;
+  totalCount: number;
 };

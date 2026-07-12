@@ -21,24 +21,38 @@ function toNotification(row: NotificationRow): Notification {
 
 export async function listNotificationsForUser(
   supabase: SupabaseServerClient,
-  userId: string
+  userId: string,
+  page = 1,
+  pageSize = 50
 ): Promise<NotificationSummary> {
-  const { data, error } = await supabase
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const notificationsQuery = supabase
     .from("notifications")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-    .limit(50);
+    .range(from, to);
+  const unreadCountQuery = supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .is("read_at", null);
+  const [
+    { data, error, count },
+    { count: unreadCount, error: unreadCountError },
+  ] = await Promise.all([notificationsQuery, unreadCountQuery]);
 
-  if (error) {
-    throw new Error(error.message);
+  if (error || unreadCountError) {
+    throw new Error(error?.message ?? unreadCountError?.message);
   }
 
   const notifications = ((data ?? []) as NotificationRow[]).map(toNotification);
 
   return {
     notifications,
-    unreadCount: notifications.filter((notification) => !notification.readAt).length,
+    unreadCount: unreadCount ?? 0,
+    totalCount: count ?? 0,
   };
 }
 
@@ -81,4 +95,23 @@ export async function markNotificationReadForUser(
   }
 
   return toNotification(data as NotificationRow);
+}
+
+export async function markAllNotificationsReadForUser(
+  supabase: SupabaseServerClient,
+  userId: string
+) {
+  const payload = {
+    read_at: new Date().toISOString(),
+  } satisfies NotificationUpdate;
+
+  const { error } = await supabase
+    .from("notifications")
+    .update(payload as never)
+    .eq("user_id", userId)
+    .is("read_at", null);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }

@@ -1,4 +1,7 @@
+"use client";
+
 import type { ComponentProps } from "react";
+import { useEffect, useState } from "react";
 import { EditIcon, XIcon } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Client } from "@/server/models/client.model";
@@ -36,8 +39,16 @@ export function ClientEditDrawer({
   shouldOpen = false,
   dictionary,
 }: ClientEditDrawerProps) {
+  const [open, setOpen] = useState(shouldOpen);
+
+  useEffect(() => {
+    if (shouldOpen) {
+      setOpen(true);
+    }
+  }, [shouldOpen]);
+
   return (
-    <Drawer direction="right" defaultOpen={shouldOpen} handleOnly>
+    <Drawer direction="right" open={open} onOpenChange={setOpen} handleOnly>
       <DrawerTrigger asChild>
         <Button type="button" size="icon" variant="ghost">
           <EditIcon className="h-4 w-4" />
@@ -67,6 +78,7 @@ export function ClientEditDrawer({
             variant="plain"
             mode="edit"
             client={client}
+            onSuccess={() => setOpen(false)}
             dictionary={dictionary}
           />
         </div>

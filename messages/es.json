@@ -275,6 +275,8 @@
     "name": "Nombre",
     "email": "Correo electronico",
     "phone": "Telefono",
+    "country": "Pais",
+    "city": "Ciudad",
     "notes": "Notas",
     "create": "Crear cliente",
     "update": "Actualizar cliente",
@@ -285,7 +287,10 @@
     "editInvalid": "Revisa los campos del cliente e intentalo nuevamente.",
     "empty": "Aun no hay clientes.",
     "private": "Privado",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Pagina"
   },
   "sessions": {
     "title": "Sesiones",
@@ -650,7 +655,11 @@
     "view": "Ver",
     "viewMore": "Ver mas",
     "markRead": "Marcar como leida",
-    "invalid": "No se pudo actualizar esa notificacion."
+    "markAllRead": "Marcar todas como leidas",
+    "invalid": "No se pudo actualizar esa notificacion.",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Pagina"
   },
   "userManagement": {
     "title": "Gestion de usuarios",

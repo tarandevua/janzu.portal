@@ -228,7 +228,13 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
   ] = await Promise.all([
     practitioner ? listClientsByPractitionerId(supabase, practitioner.id) : Promise.resolve([]),
     practitioner
-      ? listSessionsByPractitionerIdPage(supabase, practitioner.id, sessionsPage, PAGE_SIZE)
+      ? listSessionsByPractitionerIdPage(
+          supabase,
+          practitioner.id,
+          sessionsPage,
+          PAGE_SIZE,
+          adminFilters.validation
+        )
       : Promise.resolve({ items: [], totalCount: 0 }),
     practitioner
       ? listSessionRequestsByPractitionerIdPage(
@@ -308,6 +314,11 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
                           page={sessionsPage}
                           pageSize={PAGE_SIZE}
                           totalCount={sessionsPageData.totalCount}
+                          validationFilter={adminFilters.validation ?? "all"}
+                          resetHref={buildTabHref(locale, "history", 1, requestsPage, allSessionsPage, {
+                            ...adminFilters,
+                            validation: "all",
+                          })}
                           previousHref={buildSessionsHref(locale, sessionsPage - 1, requestsPage, "history", allSessionsPage, adminFilters)}
                           nextHref={buildSessionsHref(locale, sessionsPage + 1, requestsPage, "history", allSessionsPage, adminFilters)}
                           dictionary={dictionary.sessions}

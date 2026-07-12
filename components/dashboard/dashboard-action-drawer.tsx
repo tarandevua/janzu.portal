@@ -22,6 +22,8 @@ type DashboardActionDrawerProps = {
   cancelLabel?: string;
   closeLabel?: string;
   defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export function DashboardActionDrawer({
@@ -32,9 +34,17 @@ export function DashboardActionDrawer({
   cancelLabel = "Cancel",
   closeLabel = "Close",
   defaultOpen = false,
+  open,
+  onOpenChange,
 }: DashboardActionDrawerProps) {
   return (
-    <Drawer direction="right" defaultOpen={defaultOpen} handleOnly>
+    <Drawer
+      direction="right"
+      defaultOpen={defaultOpen}
+      open={open}
+      onOpenChange={onOpenChange}
+      handleOnly
+    >
       <DrawerTrigger asChild>
         <Button type="button">
           <PlusIcon className="h-4 w-4" />

@@ -1,6 +1,6 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
-import type { Client, ClientInput } from "@/server/models/client.model";
+import type { Client, ClientInput, ClientsPage } from "@/server/models/client.model";
 
 type ClientRow = Database["public"]["Tables"]["clients"]["Row"];
 
@@ -11,6 +11,8 @@ function toClient(row: ClientRow): Client {
     name: row.name,
     email: row.email,
     phone: row.phone,
+    country: row.country,
+    city: row.city,
     notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -34,6 +36,31 @@ export async function listClientsByPractitionerId(
   return (data ?? []).map(toClient);
 }
 
+export async function listClientsByPractitionerIdPage(
+  supabase: SupabaseServerClient,
+  practitionerId: string,
+  page: number,
+  pageSize: number
+): Promise<ClientsPage> {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await supabase
+    .from("clients")
+    .select("*", { count: "exact" })
+    .eq("practitioner_id", practitionerId)
+    .order("updated_at", { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    items: (data ?? []).map(toClient),
+    totalCount: count ?? 0,
+  };
+}
+
 export async function createClientForPractitioner(
   supabase: SupabaseServerClient,
   practitionerId: string,
@@ -44,6 +71,8 @@ export async function createClientForPractitioner(
     name: input.name,
     email: input.email ?? null,
     phone: input.phone ?? null,
+    country: input.country ?? null,
+    city: input.city ?? null,
     notes: input.notes ?? null,
   } satisfies Database["public"]["Tables"]["clients"]["Insert"];
 
@@ -70,6 +99,8 @@ export async function updateClientForPractitioner(
     name: input.name,
     email: input.email ?? null,
     phone: input.phone ?? null,
+    country: input.country ?? null,
+    city: input.city ?? null,
     notes: input.notes ?? null,
   } satisfies Database["public"]["Tables"]["clients"]["Update"];
 

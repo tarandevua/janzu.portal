@@ -37,7 +37,7 @@ export async function JanzuDashboardFrame({
   const [notificationSummary, dictionary] = await Promise.all([
     createSupabaseServerClient()
       .then((supabase) => listMyNotifications(supabase, user.id))
-      .catch(() => ({ notifications: [], unreadCount: 0 })),
+      .catch(() => ({ notifications: [], unreadCount: 0, totalCount: 0 })),
     getDictionary(locale),
   ])
   const latestUnreadNotifications = notificationSummary.notifications

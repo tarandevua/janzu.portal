@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import type { Route } from "next";
-import { BellIcon, CheckIcon, ExternalLinkIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BellIcon, CheckCheckIcon, CheckIcon, ExternalLinkIcon } from "lucide-react";
+import { PaginationControls } from "@/components/dashboard/pagination-controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -12,7 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { markNotificationRead } from "@/features/notifications/actions";
+import {
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "@/features/notifications/actions";
 import type { Locale } from "@/lib/i18n/config";
 import type { Notification } from "@/server/models/notification.model";
 
@@ -26,13 +34,22 @@ type NotificationDictionary = {
   action: string;
   view: string;
   markRead: string;
+  markAllRead: string;
   invalid: string;
+  previous: string;
+  next: string;
+  page: string;
 };
 
 type NotificationListProps = {
   locale: Locale;
   notifications: Notification[];
   unreadCount: number;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  previousHref: string;
+  nextHref: string;
   status?: string;
   dictionary: NotificationDictionary;
 };
@@ -60,14 +77,72 @@ function formatCreatedAt(locale: Locale, value: string) {
   }).format(new Date(value));
 }
 
+function NotificationTableSkeleton({ dictionary }: { dictionary: NotificationDictionary }) {
+  return (
+    <div className="overflow-hidden rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{dictionary.listTitle}</TableHead>
+            <TableHead>{dictionary.createdAt}</TableHead>
+            <TableHead>{dictionary.action}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <Skeleton className="h-4 w-full max-w-xl" />
+                </div>
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-36" />
+              </TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Skeleton className="h-9 w-20" />
+                  <Skeleton className="h-9 w-28" />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+        <Skeleton className="h-4 w-20" />
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-20" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function NotificationList({
   locale,
   notifications,
   unreadCount,
+  page,
+  pageSize,
+  totalCount,
+  previousHref,
+  nextHref,
   status,
   dictionary,
 }: NotificationListProps) {
   const markReadAction = markNotificationRead.bind(null, locale);
+  const markAllReadAction = markAllNotificationsRead.bind(null, locale);
+  const [isPaginating, setIsPaginating] = useState(false);
+
+  useEffect(() => {
+    setIsPaginating(false);
+  }, [notifications, page]);
 
   return (
     <Card>
@@ -79,80 +154,103 @@ export function NotificationList({
           </CardTitle>
           <CardDescription>{dictionary.listDescription}</CardDescription>
         </div>
-        <Badge variant={unreadCount > 0 ? "default" : "secondary"}>
-          {unreadCount} {dictionary.unread}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={unreadCount > 0 ? "default" : "secondary"}>
+            {unreadCount} {dictionary.unread}
+          </Badge>
+          {unreadCount > 0 ? (
+            <form action={markAllReadAction}>
+              <Button type="submit" variant="outline" size="sm">
+                <CheckCheckIcon className="h-4 w-4" />
+                {dictionary.markAllRead}
+              </Button>
+            </form>
+          ) : null}
+        </div>
       </CardHeader>
       <CardContent>
         {status === "invalid" ? (
           <p className="mb-4 text-sm text-destructive">{dictionary.invalid}</p>
         ) : null}
-        {notifications.length === 0 ? (
+        {isPaginating ? (
+          <NotificationTableSkeleton dictionary={dictionary} />
+        ) : notifications.length === 0 ? (
           <p className="text-sm text-muted-foreground">{dictionary.empty}</p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{dictionary.listTitle}</TableHead>
-                <TableHead>{dictionary.createdAt}</TableHead>
-                <TableHead>{dictionary.action}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {notifications.map((notification) => {
-                const href = resolveNotificationHref(locale, notification.href);
-                const isUnread = !notification.readAt;
+          <div className="overflow-hidden rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{dictionary.listTitle}</TableHead>
+                  <TableHead>{dictionary.createdAt}</TableHead>
+                  <TableHead>{dictionary.action}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {notifications.map((notification) => {
+                  const href = resolveNotificationHref(locale, notification.href);
+                  const isUnread = !notification.readAt;
 
-                return (
-                  <TableRow key={notification.id}>
-                    <TableCell>
-                      <div className="min-w-0 space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium">{notification.title}</span>
-                          <Badge variant={isUnread ? "default" : "outline"}>
-                            {isUnread ? dictionary.unread : dictionary.read}
-                          </Badge>
+                  return (
+                    <TableRow key={notification.id}>
+                      <TableCell>
+                        <div className="min-w-0 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-medium">{notification.title}</span>
+                            <Badge variant={isUnread ? "default" : "outline"}>
+                              {isUnread ? dictionary.unread : dictionary.read}
+                            </Badge>
+                          </div>
+                          {notification.body ? (
+                            <p className="max-w-2xl text-sm text-muted-foreground">
+                              {notification.body}
+                            </p>
+                          ) : null}
                         </div>
-                        {notification.body ? (
-                          <p className="max-w-2xl text-sm text-muted-foreground">
-                            {notification.body}
-                          </p>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                      {formatCreatedAt(locale, notification.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        {href ? (
-                          <Button asChild variant="outline" size="sm">
-                            <Link href={href as Route}>
-                              <ExternalLinkIcon className="h-4 w-4" />
-                              {dictionary.view}
-                            </Link>
-                          </Button>
-                        ) : null}
-                        {isUnread ? (
-                          <form action={markReadAction}>
-                            <input
-                              type="hidden"
-                              name="notificationId"
-                              value={notification.id}
-                            />
-                            <Button type="submit" variant="secondary" size="sm">
-                              <CheckIcon className="h-4 w-4" />
-                              {dictionary.markRead}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                        {formatCreatedAt(locale, notification.createdAt)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
+                          {href ? (
+                            <Button asChild variant="outline" size="sm">
+                              <Link href={href as Route}>
+                                <ExternalLinkIcon className="h-4 w-4" />
+                                {dictionary.view}
+                              </Link>
                             </Button>
-                          </form>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                          ) : null}
+                          {isUnread ? (
+                            <form action={markReadAction}>
+                              <input
+                                type="hidden"
+                                name="notificationId"
+                                value={notification.id}
+                              />
+                              <Button type="submit" variant="secondary" size="sm">
+                                <CheckIcon className="h-4 w-4" />
+                                {dictionary.markRead}
+                              </Button>
+                            </form>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+            <PaginationControls
+              page={page}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              previousHref={previousHref}
+              nextHref={nextHref}
+              onNavigate={() => setIsPaginating(true)}
+              dictionary={dictionary}
+            />
+          </div>
         )}
       </CardContent>
     </Card>
