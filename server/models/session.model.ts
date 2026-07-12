@@ -1,3 +1,5 @@
+import type { Json } from "@/types/database";
+
 export type Session = {
   id: string;
   practitionerId: string;
@@ -7,6 +9,12 @@ export type Session = {
   location: string | null;
   notes: string | null;
   isValidated: boolean;
+  createdByIp: string | null;
+  createdByUserAgent: string | null;
+  createdByDeviceId: string | null;
+  createdByAcceptLanguage: string | null;
+  createdByReferrer: string | null;
+  createdByMetadata: Json;
   createdAt: string;
   updatedAt: string;
 };
@@ -39,4 +47,13 @@ export type SessionInput = {
   durationMinutes: number;
   location?: string | null;
   notes?: string | null;
+};
+
+export type SessionCreationMetadata = {
+  createdByIp?: string | null;
+  createdByUserAgent?: string | null;
+  createdByDeviceId?: string | null;
+  createdByAcceptLanguage?: string | null;
+  createdByReferrer?: string | null;
+  createdByMetadata?: Json;
 };

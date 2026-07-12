@@ -1,3 +1,5 @@
+import type { Json } from "@/types/database";
+
 export type SessionFeedback = {
   id: string;
   sessionId: string;
@@ -15,6 +17,12 @@ export type SessionFeedback = {
   learningPhone: string | null;
   anythingElse: string | null;
   gdprAgreed: boolean;
+  submitterIp: string | null;
+  submitterUserAgent: string | null;
+  submitterDeviceId: string | null;
+  submitterAcceptLanguage: string | null;
+  submitterReferrer: string | null;
+  submitterMetadata: Json;
   submittedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -34,6 +42,15 @@ export type FeedbackInput = {
   learningPhone?: string | null;
   anythingElse?: string | null;
   gdprAgreed: boolean;
+};
+
+export type FeedbackSubmissionMetadata = {
+  submitterIp?: string | null;
+  submitterUserAgent?: string | null;
+  submitterDeviceId?: string | null;
+  submitterAcceptLanguage?: string | null;
+  submitterReferrer?: string | null;
+  submitterMetadata?: Json;
 };
 
 export type FeedbackStatus = {

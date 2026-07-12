@@ -15,6 +15,8 @@ export const sessionSchema = z.object({
   durationMinutes: z.coerce.number().int().min(1).max(1440),
   location: z.preprocess(emptyToNull, z.string().trim().max(240).nullable().optional()),
   notes: z.preprocess(emptyToNull, z.string().trim().max(5000).nullable().optional()),
+  deviceId: z.preprocess(emptyToNull, z.string().trim().max(128).nullable().optional()),
+  deviceMetadata: z.preprocess(emptyToNull, z.string().trim().max(5000).nullable().optional()),
 });
 
 export type SessionPayload = z.infer<typeof sessionSchema>;

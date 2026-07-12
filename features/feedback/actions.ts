@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createMySessionFeedbackLink, submitPublicFeedback } from "@/server/services/feedback.service";
+import { getSubmissionMetadata } from "@/server/utils/submission-metadata";
 import { feedbackSchema, feedbackTokenSchema } from "@/server/validators/feedback.schema";
 
 export async function createFeedbackLink(locale: Locale, formData: FormData) {
@@ -49,6 +51,8 @@ export async function submitFeedbackForm(locale: Locale, token: string, formData
     learningPhone: formData.get("learningPhone"),
     anythingElse: formData.get("anythingElse"),
     gdprAgreed: formData.get("gdprAgreed") === "on",
+    deviceId: formData.get("deviceId"),
+    deviceMetadata: formData.get("deviceMetadata"),
   });
 
   if (!parsed.success) {
@@ -56,7 +60,19 @@ export async function submitFeedbackForm(locale: Locale, token: string, formData
   }
 
   const supabase = await createSupabaseServerClient();
-  await submitPublicFeedback(supabase, tokenResult.data, parsed.data);
+  const metadata = getSubmissionMetadata(await headers(), {
+    deviceId: parsed.data.deviceId,
+    deviceMetadata: parsed.data.deviceMetadata,
+  });
+
+  await submitPublicFeedback(supabase, tokenResult.data, parsed.data, {
+    submitterIp: metadata.ip,
+    submitterUserAgent: metadata.userAgent,
+    submitterDeviceId: metadata.deviceId,
+    submitterAcceptLanguage: metadata.acceptLanguage,
+    submitterReferrer: metadata.referrer,
+    submitterMetadata: metadata.metadata,
+  });
 
   redirect(`/${locale}/feedback/${token}?status=submitted`);
 }

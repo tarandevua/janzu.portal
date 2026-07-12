@@ -22,6 +22,8 @@ export const feedbackSchema = z.object({
   learningPhone: z.preprocess(emptyToNull, z.string().trim().max(80).nullable().optional()),
   anythingElse: z.preprocess(emptyToNull, z.string().trim().max(5000).nullable().optional()),
   gdprAgreed: z.coerce.boolean().refine((value) => value, "GDPR agreement is required"),
+  deviceId: z.preprocess(emptyToNull, z.string().trim().max(128).nullable().optional()),
+  deviceMetadata: z.preprocess(emptyToNull, z.string().trim().max(5000).nullable().optional()),
 }).superRefine((data, context) => {
   if (data.supportAtEnd === "other" && !data.supportOtherText) {
     context.addIssue({

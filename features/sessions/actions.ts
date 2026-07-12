@@ -2,10 +2,12 @@
 
 import crypto from "node:crypto";
 import { addDays, addMonths, addWeeks } from "date-fns";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getSubmissionMetadata } from "@/server/utils/submission-metadata";
 import {
   cancelSessionAvailabilitySlot,
   cancelSessionAvailabilitySeries,
@@ -91,13 +93,27 @@ export async function createSession(locale: Locale, formData: FormData) {
     durationMinutes: formData.get("durationMinutes"),
     location: formData.get("location"),
     notes: formData.get("notes"),
+    deviceId: formData.get("deviceId"),
+    deviceMetadata: formData.get("deviceMetadata"),
   });
 
   if (!parsed.success) {
     redirect(`/${locale}/dashboard/sessions?status=invalid`);
   }
 
-  await createMySession(supabase, user.id, parsed.data);
+  const metadata = getSubmissionMetadata(await headers(), {
+    deviceId: parsed.data.deviceId,
+    deviceMetadata: parsed.data.deviceMetadata,
+  });
+
+  await createMySession(supabase, user.id, parsed.data, {
+    createdByIp: metadata.ip,
+    createdByUserAgent: metadata.userAgent,
+    createdByDeviceId: metadata.deviceId,
+    createdByAcceptLanguage: metadata.acceptLanguage,
+    createdByReferrer: metadata.referrer,
+    createdByMetadata: metadata.metadata,
+  });
 
   revalidatePath(`/${locale}/dashboard/sessions`);
   redirect(`/${locale}/dashboard/sessions?status=created`);

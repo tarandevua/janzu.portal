@@ -6,6 +6,7 @@ import type {
   DashboardFeedbackPage,
   FeedbackInput,
   FeedbackParticipant,
+  FeedbackSubmissionMetadata,
   FeedbackStatus,
   SessionFeedback,
 } from "@/server/models/feedback.model";
@@ -62,6 +63,12 @@ function toFeedback(row: FeedbackRow): SessionFeedback {
     learningPhone: row.learning_phone,
     anythingElse: row.anything_else,
     gdprAgreed: row.gdpr_agreed,
+    submitterIp: row.submitter_ip,
+    submitterUserAgent: row.submitter_user_agent,
+    submitterDeviceId: row.submitter_device_id,
+    submitterAcceptLanguage: row.submitter_accept_language,
+    submitterReferrer: row.submitter_referrer,
+    submitterMetadata: row.submitter_metadata,
     submittedAt: row.submitted_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -257,7 +264,8 @@ export async function createFeedbackLinkForSession(
 export async function submitFeedbackByToken(
   supabase: SupabaseServerClient,
   token: string,
-  input: FeedbackInput
+  input: FeedbackInput,
+  metadata: FeedbackSubmissionMetadata = {}
 ) {
   const rpcClient = supabase as unknown as SubmitFeedbackRpcClient;
   const { data, error } = await rpcClient.rpc("submit_session_feedback", {
@@ -275,6 +283,12 @@ export async function submitFeedbackByToken(
       feedback_learning_phone: input.learningPhone ?? null,
       feedback_anything_else: input.anythingElse ?? null,
       feedback_gdpr_agreed: input.gdprAgreed,
+      feedback_submitter_ip: metadata.submitterIp ?? null,
+      feedback_submitter_user_agent: metadata.submitterUserAgent ?? null,
+      feedback_submitter_device_id: metadata.submitterDeviceId ?? null,
+      feedback_submitter_accept_language: metadata.submitterAcceptLanguage ?? null,
+      feedback_submitter_referrer: metadata.submitterReferrer ?? null,
+      feedback_submitter_metadata: metadata.submitterMetadata ?? {},
     });
 
   if (error) {

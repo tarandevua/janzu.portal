@@ -5,6 +5,7 @@ import type {
   AdminSessionFilters,
   AdminSessionParticipant,
   Session,
+  SessionCreationMetadata,
   SessionInput,
 } from "@/server/models/session.model";
 
@@ -38,6 +39,12 @@ function toSession(row: SessionRow): Session {
     location: row.location,
     notes: row.notes,
     isValidated: row.is_validated,
+    createdByIp: row.created_by_ip,
+    createdByUserAgent: row.created_by_user_agent,
+    createdByDeviceId: row.created_by_device_id,
+    createdByAcceptLanguage: row.created_by_accept_language,
+    createdByReferrer: row.created_by_referrer,
+    createdByMetadata: row.created_by_metadata,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -173,7 +180,8 @@ export async function listAdminSessionParticipants(
 export async function createSessionForPractitioner(
   supabase: SupabaseServerClient,
   practitionerId: string,
-  input: SessionInput
+  input: SessionInput,
+  metadata: SessionCreationMetadata = {}
 ) {
   const payload = {
     practitioner_id: practitionerId,
@@ -182,6 +190,12 @@ export async function createSessionForPractitioner(
     duration_minutes: input.durationMinutes,
     location: input.location ?? null,
     notes: input.notes ?? null,
+    created_by_ip: metadata.createdByIp ?? null,
+    created_by_user_agent: metadata.createdByUserAgent ?? null,
+    created_by_device_id: metadata.createdByDeviceId ?? null,
+    created_by_accept_language: metadata.createdByAcceptLanguage ?? null,
+    created_by_referrer: metadata.createdByReferrer ?? null,
+    created_by_metadata: metadata.createdByMetadata ?? {},
   } satisfies Database["public"]["Tables"]["sessions"]["Insert"];
 
   const { data, error } = await supabase

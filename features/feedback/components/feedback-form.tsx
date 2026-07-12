@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { Route } from "next";
 import { CheckIcon, LanguagesIcon, StarIcon } from "lucide-react";
+import { DeviceMetadataFields } from "@/components/device-metadata-fields";
 import type { Locale } from "@/lib/i18n/config";
 import { submitFeedbackForm } from "@/features/feedback/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -66,9 +67,9 @@ export function FeedbackForm({
       ? dictionary.submitted
       : status === "invalid"
         ? dictionary.invalid
-        : isSubmitted
-          ? dictionary.alreadySubmitted
-          : null;
+          : isSubmitted
+            ? dictionary.alreadySubmitted
+            : null;
 
   return (
     <Card className="mx-auto max-w-2xl">
@@ -234,6 +235,7 @@ export function FeedbackForm({
           </Label>
 
           <input type="hidden" name="emotionalImpact" value="" readOnly />
+          <DeviceMetadataFields />
 
           <Button type="submit" className="w-fit" disabled={isSubmitted}>
             <CheckIcon className="h-4 w-4" />

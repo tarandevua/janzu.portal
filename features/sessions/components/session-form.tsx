@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n/config";
+import { DeviceMetadataFields } from "@/components/device-metadata-fields";
 import type { Client } from "@/server/models/client.model";
 import { createSession } from "@/features/sessions/actions";
 import { SessionClientPicker } from "@/features/sessions/components/session-client-picker";
@@ -71,6 +72,8 @@ export function SessionForm({
             <Label htmlFor="notes">{dictionary.notes}</Label>
             <Textarea id="notes" name="notes" rows={4} />
           </div>
+
+          <DeviceMetadataFields />
 
           <Button type="submit" className="w-fit">
             {dictionary.create}

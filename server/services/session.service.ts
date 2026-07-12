@@ -1,5 +1,5 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
-import type { SessionInput } from "@/server/models/session.model";
+import type { SessionCreationMetadata, SessionInput } from "@/server/models/session.model";
 import { createClientForPractitioner } from "@/server/repositories/client.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 import {
@@ -29,7 +29,8 @@ export async function listMySessions(supabase: SupabaseServerClient, userId: str
 export async function createMySession(
   supabase: SupabaseServerClient,
   userId: string,
-  input: SessionInput
+  input: SessionInput,
+  metadata?: SessionCreationMetadata
 ) {
   const practitionerId = await requireSessionPractitionerId(supabase, userId);
   const client =
@@ -41,7 +42,7 @@ export async function createMySession(
   const session = await createSessionForPractitioner(supabase, practitionerId, {
     ...input,
     clientId: input.clientId ?? client?.id ?? null,
-  });
+  }, metadata);
 
   await createFeedbackLinkForSession(supabase, session.id);
 

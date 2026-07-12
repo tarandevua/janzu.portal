@@ -1,5 +1,5 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
-import type { FeedbackInput } from "@/server/models/feedback.model";
+import type { FeedbackInput, FeedbackSubmissionMetadata } from "@/server/models/feedback.model";
 import {
   createFeedbackLinkForSession,
   getFeedbackStatusByToken,
@@ -61,7 +61,8 @@ export function findFeedbackParticipants(
 export async function submitPublicFeedback(
   supabase: SupabaseServerClient,
   token: string,
-  input: FeedbackInput
+  input: FeedbackInput,
+  metadata?: FeedbackSubmissionMetadata
 ) {
-  return submitFeedbackByToken(supabase, token, input);
+  return submitFeedbackByToken(supabase, token, input, metadata);
 }
