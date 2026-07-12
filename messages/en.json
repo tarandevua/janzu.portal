@@ -387,6 +387,8 @@
     "learningPhone": "Phone Number",
     "gdprAgreement": "By submitting this form, I agree that Janzu Community Portal may process the data provided here for session feedback, follow-up, and practitioner communication according to applicable data protection rules.",
     "language": "Language",
+    "english": "English",
+    "spanish": "Spanish",
     "submit": "Submit feedback",
     "submitted": "Thank you. Feedback submitted.",
     "invalid": "Check the feedback fields and try again.",

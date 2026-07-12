@@ -300,6 +300,7 @@ export type Database = {
           session_id: string;
           token: string;
           participant_email: string | null;
+          participant_preferred_language: "en" | "es" | null;
           rating: number;
           experience_text: string | null;
           emotional_impact: string | null;
@@ -327,6 +328,7 @@ export type Database = {
           session_id: string;
           token: string;
           participant_email?: string | null;
+          participant_preferred_language?: "en" | "es" | null;
           rating?: number;
           experience_text?: string | null;
           emotional_impact?: string | null;
@@ -354,6 +356,7 @@ export type Database = {
           session_id?: string;
           token?: string;
           participant_email?: string | null;
+          participant_preferred_language?: "en" | "es" | null;
           rating?: number;
           experience_text?: string | null;
           emotional_impact?: string | null;
@@ -982,6 +985,7 @@ export type Database = {
         Args: {
           feedback_token: string;
           feedback_participant_email: string;
+          feedback_participant_preferred_language: "en" | "es";
           feedback_rating: number;
           feedback_experience_text: string | null;
           feedback_emotional_impact: string | null;

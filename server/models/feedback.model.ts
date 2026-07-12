@@ -1,10 +1,12 @@
 import type { Json } from "@/types/database";
+import type { Locale } from "@/lib/i18n/config";
 
 export type SessionFeedback = {
   id: string;
   sessionId: string;
   token: string;
   participantEmail: string | null;
+  participantPreferredLanguage: Locale | null;
   rating: number;
   experienceText: string | null;
   emotionalImpact: string | null;
@@ -30,6 +32,7 @@ export type SessionFeedback = {
 
 export type FeedbackInput = {
   participantEmail: string;
+  participantPreferredLanguage: Locale;
   rating: number;
   experienceText?: string | null;
   emotionalImpact?: string | null;

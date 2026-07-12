@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import { CheckIcon, LanguagesIcon, StarIcon } from "lucide-react";
 import { DeviceMetadataFields } from "@/components/device-metadata-fields";
 import type { Locale } from "@/lib/i18n/config";
@@ -13,6 +13,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +49,8 @@ type FeedbackFormProps = {
     learningPhone: string;
     gdprAgreement: string;
     language: string;
+    english: string;
+    spanish: string;
     submit: string;
     submitted: string;
     invalid: string;
@@ -57,11 +66,12 @@ export function FeedbackForm({
   dictionary,
   isSubmitted,
 }: FeedbackFormProps) {
+  const router = useRouter();
   const action = submitFeedbackForm.bind(null, locale, token);
+  const [isSwitchingLanguage, startLanguageTransition] = useTransition();
   const [supportAtEnd, setSupportAtEnd] = useState("yes");
   const [interestedLearningJanzu, setInterestedLearningJanzu] = useState(false);
   const [rating, setRating] = useState(5);
-  const nextLocale: Locale = locale === "en" ? "es" : "en";
   const message =
     status === "submitted"
       ? dictionary.submitted
@@ -71,6 +81,16 @@ export function FeedbackForm({
             ? dictionary.alreadySubmitted
             : null;
 
+  function handleLanguageChange(nextLocale: string) {
+    if (nextLocale !== "en" && nextLocale !== "es" || nextLocale === locale) {
+      return;
+    }
+
+    startLanguageTransition(() => {
+      router.push(`/${nextLocale}/feedback/${token}` as Route);
+    });
+  }
+
   return (
     <Card className="mx-auto max-w-2xl">
       <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -78,12 +98,21 @@ export function FeedbackForm({
           <CardTitle>{dictionary.title}</CardTitle>
           <CardDescription>{dictionary.description}</CardDescription>
         </div>
-        <Button asChild variant="outline" size="sm" className="w-fit gap-2">
-          <Link href={`/${nextLocale}/feedback/${token}` as Route}>
+        <div className="grid w-full gap-2 sm:w-48">
+          <Label htmlFor="feedback-language" className="text-xs text-muted-foreground">
+            {dictionary.language}
+          </Label>
+          <Select value={locale} onValueChange={handleLanguageChange} disabled={isSwitchingLanguage}>
+            <SelectTrigger id="feedback-language" className="bg-background">
             <LanguagesIcon className="h-4 w-4" />
-            {dictionary.language}: {nextLocale.toUpperCase()}
-          </Link>
-        </Button>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="en">{dictionary.english}</SelectItem>
+              <SelectItem value="es">{dictionary.spanish}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
         <form action={action} className="grid gap-4">
@@ -93,6 +122,7 @@ export function FeedbackForm({
             </Alert>
           ) : (
           <>
+          <input type="hidden" name="participantPreferredLanguage" value={locale} readOnly />
           <div className="grid gap-2">
             <Label htmlFor="participantEmail">{dictionary.email} <span className="text-destructive">*</span></Label>
             <Input

@@ -10,6 +10,7 @@ const emptyToNull = (value: unknown) => {
 
 export const feedbackSchema = z.object({
   participantEmail: z.string().trim().email().max(320),
+  participantPreferredLanguage: z.enum(["en", "es"]),
   rating: z.coerce.number().int().min(1).max(5),
   experienceText: z.preprocess(emptyToNull, z.string().trim().min(1).max(5000)),
   emotionalImpact: z.preprocess(emptyToNull, z.string().trim().max(5000).nullable().optional()),

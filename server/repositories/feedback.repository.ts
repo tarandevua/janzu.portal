@@ -51,6 +51,7 @@ function toFeedback(row: FeedbackRow): SessionFeedback {
     sessionId: row.session_id,
     token: row.token,
     participantEmail: row.participant_email,
+    participantPreferredLanguage: row.participant_preferred_language,
     rating: row.rating,
     experienceText: row.experience_text,
     emotionalImpact: row.emotional_impact,
@@ -271,6 +272,7 @@ export async function submitFeedbackByToken(
   const { data, error } = await rpcClient.rpc("submit_session_feedback", {
       feedback_token: token,
       feedback_participant_email: input.participantEmail,
+      feedback_participant_preferred_language: input.participantPreferredLanguage,
       feedback_rating: input.rating,
       feedback_experience_text: input.experienceText ?? null,
       feedback_emotional_impact: input.emotionalImpact ?? null,
