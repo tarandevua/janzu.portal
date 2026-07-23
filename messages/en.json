@@ -72,6 +72,7 @@
       "feedback": "Feedback",
       "profile": "Profile",
       "notifications": "Notifications",
+      "knowledgeBase": "Knowledge Base",
       "logout": "Log out",
       "loggingOut": "Logging out..."
     },
@@ -206,6 +207,13 @@
       "validated": "Validated",
       "pending": "Pending"
     }
+  },
+  "knowledgeBase": {
+    "title": "Knowledge Base",
+    "knowledgeBase": "Knowledge Base",
+    "onThisPage": "On this page",
+    "previous": "Previous",
+    "next": "Next"
   },
   "practitioners": {
     "form": {

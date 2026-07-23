@@ -30,7 +30,7 @@ function normalizePath(href: string) {
   }
 }
 
-type DashboardSkeletonVariant = "generic" | "practitioner" | "apprentice";
+type DashboardSkeletonVariant = "generic" | "practitioner" | "apprentice" | "knowledge";
 
 function StatCardSkeleton() {
   return (
@@ -151,6 +151,39 @@ function ApprenticeDashboardSkeleton() {
   );
 }
 
+export function KnowledgeBaseSkeleton() {
+  return (
+    <div className="mx-auto w-full max-w-[1440px] p-4 md:p-6">
+      <div className="grid gap-8 xl:grid-cols-[240px_minmax(0,1fr)_200px]">
+        <div className="hidden xl:block" aria-hidden="true" />
+
+        <main className="min-w-0">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="mt-3 h-10 w-full max-w-xl" />
+          <Skeleton className="mt-4 h-6 w-full max-w-2xl" />
+          <div className="my-8 border-t" />
+          <div className="space-y-7">
+            {Array.from({ length: 3 }).map((_, sectionIndex) => (
+              <section key={sectionIndex} className="space-y-3">
+                <Skeleton className="h-7 w-2/5" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-11/12" />
+                <Skeleton className="h-4 w-4/5" />
+              </section>
+            ))}
+          </div>
+          <div className="mt-12 grid gap-3 border-t pt-6 sm:grid-cols-2">
+            <Skeleton className="h-20 w-full rounded-lg" />
+            <Skeleton className="h-20 w-full rounded-lg" />
+          </div>
+        </main>
+
+        <div className="hidden xl:block" aria-hidden="true" />
+      </div>
+    </div>
+  );
+}
+
 function DashboardPageSkeleton({ variant }: { variant: DashboardSkeletonVariant }) {
   if (variant === "practitioner") {
     return <PractitionerDashboardSkeleton />;
@@ -158,6 +191,10 @@ function DashboardPageSkeleton({ variant }: { variant: DashboardSkeletonVariant 
 
   if (variant === "apprentice") {
     return <ApprenticeDashboardSkeleton />;
+  }
+
+  if (variant === "knowledge") {
+    return <KnowledgeBaseSkeleton />;
   }
 
   return (
@@ -211,6 +248,12 @@ export function DashboardNavigationLoadingProvider({ children }: { children: Rea
   const startNavigation = useCallback(
     (href: string) => {
       const nextPath = normalizePath(href);
+
+      if (nextPath.includes("/dashboard/knowledge-base")) {
+        setSkeletonVariant("knowledge");
+        setIsLoading(true);
+        return;
+      }
 
       if (nextPath !== pathname) {
         if (nextPath.endsWith("/dashboard/practitioner")) {

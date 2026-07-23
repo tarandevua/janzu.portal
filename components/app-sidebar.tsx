@@ -15,6 +15,7 @@ import {
   MapPinnedIcon,
   UserCogIcon,
   SettingsIcon,
+  BookOpenIcon,
 } from "lucide-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -50,6 +51,7 @@ type SidebarDictionary = {
   feedback: string
   profile: string
   notifications: string
+  knowledgeBase: string
   logout: string
   loggingOut: string
 }
@@ -131,6 +133,11 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
       name: dictionary.events,
       url: `/${locale}/events`,
       icon: CalendarDaysIcon,
+    },
+    {
+      name: dictionary.knowledgeBase,
+      url: `/${locale}/dashboard/knowledge-base/getting-started/welcome`,
+      icon: BookOpenIcon,
     },
   ],
   }
