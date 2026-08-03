@@ -16,7 +16,7 @@ export async function requirePractitionerId(
   const profile = await getPractitionerProfileByUserId(supabase, userId);
 
   if (!profile) {
-    throw new Error("Practitioner profile is required before managing clients.");
+    throw new Error("Practitioner profile is required before managing session participants.");
   }
 
   return profile.id;

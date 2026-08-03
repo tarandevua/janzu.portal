@@ -5,6 +5,7 @@ describe("feedbackSchema", () => {
   it("accepts a valid feedback payload", () => {
     const parsed = feedbackSchema.safeParse({
       participantEmail: "participant@example.com",
+      participantPreferredLanguage: "en",
       rating: "5",
       experienceText: "Deeply calming.",
       emotionalImpact: "More grounded.",

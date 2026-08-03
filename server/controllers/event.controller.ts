@@ -40,7 +40,7 @@ export async function listManagedCommunityEvents() {
 
   if (!hasPermission(roles, "events:manage")) {
     return NextResponse.json(
-      { data: null, error: { code: "FORBIDDEN", message: "Event manager access is required." } },
+      { data: null, error: { code: "FORBIDDEN", message: "Instructor access is required." } },
       { status: 403 }
     );
   }
@@ -80,7 +80,7 @@ export async function createCommunityEvent(request: NextRequest) {
 
   if (!hasPermission(roles, "events:manage")) {
     return NextResponse.json(
-      { data: null, error: { code: "FORBIDDEN", message: "Event manager access is required." } },
+      { data: null, error: { code: "FORBIDDEN", message: "Instructor access is required." } },
       { status: 403 }
     );
   }

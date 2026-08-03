@@ -36,7 +36,7 @@ export function SectionCards() {
       </Card>
       <Card className="@container/card">
         <CardHeader className="relative">
-          <CardDescription>Private Clients</CardDescription>
+          <CardDescription>Private Session Participants</CardDescription>
           <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
             12
           </CardTitle>
@@ -49,7 +49,7 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            New client records this period <TrendingDownIcon className="size-4" />
+            New session participant records this period <TrendingDownIcon className="size-4" />
           </div>
           <div className="text-muted-foreground">
             Visible only to the practitioner

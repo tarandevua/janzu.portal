@@ -15,11 +15,11 @@ export const janzuWorkflowData = [
     status: "In Process",
     target: "50",
     limit: "50",
-    reviewer: "Manager",
+    reviewer: "Instructor",
   },
   {
     id: 3,
-    header: "Client CRM",
+    header: "Session Participants",
     type: "Private",
     status: "Done",
     target: "Secure",
@@ -42,6 +42,6 @@ export const janzuWorkflowData = [
     status: "Done",
     target: "RSVP",
     limit: "Capacity",
-    reviewer: "Manager",
+    reviewer: "Instructor",
   },
 ]

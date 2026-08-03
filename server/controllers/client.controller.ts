@@ -50,7 +50,7 @@ export async function createCurrentUserClient(request: NextRequest) {
         data: null,
         error: {
           code: "VALIDATION_ERROR",
-          message: "Client payload is invalid.",
+          message: "Session participant payload is invalid.",
           details: parsed.error.flatten(),
         },
       },
@@ -81,7 +81,7 @@ export async function updateCurrentUserClient(request: NextRequest, clientId: st
         data: null,
         error: {
           code: "VALIDATION_ERROR",
-          message: "Client payload is invalid.",
+          message: "Session participant payload is invalid.",
           details: parsed.error.flatten(),
         },
       },

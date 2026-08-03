@@ -789,6 +789,10 @@ export type Database = {
           title: string;
           body: string | null;
           href: string | null;
+          feedback_id: string | null;
+          participant_name: string | null;
+          feedback_session_date: string | null;
+          feedback_rating: number | null;
           read_at: string | null;
           created_at: string;
           updated_at: string;
@@ -807,6 +811,10 @@ export type Database = {
           title: string;
           body?: string | null;
           href?: string | null;
+          feedback_id?: string | null;
+          participant_name?: string | null;
+          feedback_session_date?: string | null;
+          feedback_rating?: number | null;
           read_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -825,6 +833,10 @@ export type Database = {
           title?: string;
           body?: string | null;
           href?: string | null;
+          feedback_id?: string | null;
+          participant_name?: string | null;
+          feedback_session_date?: string | null;
+          feedback_rating?: number | null;
           read_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -953,6 +965,7 @@ export type Database = {
           participant_filter?: string | null;
           page_number?: number;
           page_size?: number;
+          feedback_filter?: string | null;
         };
         Returns: {
           feedback_id: string;

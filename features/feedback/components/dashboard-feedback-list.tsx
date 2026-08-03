@@ -69,6 +69,7 @@ type DashboardFeedbackListProps = {
   feedback: DashboardFeedback[];
   participants: FeedbackParticipant[];
   selectedParticipantId?: string;
+  selectedFeedbackId?: string;
   canFilterParticipants: boolean;
   page: number;
   pageSize: number;
@@ -132,13 +133,15 @@ function FeedbackDetailSheet({
   item,
   locale,
   dictionary,
+  defaultOpen,
 }: {
   item: DashboardFeedback;
   locale: Locale;
   dictionary: FeedbackDashboardDictionary;
+  defaultOpen: boolean;
 }) {
   return (
-    <Sheet>
+    <Sheet defaultOpen={defaultOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm">
           {dictionary.details}
@@ -181,6 +184,7 @@ export function DashboardFeedbackList({
   feedback,
   participants,
   selectedParticipantId,
+  selectedFeedbackId,
   canFilterParticipants,
   page,
   pageSize,
@@ -262,7 +266,12 @@ export function DashboardFeedbackList({
                       {formatDateTime(locale, item.submittedAt)}
                     </TableCell>
                     <TableCell>
-                      <FeedbackDetailSheet item={item} locale={locale} dictionary={dictionary} />
+                      <FeedbackDetailSheet
+                        item={item}
+                        locale={locale}
+                        dictionary={dictionary}
+                        defaultOpen={item.feedbackId === selectedFeedbackId}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

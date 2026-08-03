@@ -2,7 +2,7 @@ import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SessionRequestList } from "@/features/session-requests/components/session-request-list";
 import { AdminSessionList } from "@/features/sessions/components/admin-session-list";
 import { SessionAvailabilityManager } from "@/features/sessions/components/session-availability-manager";
@@ -160,7 +160,6 @@ function PublicProfileRequiredMessage({
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">{description}</p>

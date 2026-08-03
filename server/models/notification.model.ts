@@ -14,6 +14,10 @@ export type Notification = {
   title: string;
   body: string | null;
   href: string | null;
+  feedbackId: string | null;
+  participantName: string | null;
+  feedbackSessionDate: string | null;
+  feedbackRating: number | null;
   readAt: string | null;
   createdAt: string;
   updatedAt: string;

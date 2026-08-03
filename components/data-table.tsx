@@ -278,7 +278,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
             </SelectTrigger>
             <SelectContent align="end">
               <SelectItem value="Admin">Admin</SelectItem>
-              <SelectItem value="Manager">Manager</SelectItem>
+              <SelectItem value="Instructor">Instructor</SelectItem>
             </SelectContent>
           </Select>
         </>
@@ -420,7 +420,7 @@ export function DataTable({
           <SelectContent>
             <SelectItem value="outline">Portal Workflows</SelectItem>
             <SelectItem value="past-performance">Certification</SelectItem>
-            <SelectItem value="key-personnel">Clients</SelectItem>
+            <SelectItem value="key-personnel">Session Participants</SelectItem>
             <SelectItem value="focus-documents">Locations</SelectItem>
           </SelectContent>
         </Select>
@@ -436,7 +436,7 @@ export function DataTable({
             </Badge>
           </TabsTrigger>
           <TabsTrigger value="key-personnel" className="gap-1">
-            Clients{" "}
+            Session Participants{" "}
             <Badge
               variant="secondary"
               className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/30"

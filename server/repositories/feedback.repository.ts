@@ -177,7 +177,8 @@ export async function listFeedbackDashboard(
   actorUserId: string,
   participantFilter?: string | null,
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  feedbackFilter?: string | null
 ): Promise<DashboardFeedbackPage> {
   const rpcClient = supabase as unknown as FeedbackDashboardRpcClient;
   const { data, error } = await rpcClient.rpc("list_feedback_dashboard", {
@@ -185,6 +186,7 @@ export async function listFeedbackDashboard(
     participant_filter: participantFilter ?? null,
     page_number: page,
     page_size: pageSize,
+    feedback_filter: feedbackFilter ?? null,
   });
 
   if (error) {

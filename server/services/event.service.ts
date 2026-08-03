@@ -28,7 +28,7 @@ export function listPublicEvents(supabase: SupabaseServerClient, currentUserId?:
 
 export function listEventsForManagement(supabase: SupabaseServerClient, roles: Role[]) {
   if (!hasPermission(roles, "events:manage")) {
-    throw new Error("Event manager access is required.");
+    throw new Error("Instructor access is required.");
   }
 
   return listManagedEvents(supabase);
@@ -41,7 +41,7 @@ export function createManagedEvent(
   input: EventInput
 ) {
   if (!hasPermission(roles, "events:manage")) {
-    throw new Error("Event manager access is required.");
+    throw new Error("Instructor access is required.");
   }
 
   return createEvent(supabase, userId, input);
@@ -54,7 +54,7 @@ export function updateManagedEvent(
   input: EventInput
 ) {
   if (!hasPermission(roles, "events:manage")) {
-    throw new Error("Event manager access is required.");
+    throw new Error("Instructor access is required.");
   }
 
   return updateEvent(supabase, eventId, input);
@@ -68,7 +68,7 @@ export async function uploadManagedEventImages(
   options: { startSortOrder?: number } = {}
 ) {
   if (!hasPermission(roles, "events:manage")) {
-    throw new Error("Event manager access is required.");
+    throw new Error("Instructor access is required.");
   }
 
   if (files.length === 0) {
@@ -111,7 +111,7 @@ export async function updateManagedEventMedia(
   }
 ) {
   if (!hasPermission(roles, "events:manage")) {
-    throw new Error("Event manager access is required.");
+    throw new Error("Instructor access is required.");
   }
 
   const removedMedia = await listEventMediaByIds(supabase, eventId, input.removedMediaIds);

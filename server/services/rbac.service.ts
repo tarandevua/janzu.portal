@@ -8,7 +8,7 @@ export const roleAccess: Record<Role, Omit<RoleAccess, "role">> = {
     permissions: ["users:manage", "locations:approve", "certifications:approve", "events:manage"]
   },
   manager: {
-    label: "Manager",
+    label: "Instructor",
     dashboardPath: "manager",
     permissions: ["users:manage", "locations:approve", "certifications:approve", "events:manage", "sessions:facilitate"]
   },
@@ -23,7 +23,7 @@ export const roleAccess: Record<Role, Omit<RoleAccess, "role">> = {
     permissions: ["clients:manage", "profile:manage"]
   },
   apprentice: {
-    label: "Apprentice",
+    label: "Trainee",
     dashboardPath: "apprentice",
     permissions: ["profile:manage"]
   }

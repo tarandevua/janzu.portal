@@ -15,8 +15,10 @@ const PAGE_SIZE = 10;
 
 type FeedbackDashboardPageProps = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ participantId?: string; page?: string }>;
+  searchParams: Promise<{ participantId?: string; feedbackId?: string; page?: string }>;
 };
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function normalizeParticipantId(value: string | undefined) {
   return value && value !== "all" ? value : null;
@@ -25,6 +27,10 @@ function normalizeParticipantId(value: string | undefined) {
 function parsePage(value: string | undefined) {
   const page = Number.parseInt(value ?? "1", 10);
   return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
+function normalizeFeedbackId(value: string | undefined) {
+  return value && UUID_PATTERN.test(value) ? value : null;
 }
 
 function buildFeedbackHref(locale: Locale, page: number, participantId: string | null) {
@@ -46,8 +52,9 @@ export default async function FeedbackDashboardPage({
   params,
   searchParams,
 }: FeedbackDashboardPageProps) {
-  const [{ locale }, { participantId, page }] = await Promise.all([params, searchParams]);
-  const currentPage = parsePage(page);
+  const [{ locale }, { participantId, feedbackId, page }] = await Promise.all([params, searchParams]);
+  const selectedFeedbackId = normalizeFeedbackId(feedbackId);
+  const currentPage = selectedFeedbackId ? 1 : parsePage(page);
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
     supabase.auth.getUser(),
@@ -75,7 +82,8 @@ export default async function FeedbackDashboardPage({
       data.user.id,
       selectedParticipantId,
       currentPage,
-      PAGE_SIZE
+      PAGE_SIZE,
+      selectedFeedbackId
     ),
     findFeedbackParticipants(supabase, data.user.id),
   ]);
@@ -99,6 +107,7 @@ export default async function FeedbackDashboardPage({
             feedback={feedbackPage.items}
             participants={participants}
             selectedParticipantId={selectedParticipantId ?? undefined}
+            selectedFeedbackId={selectedFeedbackId ?? undefined}
             canFilterParticipants={canFilterParticipants}
             page={currentPage}
             pageSize={PAGE_SIZE}

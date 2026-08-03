@@ -46,9 +46,17 @@ export function findDashboardFeedback(
   actorUserId: string,
   participantFilter?: string | null,
   page?: number,
-  pageSize?: number
+  pageSize?: number,
+  feedbackFilter?: string | null
 ) {
-  return listFeedbackDashboard(supabase, actorUserId, participantFilter, page, pageSize);
+  return listFeedbackDashboard(
+    supabase,
+    actorUserId,
+    participantFilter,
+    page,
+    pageSize,
+    feedbackFilter
+  );
 }
 
 export function findFeedbackParticipants(

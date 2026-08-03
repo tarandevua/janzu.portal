@@ -30,6 +30,10 @@ type NotificationDictionary = {
   empty: string;
   unread: string;
   read: string;
+  participant: string;
+  sessionDate: string;
+  rating: string;
+  status: string;
   createdAt: string;
   action: string;
   view: string;
@@ -77,6 +81,16 @@ function formatCreatedAt(locale: Locale, value: string) {
   }).format(new Date(value));
 }
 
+function formatSessionDate(locale: Locale, value: string | null) {
+  if (!value) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+  }).format(new Date(`${value}T00:00:00`));
+}
+
 function NotificationTableSkeleton({ dictionary }: { dictionary: NotificationDictionary }) {
   return (
     <div className="overflow-hidden rounded-md border">
@@ -84,6 +98,10 @@ function NotificationTableSkeleton({ dictionary }: { dictionary: NotificationDic
         <TableHeader>
           <TableRow>
             <TableHead>{dictionary.listTitle}</TableHead>
+            <TableHead>{dictionary.participant}</TableHead>
+            <TableHead>{dictionary.sessionDate}</TableHead>
+            <TableHead>{dictionary.rating}</TableHead>
+            <TableHead>{dictionary.status}</TableHead>
             <TableHead>{dictionary.createdAt}</TableHead>
             <TableHead>{dictionary.action}</TableHead>
           </TableRow>
@@ -100,6 +118,10 @@ function NotificationTableSkeleton({ dictionary }: { dictionary: NotificationDic
                   <Skeleton className="h-4 w-full max-w-xl" />
                 </div>
               </TableCell>
+              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+              <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-36" />
               </TableCell>
@@ -177,11 +199,15 @@ export function NotificationList({
         ) : notifications.length === 0 ? (
           <p className="text-sm text-muted-foreground">{dictionary.empty}</p>
         ) : (
-          <div className="overflow-hidden rounded-md border">
+          <div className="overflow-x-auto rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{dictionary.listTitle}</TableHead>
+                  <TableHead>{dictionary.participant}</TableHead>
+                  <TableHead>{dictionary.sessionDate}</TableHead>
+                  <TableHead>{dictionary.rating}</TableHead>
+                  <TableHead>{dictionary.status}</TableHead>
                   <TableHead>{dictionary.createdAt}</TableHead>
                   <TableHead>{dictionary.action}</TableHead>
                 </TableRow>
@@ -197,9 +223,6 @@ export function NotificationList({
                         <div className="min-w-0 space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="font-medium">{notification.title}</span>
-                            <Badge variant={isUnread ? "default" : "outline"}>
-                              {isUnread ? dictionary.unread : dictionary.read}
-                            </Badge>
                           </div>
                           {notification.body ? (
                             <p className="max-w-2xl text-sm text-muted-foreground">
@@ -207,6 +230,22 @@ export function NotificationList({
                             </p>
                           ) : null}
                         </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {notification.participantName ?? "—"}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                        {formatSessionDate(locale, notification.feedbackSessionDate)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {notification.feedbackRating === null
+                          ? "—"
+                          : `${notification.feedbackRating}/5`}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={isUnread ? "default" : "outline"}>
+                          {isUnread ? dictionary.unread : dictionary.read}
+                        </Badge>
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                         {formatCreatedAt(locale, notification.createdAt)}
