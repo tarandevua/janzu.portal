@@ -28,3 +28,7 @@ Content-Type: application/json
 When feedback is submitted, the linked session is marked validated by a database trigger.
 
 Reopening a submitted feedback link returns the public confirmation state rather than the form.
+
+## Authenticated feedback detail
+
+Dashboard deep links use `feedbackId` to filter `list_feedback_dashboard`. The database function rejects anonymous calls and any request whose `actor_user_id` differs from `auth.uid()`. Practitioners can read feedback for their own sessions; the existing Administrator and Instructor review permissions remain unchanged.

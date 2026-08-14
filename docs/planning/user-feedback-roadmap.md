@@ -26,8 +26,8 @@ Use this roadmap together with [Agent Implementation Playbook](./agent-implement
 | DONE-04 | English and Spanish terminology updated without renaming internal database tables, routes, or role values. | Done |
 | DONE-05 | Portal roles documented in the English and Spanish knowledge base. | Done |
 | DONE-06 | Obsolete feedback “next sprint” placeholder removed. | Done |
-| DONE-07 | Feedback notifications contain participant name, session date, rating, unread state, and an exact feedback link. | Verify |
-| DONE-08 | Exact feedback links open the corresponding feedback detail panel. | Verify |
+| DONE-07 | Feedback notifications contain participant name, session date, rating, unread state, and an exact feedback link. | Done |
+| DONE-08 | Exact feedback links open the corresponding feedback detail panel. | Done |
 
 ## Important current constraints
 
@@ -89,7 +89,7 @@ Decide:
 
 #### TASK-001: Verify completed feedback and terminology work
 
-**Status:** Ready  
+**Status:** Done
 **Priority:** P0  
 **Dependencies:** None
 
@@ -101,6 +101,8 @@ Decide:
 - The exact link opens only feedback the signed-in user is authorized to read.
 - English and Spanish display the approved terminology.
 - Existing notification backfill does not associate the wrong feedback record.
+
+**Verification:** Migration `202608140001_verify_feedback_notifications.sql` and its SQL integration test verify one-notification idempotency, exact-link authorization, and conservative one-to-one legacy matching. English and Spanish dictionary parity and approved terminology are covered by unit tests and the localized session guidance.
 
 #### TASK-002: Approve and record DEC-01 through DEC-04
 

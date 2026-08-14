@@ -3,6 +3,16 @@ import { defaultLocale, isLocale, locales } from "@/lib/i18n/config";
 import en from "@/messages/en.json";
 import es from "@/messages/es.json";
 
+function dictionaryKeys(value: unknown, prefix = ""): string[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return [prefix];
+  }
+
+  return Object.entries(value).flatMap(([key, child]) =>
+    dictionaryKeys(child, prefix ? `${prefix}.${key}` : key)
+  );
+}
+
 describe("i18n config", () => {
   it("supports English and Spanish", () => {
     expect(locales).toEqual(["en", "es"]);
@@ -10,6 +20,10 @@ describe("i18n config", () => {
 
   it("uses English as the default locale", () => {
     expect(defaultLocale).toBe("en");
+  });
+
+  it("keeps English and Spanish dictionary keys in parity", () => {
+    expect(dictionaryKeys(es).sort()).toEqual(dictionaryKeys(en).sort());
   });
 
   it("validates known locales", () => {

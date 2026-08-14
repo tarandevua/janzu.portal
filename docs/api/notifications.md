@@ -51,8 +51,14 @@ The update is scoped to the current authenticated user by RLS and repository fil
 
 ## Automatic notification triggers
 
-- Session feedback submitted: notifies the practitioner with the participant name, session date, rating, and a direct link to the feedback record.
+- Session feedback submitted: creates at most one notification per feedback record and includes the participant name, session date, rating, and a direct link to that record.
 - Location approved: notifies the submitting practitioner.
 - Event RSVP received: notifies the event creator.
 - Certification eligible: notifies the practitioner when progress reaches review state.
 - Certification approved: notifies the practitioner after administrator or instructor approval.
+
+The feedback notification invariant is enforced by the partial unique index on `notifications.feedback_id`, not only by application behavior.
+
+## Feedback notification backfill
+
+Migration `202608140001_verify_feedback_notifications.sql` rechecks legacy matches in both directions: a notification and feedback record must be each other's unique closest match within five minutes. Equal-distance or otherwise ambiguous records remain unlinked and route to the authorized feedback list; the migration never guesses an exact destination.
