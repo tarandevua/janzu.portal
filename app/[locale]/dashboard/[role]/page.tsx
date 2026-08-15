@@ -8,6 +8,7 @@ import {
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { FacilitatorDashboard } from "@/components/dashboard/facilitator-dashboard";
 import { JanzuDashboardBlock } from "@/components/dashboard/janzu-dashboard-block";
+import { InstructorDashboard } from "@/components/dashboard/instructor-dashboard";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import {
   PractitionerDashboardContent,
@@ -77,7 +78,7 @@ async function ApprenticeDashboardContentLoader({
   locale: Locale;
   dictionary: Parameters<typeof ApprenticeDashboardContent>[0]["dictionary"];
 }) {
-  const dashboardData = await getApprenticeDashboardData(supabase, userId);
+  const dashboardData = await getApprenticeDashboardData(supabase, userId, locale);
 
   return (
     <ApprenticeDashboardContent
@@ -167,7 +168,7 @@ export default async function RoleDashboardPage({ params }: RoleDashboardPagePro
     );
   }
 
-  if (role === "admin" || role === "manager") {
+  if (role === "admin") {
     const dashboardData = await getAdminDashboardData(supabase, data.user.id);
 
     return (
@@ -178,6 +179,18 @@ export default async function RoleDashboardPage({ params }: RoleDashboardPagePro
         title={roleDictionary.title}
         data={dashboardData}
         dictionary={dictionary.dashboard.adminData}
+      />
+    );
+  }
+
+  if (role === "instructor") {
+    return (
+      <InstructorDashboard
+        locale={locale}
+        access={access}
+        user={user}
+        title={roleDictionary.title}
+        dictionary={dictionary.dashboard.instructorData}
       />
     );
   }

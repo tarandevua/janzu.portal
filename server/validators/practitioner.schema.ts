@@ -106,10 +106,21 @@ export const practitionerProfileSchema = z.object({
   youtubeUrl: optionalSocialUsername,
   tiktokUrl: optionalSocialUsername,
   profileImageUrl: optionalProfileImageReference,
-  isPublic: z.boolean().default(false),
+});
+
+export const profileVisibilitySchema = z.object({
+  directory: z.enum(["private", "community", "public"]),
+  displayName: z.enum(["private", "community", "public"]),
+  profileImage: z.enum(["private", "community", "public"]),
+  bio: z.enum(["private", "community", "public"]),
+  languages: z.enum(["private", "community", "public"]),
+  location: z.enum(["private", "community", "public"]),
+  website: z.enum(["private", "community", "public"]),
+  socialLinks: z.enum(["private", "community", "public"]),
 });
 
 export type PractitionerProfilePayload = z.infer<typeof practitionerProfileSchema>;
+export type ProfileVisibilityPayload = z.infer<typeof profileVisibilitySchema>;
 
 export function parsePracticeLocations(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || value.trim() === "") {

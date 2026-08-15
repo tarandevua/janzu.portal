@@ -1,5 +1,7 @@
 # Sprint 8 - Certification Tracking
 
+> Historical note: the legacy Manager approval described below no longer applies to Instructors. DEC-02 defines the replacement readiness, assessment, and Administrator issuance authorities.
+
 ## Goal
 
 Track practitioner progress toward certification based on 50 validated sessions.

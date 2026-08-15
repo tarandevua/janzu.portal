@@ -10,10 +10,10 @@ describe("userRoleMutationSchema", () => {
   it("accepts a valid role mutation", () => {
     const parsed = userRoleMutationSchema.parse({
       userId: "38ec640a-d72b-4c27-944e-3ff5e63d4b9c",
-      role: "manager",
+      role: "instructor",
     });
 
-    expect(parsed.role).toBe("manager");
+    expect(parsed.role).toBe("instructor");
   });
 
   it("rejects invalid roles", () => {

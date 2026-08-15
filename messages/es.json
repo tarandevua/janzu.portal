@@ -33,7 +33,7 @@
         "title": "Panel de administracion",
         "description": "Gestiona usuarios, aprobaciones, decisiones de certificacion y operaciones de la plataforma."
       },
-      "manager": {
+      "instructor": {
         "title": "Panel de Instructor",
         "description": "Coordina revisiones operativas, eventos, ubicaciones aprobadas y apoyo a practicantes."
       },
@@ -53,7 +53,7 @@
     "sidebar": {
       "roles": {
         "admin": "Administrador",
-        "manager": "Instructor",
+        "instructor": "Instructor",
         "facilitator": "Facilitador",
         "practitioner": "Practicante",
         "apprentice": "Persona en formación"
@@ -73,8 +73,17 @@
       "profile": "Perfil",
       "notifications": "Notificaciones",
       "knowledgeBase": "Base de conocimiento",
+      "firstSteps": "Primeros pasos",
+      "supervision": "Relacion con Instructor",
+      "training": "Historial de formacion",
+      "communityDirectory": "Directorio de la comunidad",
       "logout": "Cerrar sesion",
       "loggingOut": "Cerrando sesion..."
+    },
+    "instructorData": {
+      "description": "Revisa solo a las Personas en formacion que tienen una relacion activa contigo.",
+      "supervision": "Solicitudes de supervision",
+      "training": "Revision de formacion"
     },
     "practitionerData": {
       "setupTitle": "Completa tu perfil.",
@@ -137,7 +146,11 @@
       "location": "Ubicacion",
       "publicProfile": "Perfil publico",
       "privateProfile": "Perfil privado",
-      "notStarted": "Crea tu perfil para empezar a seguir tu progreso."
+      "notStarted": "Crea tu perfil para empezar a seguir tu progreso.",
+      "firstSteps": "Primeros pasos"
+      ,"firstStepsDescription": "Sigue la proxima accion valida. El progreso se guarda entre dispositivos."
+      ,"continueFirstSteps": "Continuar"
+      ,"reviewFirstSteps": "Revisar guia"
     },
     "adminData": {
       "users": "Usuarios",
@@ -218,7 +231,7 @@
   "practitioners": {
     "form": {
       "title": "Perfil",
-      "description": "Gestiona la informacion que puede aparecer en tu perfil publico.",
+      "description": "Gestiona la informacion de tu perfil. La visibilidad se configura por separado y comienza como privada.",
       "fullName": "Nombre deseado",
       "officialFullName": "Nombre completo oficial",
       "officialFullNameHelp": "Usa aqui tu nombre legal o el nombre que debe aparecer en el certificado. Este nombre se usa para la revision de certificacion y los registros del certificado.",
@@ -232,7 +245,7 @@
       "latitude": "Latitud",
       "longitude": "Longitud",
       "mapPickerTitle": "Coloca tus pines de practica en el mapa",
-      "mapPickerDescription": "Haz clic en cada area publica de practica que quieres agregar a tu perfil. Puedes agregar mas de un pin y arrastrar cualquier pin para ajustarlo.",
+      "mapPickerDescription": "Agrega coordenadas privadas de practica para tus propios registros. Los directorios solo muestran la ciudad o region segun la audiencia elegida, nunca estas coordenadas exactas.",
       "selectedCoordinates": "Coordenadas seleccionadas",
       "noCoordinatesSelected": "Aun no has seleccionado pines de practica.",
       "removeLocation": "Eliminar ubicacion",
@@ -257,6 +270,29 @@
       "avatarBucket": "No se encontro el bucket de Cloudflare R2. Revisa el nombre del bucket y el account ID.",
       "avatarUpload": "No se pudo subir la imagen de perfil. Revisa la configuracion de R2 e intentalo nuevamente."
     },
+    "visibility": {
+      "title": "Visibilidad del perfil",
+      "description": "Elige la audiencia de cada campo. La opcion predeterminada es privado. La visibilidad publica solo esta disponible para Facilitadores e Instructores verificados.",
+      "directory": "Aparicion en el directorio",
+      "displayName": "Nombre visible",
+      "profileImage": "Imagen de perfil",
+      "bio": "Biografia",
+      "languages": "Idiomas",
+      "location": "Ciudad, region y pais",
+      "website": "Sitio web y enlace de reservas",
+      "socialLinks": "Redes sociales",
+      "private": "Privado",
+      "community": "Comunidad autenticada",
+      "public": "Publico",
+      "publicUnavailable": "Los perfiles de Personas en formacion no pueden ser publicos. Aun puedes aparecer en el directorio de la comunidad autenticada.",
+      "save": "Guardar visibilidad",
+      "saved": "Configuracion de visibilidad guardada.",
+      "invalid": "Revisa la configuracion de visibilidad e intentalo de nuevo."
+    },
+    "community": {
+      "title": "Directorio de la comunidad",
+      "description": "Miembros autenticados que eligieron visibilidad comunitaria. Los campos se filtran segun las elecciones de cada miembro."
+    },
     "public": {
       "title": "Encontrar practicantes de Janzu",
       "description": "Explora perfiles publicos por ubicacion, idioma y enfoque de practica.",
@@ -268,6 +304,7 @@
       "apprenticePin": "Persona en formación",
       "participantPin": "Profesional Certificado",
       "facilitatorPin": "Facilitador",
+      "instructorPin": "Instructor",
       "emptyGroup": "Aun no hay perfiles publicos disponibles en este grupo.",
       "viewDetails": "Ver detalles"
     }
@@ -673,6 +710,97 @@
     "next": "Siguiente",
     "page": "Pagina"
   },
+  "firstSteps": {
+    "title": "Primeros pasos",
+    "description": "Sigue la proxima accion valida de tu recorrido como Persona en formacion. El progreso se guarda entre dispositivos y esta guia permanece disponible.",
+    "progress": "Progreso",
+    "complete": "Completado",
+    "open": "Abrir",
+    "learningAlliance": "Alianza de Aprendizaje",
+    "learningAllianceDescription": "Reconoce el acuerdo operativo actual. Es revocable y no es una firma legal ni una condicion automatica de certificacion.",
+    "agreementStatement": "Tengo la intencion de participar con respeto, proteger la informacion privada de sesiones y feedback, comunicar claramente limites y disponibilidad, mantener registros honestos y pedir apoyo ante inquietudes de seguridad o de la relacion.",
+    "agreementNonLegal": "Este reconocimiento no es legal, puede revocarse en cualquier momento y no cambia automaticamente el estado de certificacion.",
+    "version": "Version de la politica",
+    "accept": "Aceptar reconocimiento",
+    "revoke": "Revocar reconocimiento",
+    "profile": "Completar perfil y visibilidad",
+    "profileDescription": "Agrega los datos del perfil y elige deliberadamente la audiencia de cada campo permitido.",
+    "training": "Registrar historial de formacion",
+    "trainingDescription": "Envia formaciones oficiales de Nivel 1 o Nivel 2 para su verificacion.",
+    "instructor": "Elegir un Instructor",
+    "instructorDescription": "Envia una solicitud y espera a que el Instructor la acepte.",
+    "guidance": "Guias del portal",
+    "calendar": "Guia del calendario",
+    "calendarDescription": "Comprende zonas horarias, disponibilidad recurrente, estados de reserva e historial de cancelacion.",
+    "sessions": "Guia de sesiones",
+    "sessionsDescription": "Conoce el flujo privado de Participantes de sesiones y registros de sesion.",
+    "feedback": "Guia de feedback",
+    "feedbackDescription": "Conoce los enlaces exactos, validacion, notificaciones y privacidad.",
+    "markComplete": "Marcar como entendido",
+    "markIncomplete": "Marcar para revisar",
+    "allianceAccepted": "Reconocimiento de la Alianza de Aprendizaje registrado.",
+    "allianceRevoked": "Reconocimiento revocado. El elemento vuelve a estar incompleto.",
+    "guideUpdated": "Progreso de la guia actualizado.",
+    "invalid": "La actualizacion de Primeros pasos no es valida."
+  },
+  "training": {
+    "title": "Historial de formacion",
+    "description": "Registra formaciones oficiales de Nivel 1 o Nivel 2. Las declaraciones no afectan la certificacion hasta que un Instructor autorizado o un Administrador las verifique.",
+    "addTitle": "Agregar registro de formacion",
+    "level": "Nivel de formacion",
+    "level1": "Nivel 1",
+    "level2": "Nivel 2",
+    "cohort": "Cohorte",
+    "location": "Lugar de la formacion",
+    "startedOn": "Fecha de inicio",
+    "completedOn": "Fecha de finalizacion",
+    "teachingInstructor": "Instructor docente",
+    "courseworkComplete": "Todos los trabajos obligatorios estan completos",
+    "evidence": "Referencia de evidencia",
+    "notes": "Notas privadas",
+    "submit": "Enviar registro",
+    "records": "Registros de formacion",
+    "empty": "Aun no hay registros de formacion.",
+    "claimed": "Pendiente de verificacion",
+    "verified": "Verificado",
+    "rejected": "Requiere correccion",
+    "approve": "Verificar",
+    "reject": "Solicitar correccion",
+    "rejectionReason": "Motivo de correccion",
+    "submitted": "Registro de formacion enviado.",
+    "correct": "Corregir y reenviar",
+    "corrected": "Registro de formacion corregido y reenviado.",
+    "invalid": "Revisa el registro de formacion e intentalo de nuevo."
+  },
+  "supervision": {
+    "title": "Relacion con Instructor",
+    "description": "Solicita, revisa, transfiere o finaliza una relacion de supervision.",
+    "chooseInstructor": "Elegir un Instructor",
+    "chooseInstructorDescription": "Tu eleccion envia una solicitud. El Instructor debe aceptarla antes de que la relacion quede activa.",
+    "instructor": "Instructor",
+    "trainee": "Persona en formacion",
+    "request": "Enviar solicitud",
+    "requests": "Solicitudes",
+    "history": "Relaciones actuales y anteriores",
+    "empty": "Aun no hay relaciones de supervision.",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "end": "Finalizar",
+    "reason": "Motivo",
+    "status": "Estado",
+    "pending": "Pendiente",
+    "active": "Activa",
+    "declined": "Rechazada",
+    "ended": "Finalizada",
+    "cancelled": "Cancelada",
+    "training": "Historial de formacion",
+    "adminAssign": "Asignacion administrativa",
+    "assign": "Asignar Instructor",
+    "requested": "Solicitud enviada al Instructor.",
+    "accepted": "Solicitud de Instructor aceptada.",
+    "assigned": "Instructor asignado.",
+    "invalid": "Revisa la solicitud e intentalo de nuevo."
+  },
   "userManagement": {
     "title": "Gestion de usuarios",
     "description": "Gestiona usuarios del portal y asignaciones de roles. Los instructores pueden asignar roles de persona en formación, practicante y facilitador; los administradores pueden gestionar todos los roles.",
@@ -743,7 +871,7 @@
     "forbidden": "Se requiere acceso de administrador o instructor para gestionar usuarios.",
     "roleLabels": {
       "admin": "Admin",
-      "manager": "Instructor",
+      "instructor": "Instructor",
       "facilitator": "Facilitador",
       "practitioner": "Practicante",
       "apprentice": "Persona en formación"

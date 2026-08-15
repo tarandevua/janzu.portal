@@ -18,29 +18,30 @@ describe("RBAC service", () => {
   });
 
   it("uses the highest-privilege role as primary", () => {
-    expect(getPrimaryRole(["practitioner", "manager"])).toBe("manager");
+    expect(getPrimaryRole(["practitioner", "instructor"])).toBe("instructor");
     expect(getPrimaryRole([])).toBeNull();
   });
 
   it("checks exact dashboard access", () => {
-    expect(canAccessDashboard(["manager"], "manager")).toBe(true);
-    expect(canAccessDashboard(["manager"], "admin")).toBe(false);
+    expect(canAccessDashboard(["instructor"], "instructor")).toBe(true);
+    expect(canAccessDashboard(["instructor"], "admin")).toBe(false);
   });
 
   it("checks roles and permissions", () => {
     expect(hasRole(["facilitator"], "facilitator")).toBe(true);
     expect(hasPermission(["admin"], "certifications:approve")).toBe(true);
-    expect(hasPermission(["manager"], "certifications:approve")).toBe(true);
-    expect(hasPermission(["manager"], "users:manage")).toBe(true);
+    expect(hasPermission(["instructor"], "trainees:supervise")).toBe(true);
+    expect(hasPermission(["instructor"], "users:manage")).toBe(false);
+    expect(hasPermission(["instructor"], "events:manage")).toBe(false);
     expect(hasPermission(["practitioner"], "certifications:approve")).toBe(false);
   });
 
-  it("limits manager role administration to operational roles", () => {
+  it("limits role administration to Administrators", () => {
     expect(canManageUserRole(["admin"], "admin")).toBe(true);
-    expect(canManageUserRole(["manager"], "facilitator")).toBe(true);
-    expect(canManageUserRole(["manager"], "practitioner")).toBe(true);
-    expect(canManageUserRole(["manager"], "admin")).toBe(false);
-    expect(canManageUserRole(["manager"], "manager")).toBe(false);
+    expect(canManageUserRole(["instructor"], "facilitator")).toBe(false);
+    expect(canManageUserRole(["instructor"], "practitioner")).toBe(false);
+    expect(canManageUserRole(["instructor"], "admin")).toBe(false);
+    expect(canManageUserRole(["instructor"], "instructor")).toBe(false);
   });
 
   it("builds locale-aware role dashboard paths", () => {

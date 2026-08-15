@@ -33,11 +33,11 @@ describe("i18n config", () => {
   });
 
   it("maps persisted role and participant keys to the current terminology", () => {
-    expect(en.dashboard.sidebar.roles.manager).toBe("Instructor");
+    expect(en.dashboard.sidebar.roles.instructor).toBe("Instructor");
     expect(en.dashboard.sidebar.roles.apprentice).toBe("Trainee");
     expect(en.dashboard.sidebar.clients).toBe("Session Participants");
 
-    expect(es.dashboard.sidebar.roles.manager).toBe("Instructor");
+    expect(es.dashboard.sidebar.roles.instructor).toBe("Instructor");
     expect(es.dashboard.sidebar.roles.apprentice).toBe("Persona en formación");
     expect(es.dashboard.sidebar.clients).toBe("Participantes de sesiones");
   });

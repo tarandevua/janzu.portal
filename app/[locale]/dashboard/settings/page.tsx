@@ -33,7 +33,7 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
     redirect(`/${locale}/dashboard`);
   }
 
-  const canManageAdminSettings = hasAnyRole(roles, ["admin", "manager"]);
+  const canManageAdminSettings = hasAnyRole(roles, ["admin"]);
   const authSettings = canManageAdminSettings
     ? await getAdminAuthSettings(supabase, data.user.id)
     : null;

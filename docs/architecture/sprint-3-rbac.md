@@ -1,5 +1,7 @@
 # Sprint 3 - RBAC Foundation
 
+> Historical note: the original Manager permissions described below were removed by TASK-201 and DEC-01. The current `instructor` role is relationship-scoped and does not inherit administrative access.
+
 ## Goal
 
 Introduce role-based access control for Admin, Manager, Facilitator, and Practitioner.

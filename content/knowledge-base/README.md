@@ -28,7 +28,7 @@ status: published
 
 - `sectionOrder` orders sections and `order` orders articles within a section.
 - Omit `roles` to make an article visible to every authenticated portal user.
-- Allowed roles are `admin`, `manager`, `facilitator`, `practitioner`, and `apprentice`.
+- Allowed roles are `admin`, `instructor`, `facilitator`, `practitioner`, and `apprentice`.
 - Use `status: draft` to keep unfinished content out of navigation and generated routes.
 - Level-two and level-three headings generate the article outline automatically.
 - MDX can execute imported components, so only accept changes from trusted repository contributors.

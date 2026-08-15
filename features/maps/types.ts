@@ -1,5 +1,5 @@
 export type MapMarkerKind = "practitioner" | "location";
-export type PractitionerMarkerGroup = "apprentice" | "participant" | "facilitator";
+export type PractitionerMarkerGroup = "apprentice" | "participant" | "facilitator" | "instructor";
 
 export type MapMarker = {
   id: string;

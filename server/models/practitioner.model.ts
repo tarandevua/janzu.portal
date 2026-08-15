@@ -1,4 +1,17 @@
-export type PublicPractitionerGroup = "apprentice" | "participant" | "facilitator";
+export type PublicPractitionerGroup = "apprentice" | "participant" | "facilitator" | "instructor";
+export type ProfileVisibility = "private" | "community" | "public";
+
+export type ProfileVisibilitySettings = {
+  directory: ProfileVisibility;
+  displayName: ProfileVisibility;
+  profileImage: ProfileVisibility;
+  bio: ProfileVisibility;
+  languages: ProfileVisibility;
+  location: ProfileVisibility;
+  website: ProfileVisibility;
+  socialLinks: ProfileVisibility;
+  configuredAt: string | null;
+};
 
 export type PractitionerPracticeLocation = {
   id?: string;
@@ -29,9 +42,12 @@ export type PractitionerProfile = {
   tiktokUrl: string | null;
   profileImageUrl: string | null;
   isPublic: boolean;
+  visibility: ProfileVisibilitySettings;
   createdAt: string;
   updatedAt: string;
 };
+
+export type ProfileVisibilityInput = Omit<ProfileVisibilitySettings, "configuredAt">;
 
 export type PractitionerProfileInput = {
   bio?: string | null;
@@ -47,5 +63,4 @@ export type PractitionerProfileInput = {
   youtubeUrl?: string | null;
   tiktokUrl?: string | null;
   profileImageUrl?: string | null;
-  isPublic?: boolean;
 };

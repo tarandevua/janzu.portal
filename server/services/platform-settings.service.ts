@@ -15,8 +15,8 @@ export async function getAdminAuthSettings(
 ) {
   const roles = await listUserRoles(supabase, actorUserId);
 
-  if (!hasAnyRole(roles, ["admin", "manager"])) {
-    throw new Error("Administrator or instructor access is required to manage authentication settings.");
+  if (!hasAnyRole(roles, ["admin"])) {
+    throw new Error("Administrator access is required to manage authentication settings.");
   }
 
   return getAuthSettings(supabase);
@@ -29,8 +29,8 @@ export async function updateAdminAuthSettings(
 ) {
   const roles = await listUserRoles(supabase, actorUserId);
 
-  if (!hasAnyRole(roles, ["admin", "manager"])) {
-    throw new Error("Administrator or instructor access is required to manage authentication settings.");
+  if (!hasAnyRole(roles, ["admin"])) {
+    throw new Error("Administrator access is required to manage authentication settings.");
   }
 
   await updateAuthSettings(supabase, actorUserId, settings);

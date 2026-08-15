@@ -5,7 +5,12 @@ export type NotificationType =
   | "event_invitation"
   | "event_rsvp_received"
   | "certification_progress"
-  | "certification_approved";
+  | "certification_approved"
+  | "supervision_requested"
+  | "supervision_accepted"
+  | "supervision_declined"
+  | "supervision_ended"
+  | "training_history_reviewed";
 
 export type Notification = {
   id: string;

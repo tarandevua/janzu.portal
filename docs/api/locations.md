@@ -39,7 +39,7 @@ New locations start as `pending`.
 
 ```http
 GET /api/locations/review
-Cookie: sb-access-token=<admin-or-manager-session>
+Cookie: sb-access-token=<admin-session>
 ```
 
 ## Review a location
@@ -47,7 +47,7 @@ Cookie: sb-access-token=<admin-or-manager-session>
 ```http
 POST /api/locations/review
 Content-Type: application/json
-Cookie: sb-access-token=<admin-or-manager-session>
+Cookie: sb-access-token=<admin-session>
 
 {
   "locationId": "00000000-0000-0000-0000-000000000000",

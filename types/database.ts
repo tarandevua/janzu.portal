@@ -36,19 +36,19 @@ export type Database = {
       roles: {
         Row: {
           id: string;
-          name: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
+          name: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
           description: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
-          name: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
+          name: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
           description?: string | null;
           created_at?: string;
         };
         Update: {
           id?: string;
-          name?: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
+          name?: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
           description?: string | null;
           created_at?: string;
         };
@@ -75,6 +75,165 @@ export type Database = {
           role_id?: string;
           assigned_by?: string | null;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      supervision_assignments: {
+        Row: {
+          id: string;
+          trainee_user_id: string;
+          instructor_user_id: string;
+          status: "pending" | "active" | "declined" | "ended" | "cancelled";
+          requested_by: string;
+          requested_at: string;
+          responded_by: string | null;
+          responded_at: string | null;
+          ended_by: string | null;
+          ended_at: string | null;
+          end_reason: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          trainee_user_id: string;
+          instructor_user_id: string;
+          status?: "pending" | "active" | "declined" | "ended" | "cancelled";
+          requested_by: string;
+          requested_at?: string;
+          responded_by?: string | null;
+          responded_at?: string | null;
+          ended_by?: string | null;
+          ended_at?: string | null;
+          end_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          trainee_user_id?: string;
+          instructor_user_id?: string;
+          status?: "pending" | "active" | "declined" | "ended" | "cancelled";
+          requested_by?: string;
+          requested_at?: string;
+          responded_by?: string | null;
+          responded_at?: string | null;
+          ended_by?: string | null;
+          ended_at?: string | null;
+          end_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      training_history: {
+        Row: {
+          id: string;
+          trainee_user_id: string;
+          level: "level_1" | "level_2";
+          cohort: string;
+          location: string;
+          started_on: string;
+          completed_on: string;
+          teaching_instructor_name: string;
+          coursework_complete: boolean;
+          evidence_reference: string | null;
+          notes: string | null;
+          status: "claimed" | "verified" | "rejected";
+          verified_by: string | null;
+          verified_under_assignment_id: string | null;
+          verified_at: string | null;
+          rejection_reason: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          trainee_user_id: string;
+          level: "level_1" | "level_2";
+          cohort: string;
+          location: string;
+          started_on: string;
+          completed_on: string;
+          teaching_instructor_name: string;
+          coursework_complete?: boolean;
+          evidence_reference?: string | null;
+          notes?: string | null;
+          status?: "claimed" | "verified" | "rejected";
+          verified_by?: string | null;
+          verified_under_assignment_id?: string | null;
+          verified_at?: string | null;
+          rejection_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          trainee_user_id?: string;
+          level?: "level_1" | "level_2";
+          cohort?: string;
+          location?: string;
+          started_on?: string;
+          completed_on?: string;
+          teaching_instructor_name?: string;
+          coursework_complete?: boolean;
+          evidence_reference?: string | null;
+          notes?: string | null;
+          status?: "claimed" | "verified" | "rejected";
+          verified_by?: string | null;
+          verified_under_assignment_id?: string | null;
+          verified_at?: string | null;
+          rejection_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      learning_alliance_acknowledgements: {
+        Row: {
+          id: string;
+          user_id: string;
+          actor_user_id: string;
+          policy_version: string;
+          locale: string;
+          action: "accepted" | "revoked";
+          occurred_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          actor_user_id: string;
+          policy_version: string;
+          locale: string;
+          action: "accepted" | "revoked";
+          occurred_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          actor_user_id?: string;
+          policy_version?: string;
+          locale?: string;
+          action?: "accepted" | "revoked";
+          occurred_at?: string;
+        };
+        Relationships: [];
+      };
+      onboarding_guide_completions: {
+        Row: {
+          user_id: string;
+          guide_key: "calendar" | "sessions" | "feedback";
+          completed_at: string;
+        };
+        Insert: {
+          user_id: string;
+          guide_key: "calendar" | "sessions" | "feedback";
+          completed_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          guide_key?: "calendar" | "sessions" | "feedback";
+          completed_at?: string;
         };
         Relationships: [];
       };
@@ -122,6 +281,15 @@ export type Database = {
           tiktok_url: string | null;
           profile_image_url: string | null;
           is_public: boolean;
+          directory_visibility: "private" | "community" | "public";
+          display_name_visibility: "private" | "community" | "public";
+          profile_image_visibility: "private" | "community" | "public";
+          bio_visibility: "private" | "community" | "public";
+          languages_visibility: "private" | "community" | "public";
+          location_visibility: "private" | "community" | "public";
+          website_visibility: "private" | "community" | "public";
+          social_links_visibility: "private" | "community" | "public";
+          visibility_configured_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -141,6 +309,15 @@ export type Database = {
           tiktok_url?: string | null;
           profile_image_url?: string | null;
           is_public?: boolean;
+          directory_visibility?: "private" | "community" | "public";
+          display_name_visibility?: "private" | "community" | "public";
+          profile_image_visibility?: "private" | "community" | "public";
+          bio_visibility?: "private" | "community" | "public";
+          languages_visibility?: "private" | "community" | "public";
+          location_visibility?: "private" | "community" | "public";
+          website_visibility?: "private" | "community" | "public";
+          social_links_visibility?: "private" | "community" | "public";
+          visibility_configured_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -160,6 +337,15 @@ export type Database = {
           tiktok_url?: string | null;
           profile_image_url?: string | null;
           is_public?: boolean;
+          directory_visibility?: "private" | "community" | "public";
+          display_name_visibility?: "private" | "community" | "public";
+          profile_image_visibility?: "private" | "community" | "public";
+          bio_visibility?: "private" | "community" | "public";
+          languages_visibility?: "private" | "community" | "public";
+          location_visibility?: "private" | "community" | "public";
+          website_visibility?: "private" | "community" | "public";
+          social_links_visibility?: "private" | "community" | "public";
+          visibility_configured_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -785,7 +971,12 @@ export type Database = {
             | "event_invitation"
             | "event_rsvp_received"
             | "certification_progress"
-            | "certification_approved";
+            | "certification_approved"
+            | "supervision_requested"
+            | "supervision_accepted"
+            | "supervision_declined"
+            | "supervision_ended"
+            | "training_history_reviewed";
           title: string;
           body: string | null;
           href: string | null;
@@ -807,7 +998,12 @@ export type Database = {
             | "event_invitation"
             | "event_rsvp_received"
             | "certification_progress"
-            | "certification_approved";
+            | "certification_approved"
+            | "supervision_requested"
+            | "supervision_accepted"
+            | "supervision_declined"
+            | "supervision_ended"
+            | "training_history_reviewed";
           title: string;
           body?: string | null;
           href?: string | null;
@@ -829,7 +1025,12 @@ export type Database = {
             | "event_invitation"
             | "event_rsvp_received"
             | "certification_progress"
-            | "certification_approved";
+            | "certification_approved"
+            | "supervision_requested"
+            | "supervision_accepted"
+            | "supervision_declined"
+            | "supervision_ended"
+            | "training_history_reviewed";
           title?: string;
           body?: string | null;
           href?: string | null;
@@ -849,14 +1050,14 @@ export type Database = {
       user_has_role: {
         Args: {
           target_user_id: string;
-          role_name: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
+          role_name: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
         };
         Returns: boolean;
       };
       can_manage_user_role: {
         Args: {
           actor_user_id: string;
-          target_role: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
+          target_role: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
         };
         Returns: boolean;
       };
@@ -866,7 +1067,7 @@ export type Database = {
           page_number?: number;
           page_size?: number;
           search_query?: string | null;
-          role_filter?: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice" | null;
+          role_filter?: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice" | null;
           profile_filter?: string | null;
         };
         Returns: {
@@ -874,7 +1075,7 @@ export type Database = {
           email: string;
           full_name: string | null;
           created_at: string;
-          roles: ("admin" | "manager" | "facilitator" | "practitioner" | "apprentice")[];
+          roles: ("admin" | "instructor" | "facilitator" | "practitioner" | "apprentice")[];
           practitioner_id: string | null;
           practitioner_is_public: boolean | null;
           practitioner_country: string | null;
@@ -894,7 +1095,7 @@ export type Database = {
         Args: {
           actor_user_id: string;
           target_user_id: string;
-          target_role: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
+          target_role: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
         };
         Returns: undefined;
       };
@@ -902,7 +1103,89 @@ export type Database = {
         Args: {
           actor_user_id: string;
           target_user_id: string;
-          target_role: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
+          target_role: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
+        };
+        Returns: undefined;
+      };
+      is_active_instructor_for: {
+        Args: {
+          candidate_instructor_id: string;
+          candidate_trainee_id: string;
+        };
+        Returns: boolean;
+      };
+      list_available_instructors: {
+        Args: { actor_user_id: string };
+        Returns: { user_id: string; display_name: string }[];
+      };
+      list_available_trainees: {
+        Args: { actor_user_id: string };
+        Returns: { user_id: string; display_name: string }[];
+      };
+      list_supervision_assignments: {
+        Args: { actor_user_id: string };
+        Returns: {
+          id: string;
+          trainee_user_id: string;
+          trainee_name: string;
+          instructor_user_id: string;
+          instructor_name: string;
+          status: "pending" | "active" | "declined" | "ended" | "cancelled";
+          requested_at: string;
+          responded_at: string | null;
+          ended_at: string | null;
+          end_reason: string | null;
+          updated_at: string;
+        }[];
+      };
+      request_supervision: {
+        Args: { actor_user_id: string; target_instructor_user_id: string };
+        Returns: Database["public"]["Tables"]["supervision_assignments"]["Row"];
+      };
+      respond_to_supervision: {
+        Args: { actor_user_id: string; assignment_id: string; accept_request: boolean };
+        Returns: Database["public"]["Tables"]["supervision_assignments"]["Row"];
+      };
+      end_supervision: {
+        Args: { actor_user_id: string; assignment_id: string; reason: string };
+        Returns: Database["public"]["Tables"]["supervision_assignments"]["Row"];
+      };
+      admin_assign_instructor: {
+        Args: {
+          actor_user_id: string;
+          target_trainee_user_id: string;
+          target_instructor_user_id: string;
+          reason: string;
+        };
+        Returns: Database["public"]["Tables"]["supervision_assignments"]["Row"];
+      };
+      review_training_record: {
+        Args: {
+          actor_user_id: string;
+          target_record_id: string;
+          approve_record: boolean;
+          review_reason?: string | null;
+        };
+        Returns: Database["public"]["Tables"]["training_history"]["Row"];
+      };
+      current_verified_training_level: {
+        Args: { target_trainee_user_id: string };
+        Returns: "level_1" | "level_2" | null;
+      };
+      record_learning_alliance_action: {
+        Args: {
+          actor_user_id: string;
+          target_policy_version: string;
+          target_locale: string;
+          target_action: "accepted" | "revoked";
+        };
+        Returns: Database["public"]["Tables"]["learning_alliance_acknowledgements"]["Row"];
+      };
+      set_onboarding_guide_completion: {
+        Args: {
+          actor_user_id: string;
+          target_guide_key: "calendar" | "sessions" | "feedback";
+          target_completed: boolean;
         };
         Returns: undefined;
       };
@@ -932,6 +1215,20 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["practitioners"]["Row"];
       };
+      update_my_profile_visibility: {
+        Args: {
+          actor_user_id: string;
+          target_directory_visibility: "private" | "community" | "public";
+          target_display_name_visibility: "private" | "community" | "public";
+          target_profile_image_visibility: "private" | "community" | "public";
+          target_bio_visibility: "private" | "community" | "public";
+          target_languages_visibility: "private" | "community" | "public";
+          target_location_visibility: "private" | "community" | "public";
+          target_website_visibility: "private" | "community" | "public";
+          target_social_links_visibility: "private" | "community" | "public";
+        };
+        Returns: Database["public"]["Tables"]["practitioners"]["Row"];
+      };
       list_location_community_reviews: {
         Args: {
           actor_user_id: string;
@@ -946,6 +1243,30 @@ export type Database = {
           updated_at: string;
           helpful_count: number;
           viewer_marked_helpful: boolean;
+        }[];
+      };
+      list_community_practitioner_profiles: {
+        Args: { actor_user_id: string };
+        Returns: {
+          id: string;
+          user_id: string;
+          public_group: string;
+          display_name: string;
+          bio: string | null;
+          country: string | null;
+          city: string | null;
+          latitude: number | null;
+          longitude: number | null;
+          languages: string[];
+          website: string | null;
+          instagram_url: string | null;
+          facebook_url: string | null;
+          youtube_url: string | null;
+          tiktok_url: string | null;
+          profile_image_url: string | null;
+          is_public: boolean;
+          created_at: string;
+          updated_at: string;
         }[];
       };
       list_feedback_participants: {
@@ -1102,7 +1423,7 @@ export type Database = {
       };
     };
     Enums: {
-      app_role: "admin" | "manager" | "facilitator" | "practitioner" | "apprentice";
+      app_role: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
       certification_status: "in_progress" | "eligible" | "approved";
       location_type: "pool" | "spa" | "natural_water";
       approval_status: "pending" | "approved" | "rejected";
@@ -1116,7 +1437,18 @@ export type Database = {
         | "event_invitation"
         | "event_rsvp_received"
         | "certification_progress"
-        | "certification_approved";
+        | "certification_approved"
+        | "supervision_requested"
+        | "supervision_accepted"
+        | "supervision_declined"
+        | "supervision_ended"
+        | "training_history_reviewed";
+      profile_visibility: "private" | "community" | "public";
+      supervision_status: "pending" | "active" | "declined" | "ended" | "cancelled";
+      training_level: "level_1" | "level_2";
+      training_record_status: "claimed" | "verified" | "rejected";
+      learning_alliance_action: "accepted" | "revoked";
+      onboarding_guide_key: "calendar" | "sessions" | "feedback";
     };
     CompositeTypes: Record<string, never>;
   };

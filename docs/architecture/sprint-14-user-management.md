@@ -1,5 +1,7 @@
 # Sprint 14 - User and Role Management
 
+> Historical note: this sprint used the legacy Manager model. TASK-201 supersedes it: the persisted role is now `instructor`, and only Administrators may manage unrelated users or roles.
+
 ## Goal
 
 Add the missing admin and manager workflow for managing portal users and their roles.

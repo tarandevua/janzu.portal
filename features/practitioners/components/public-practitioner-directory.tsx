@@ -21,6 +21,7 @@ type PublicPractitionerDirectoryDictionary = {
   apprenticePin: string;
   participantPin: string;
   facilitatorPin: string;
+  instructorPin: string;
   emptyGroup: string;
   viewDetails: string;
 };
@@ -29,14 +30,17 @@ type PublicPractitionerDirectoryProps = {
   locale: Locale;
   profiles: PractitionerProfile[];
   dictionary: PublicPractitionerDirectoryDictionary;
+  groups?: PractitionerMarkerGroup[];
+  showDetails?: boolean;
 };
 
-const practitionerGroups: PractitionerMarkerGroup[] = ["apprentice", "participant"]; // "facilitator"
+const practitionerGroups: PractitionerMarkerGroup[] = ["facilitator", "instructor"];
 
 const groupColorClassName: Record<PractitionerMarkerGroup, string> = {
   apprentice: "bg-[#d97706]",
   participant: "bg-primary",
   facilitator: "bg-[#4f46e5]",
+  instructor: "bg-[#0f766e]",
 };
 
 function getPractitionerName(profile: { displayName?: string | null; city: string | null }, fallback: string) {
@@ -61,6 +65,8 @@ export function PublicPractitionerDirectory({
   locale,
   profiles,
   dictionary,
+  groups = practitionerGroups,
+  showDetails = true,
 }: PublicPractitionerDirectoryProps) {
   const [activeGroup, setActiveGroup] = useState<PractitionerMarkerGroup | null>(null);
   const filteredProfiles = useMemo(
@@ -104,7 +110,7 @@ export function PublicPractitionerDirectory({
         className="flex-wrap justify-start"
         aria-label="Filter practitioners by group"
       >
-        {practitionerGroups.map((group) => (
+        {groups.map((group) => (
           <ToggleGroupItem key={group} value={group} className="gap-2">
             <span className={`h-3 w-3 rounded-full ${groupColorClassName[group]}`} />
             {getGroupLabel(dictionary, group)}
@@ -158,13 +164,13 @@ export function PublicPractitionerDirectory({
                     </Badge>
                   ))}
                 </div>
-                <div className="mt-auto pt-2">
+                {showDetails ? <div className="mt-auto pt-2">
                   <Button asChild size="sm">
                     <Link href={profileHref} prefetch>
                       {dictionary.viewDetails}
                     </Link>
                   </Button>
-                </div>
+                </div> : null}
               </CardContent>
             </Card>
           );

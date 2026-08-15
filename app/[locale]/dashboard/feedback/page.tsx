@@ -72,7 +72,7 @@ export default async function FeedbackDashboardPage({
     redirect(`/${locale}/dashboard`);
   }
 
-  const canFilterParticipants = hasAnyRole(roles, ["admin", "manager"]);
+  const canFilterParticipants = hasAnyRole(roles, ["admin", "instructor"]);
   const selectedParticipantId = canFilterParticipants
     ? normalizeParticipantId(participantId)
     : null;

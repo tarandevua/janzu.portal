@@ -1,6 +1,6 @@
 # User Management API
 
-Sprint 14 adds portal user and role management for admins and managers.
+Portal user and role management is Administrator-only. The former Manager identifier and permissions were removed by TASK-201.
 
 ## List users
 
@@ -10,7 +10,7 @@ GET /api/users/manage
 
 Requires `users:manage`.
 
-Admins can manage all roles. Managers can view users and manage only `facilitator` and `practitioner` roles.
+Administrators can manage roles. Instructors cannot list unrelated users or assign roles.
 
 ## Assign role
 
@@ -36,7 +36,7 @@ Content-Type: application/json
 }
 ```
 
-The database prevents non-admin users from assigning or removing `admin` and `manager` roles. It also prevents removal of the final admin role.
+The database binds the supplied actor to the authenticated user, prevents non-Administrators from assigning or removing roles, audits role changes, and prevents removal of the final Administrator role.
 
 ## Invite user
 

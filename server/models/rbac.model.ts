@@ -1,4 +1,4 @@
-export const roles = ["admin", "manager", "facilitator", "practitioner", "apprentice"] as const;
+export const roles = ["admin", "instructor", "facilitator", "practitioner", "apprentice"] as const;
 
 export type Role = (typeof roles)[number];
 
@@ -51,7 +51,8 @@ export type RolePermission =
   | "events:manage"
   | "sessions:facilitate"
   | "clients:manage"
-  | "profile:manage";
+  | "profile:manage"
+  | "trainees:supervise";
 
 export type RoleAccess = {
   role: Role;

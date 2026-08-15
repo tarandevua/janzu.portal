@@ -25,6 +25,7 @@ const groupColorClassName: Record<PractitionerMarkerGroup, string> = {
   apprentice: "bg-[#d97706]",
   participant: "bg-primary",
   facilitator: "bg-[#4f46e5]",
+  instructor: "bg-[#0f766e]",
 };
 
 function getPractitionerName(profile: { displayName?: string | null; city: string | null }, fallback: string) {

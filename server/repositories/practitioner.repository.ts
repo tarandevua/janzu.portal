@@ -4,9 +4,20 @@ import type { Database } from "@/types/database";
 import type {
   PractitionerProfile,
   PractitionerProfileInput,
+  ProfileVisibilityInput,
   PractitionerPracticeLocation,
   PublicPractitionerGroup,
 } from "@/server/models/practitioner.model";
+
+type ProfileVisibilityArgs =
+  Database["public"]["Functions"]["update_my_profile_visibility"]["Args"];
+
+type ProfileVisibilityRpcClient = {
+  rpc(
+    functionName: "update_my_profile_visibility",
+    args: ProfileVisibilityArgs
+  ): Promise<{ data: PractitionerRow | null; error: { message: string } | null }>;
+};
 
 type PractitionerRow = {
   id: string;
@@ -26,6 +37,15 @@ type PractitionerRow = {
   tiktok_url: string | null;
   profile_image_url: string | null;
   is_public: boolean;
+  directory_visibility?: "private" | "community" | "public";
+  display_name_visibility?: "private" | "community" | "public";
+  profile_image_visibility?: "private" | "community" | "public";
+  bio_visibility?: "private" | "community" | "public";
+  languages_visibility?: "private" | "community" | "public";
+  location_visibility?: "private" | "community" | "public";
+  website_visibility?: "private" | "community" | "public";
+  social_links_visibility?: "private" | "community" | "public";
+  visibility_configured_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -54,6 +74,10 @@ type PublicPractitionerRpcClient = {
   rpc(
     functionName: "get_public_practitioner_profile",
     args: { target_profile_id: string }
+  ): Promise<{ data: PractitionerRow[] | null; error: { message: string } | null }>;
+  rpc(
+    functionName: "list_community_practitioner_profiles",
+    args: { actor_user_id: string }
   ): Promise<{ data: PractitionerRow[] | null; error: { message: string } | null }>;
 };
 
@@ -109,6 +133,17 @@ function toProfile(
     tiktokUrl: row.tiktok_url,
     profileImageUrl: row.profile_image_url,
     isPublic: row.is_public,
+    visibility: {
+      directory: row.directory_visibility ?? "private",
+      displayName: row.display_name_visibility ?? "private",
+      profileImage: row.profile_image_visibility ?? "private",
+      bio: row.bio_visibility ?? "private",
+      languages: row.languages_visibility ?? "private",
+      location: row.location_visibility ?? "private",
+      website: row.website_visibility ?? "private",
+      socialLinks: row.social_links_visibility ?? "private",
+      configuredAt: row.visibility_configured_at ?? null,
+    },
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -123,6 +158,10 @@ async function getPractitionerPublicGroup(
 
   if (roles.includes("facilitator")) {
     return "facilitator";
+  }
+
+  if (roles.includes("instructor")) {
+    return "instructor";
   }
 
   if (roles.includes("practitioner")) {
@@ -270,6 +309,19 @@ export async function listPublicPractitionerProfiles(supabase: SupabaseServerCli
   return attachPracticeLocations(supabase, data ?? []);
 }
 
+export async function listCommunityPractitionerProfiles(
+  supabase: SupabaseServerClient,
+  actorUserId: string
+) {
+  const client = supabase as unknown as PublicPractitionerRpcClient;
+  const { data, error } = await client.rpc("list_community_practitioner_profiles", {
+    actor_user_id: actorUserId,
+  });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => toProfile(row, []));
+}
+
 export async function upsertPractitionerProfile(
   supabase: SupabaseServerClient,
   userId: string,
@@ -291,7 +343,6 @@ export async function upsertPractitionerProfile(
     youtube_url: input.youtubeUrl ?? null,
     tiktok_url: input.tiktokUrl ?? null,
     profile_image_url: input.profileImageUrl ?? null,
-    is_public: input.isPublic ?? false,
   } satisfies Database["public"]["Tables"]["practitioners"]["Insert"];
 
   const { data, error } = await supabase
@@ -339,4 +390,29 @@ export async function upsertPractitionerProfile(
     ...profile,
     practiceLocations,
   };
+}
+
+export async function updatePractitionerProfileVisibility(
+  supabase: SupabaseServerClient,
+  userId: string,
+  input: ProfileVisibilityInput
+) {
+  const rpcClient = supabase as unknown as ProfileVisibilityRpcClient;
+  const { data, error } = await rpcClient.rpc("update_my_profile_visibility", {
+    actor_user_id: userId,
+    target_directory_visibility: input.directory,
+    target_display_name_visibility: input.displayName,
+    target_profile_image_visibility: input.profileImage,
+    target_bio_visibility: input.bio,
+    target_languages_visibility: input.languages,
+    target_location_visibility: input.location,
+    target_website_visibility: input.website,
+    target_social_links_visibility: input.socialLinks,
+  });
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "Profile visibility could not be updated.");
+  }
+
+  return toProfile(data);
 }

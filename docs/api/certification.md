@@ -11,21 +11,21 @@ Cookie: sb-access-token=<session>
 
 ```http
 GET /api/certification/approve
-Cookie: sb-access-token=<admin-or-manager-session>
+Cookie: sb-access-token=<admin-session>
 ```
 
-Returns eligible and approved certification candidates for admin or manager review.
+Returns eligible and approved certification candidates for Administrator review. Instructor readiness and Assessor decisions belong to the future DEC-02 state-machine workflow.
 
 ## Final approval
 
 ```http
 POST /api/certification/approve
 Content-Type: application/json
-Cookie: sb-access-token=<admin-or-manager-session>
+Cookie: sb-access-token=<admin-session>
 
 {
   "practitionerId": "00000000-0000-0000-0000-000000000000"
 }
 ```
 
-Certification eligibility requires 50 validated sessions. Final approval requires an admin or manager role.
+The legacy endpoint remains Administrator-only. The DEC-02 certification state machine supersedes its single-threshold model and is tracked separately.

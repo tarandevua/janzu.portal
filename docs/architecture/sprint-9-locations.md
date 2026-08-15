@@ -1,5 +1,7 @@
 # Sprint 9 - Locations Database
 
+> Current authorization: location approval is Administrator-only. The legacy Manager grant no longer applies to Instructors.
+
 ## Goal
 
 Allow practitioners to submit water locations and allow admins/managers to approve locations before they become public.

@@ -13,7 +13,7 @@ Returns published events with RSVP counts.
 ```http
 POST /api/events
 Content-Type: application/json
-Cookie: sb-access-token=<admin-or-manager-session>
+Cookie: sb-access-token=<admin-session>
 
 {
   "title": "Janzu Retreat",
@@ -33,7 +33,7 @@ Cookie: sb-access-token=<admin-or-manager-session>
 
 ```http
 GET /api/events/manage
-Cookie: sb-access-token=<admin-or-manager-session>
+Cookie: sb-access-token=<admin-session>
 ```
 
 ## RSVP

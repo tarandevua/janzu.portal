@@ -6,6 +6,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   getMyPractitionerProfile,
+  saveMyProfileVisibility,
   saveMyPractitionerProfile,
 } from "@/server/services/practitioner.service";
 import {
@@ -19,6 +20,7 @@ import {
   parseLanguages,
   parsePracticeLocations,
   practitionerProfileSchema,
+  profileVisibilitySchema,
 } from "@/server/validators/practitioner.schema";
 
 type UpdateFullNameArgs =
@@ -101,7 +103,6 @@ export async function savePractitionerProfileInline(
     youtubeUrl: formData.get("youtubeUrl"),
     tiktokUrl: formData.get("tiktokUrl"),
     profileImageUrl,
-    isPublic: currentProfile?.isPublic ?? false,
   });
 
   if (!parsed.success) {
@@ -154,4 +155,37 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
   }
 
   redirect(`/${locale}/dashboard/profile?status=saved`);
+}
+
+export async function saveProfileVisibility(locale: Locale, formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+
+  const parsed = profileVisibilitySchema.safeParse({
+    directory: formData.get("directory"),
+    displayName: formData.get("displayName"),
+    profileImage: formData.get("profileImage"),
+    bio: formData.get("bio"),
+    languages: formData.get("languages"),
+    location: formData.get("location"),
+    website: formData.get("website"),
+    socialLinks: formData.get("socialLinks"),
+  });
+
+  if (!parsed.success) {
+    redirect(`/${locale}/dashboard/profile?status=visibility-invalid#visibility`);
+  }
+
+  await saveMyProfileVisibility(supabase, user.id, parsed.data);
+
+  revalidatePath(`/${locale}/dashboard/profile`);
+  revalidatePath(`/${locale}/practitioners`);
+  revalidatePath(`/${locale}/dashboard/first-steps`);
+  redirect(`/${locale}/dashboard/profile?status=visibility-saved#visibility`);
 }

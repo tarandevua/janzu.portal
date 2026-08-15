@@ -1,5 +1,7 @@
 # Sprint 11 - Events
 
+> Current authorization: event management is Administrator-only unless another active role explicitly grants it. The legacy Manager grant no longer applies to Instructors.
+
 ## Goal
 
 Create event management and RSVP foundations for retreats, trainings, and community gatherings.

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import {
   BellIcon,
   CalendarDaysIcon,
@@ -60,6 +61,10 @@ type ApprenticeDashboardDictionary = {
   publicProfile: string;
   privateProfile: string;
   notStarted: string;
+  firstSteps: string;
+  firstStepsDescription: string;
+  continueFirstSteps: string;
+  reviewFirstSteps: string;
 };
 
 type ApprenticeDashboardContentProps = {
@@ -174,6 +179,24 @@ export function ApprenticeDashboardContent({
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <Card>
+          <CardHeader className="flex-row items-start justify-between gap-4">
+            <div>
+              <CardTitle>{dictionary.firstSteps}</CardTitle>
+              <CardDescription>{dictionary.firstStepsDescription}</CardDescription>
+            </div>
+            <Button asChild size="sm">
+              <Link href={(data.onboarding.complete ? `/${locale}/dashboard/first-steps` : data.onboarding.nextHref) as Route}>
+                {data.onboarding.complete ? dictionary.reviewFirstSteps : dictionary.continueFirstSteps}
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">
+              {data.onboarding.completedCount}/{data.onboarding.totalCount}
+            </div>
+          </CardContent>
+        </Card>
         {showProfileReadiness ? (
           <Card>
             <CardHeader className="flex-row items-start justify-between gap-4">

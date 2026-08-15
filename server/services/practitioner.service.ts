@@ -1,10 +1,13 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { PractitionerProfileInput } from "@/server/models/practitioner.model";
+import type { ProfileVisibilityInput } from "@/server/models/practitioner.model";
 import {
   getPractitionerProfileByUserId,
   getPublicPractitionerProfile,
   listPublicPractitionerProfiles,
+  listCommunityPractitionerProfiles,
   upsertPractitionerProfile,
+  updatePractitionerProfileVisibility,
 } from "@/server/repositories/practitioner.repository";
 
 export async function getMyPractitionerProfile(
@@ -12,6 +15,14 @@ export async function getMyPractitionerProfile(
   userId: string
 ) {
   return getPractitionerProfileByUserId(supabase, userId);
+}
+
+export function saveMyProfileVisibility(
+  supabase: SupabaseServerClient,
+  userId: string,
+  input: ProfileVisibilityInput
+) {
+  return updatePractitionerProfileVisibility(supabase, userId, input);
 }
 
 export async function saveMyPractitionerProfile(
@@ -31,4 +42,11 @@ export async function findPublicPractitionerProfile(
 
 export async function findPublicPractitionerProfiles(supabase: SupabaseServerClient) {
   return listPublicPractitionerProfiles(supabase);
+}
+
+export function findCommunityPractitionerProfiles(
+  supabase: SupabaseServerClient,
+  userId: string
+) {
+  return listCommunityPractitionerProfiles(supabase, userId);
 }

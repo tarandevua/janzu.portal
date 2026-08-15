@@ -16,6 +16,9 @@ import {
   UserCogIcon,
   SettingsIcon,
   BookOpenIcon,
+  ListChecksIcon,
+  GraduationCapIcon,
+  HandshakeIcon,
 } from "lucide-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -52,12 +55,19 @@ type SidebarDictionary = {
   profile: string
   notifications: string
   knowledgeBase: string
+  firstSteps: string
+  supervision: string
+  training: string
+  communityDirectory: string
   logout: string
   loggingOut: string
 }
 
 function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictionary) {
   const canManageUsers = access.some((item) => item.permissions.includes("users:manage"))
+  const isTrainee = access.some((item) => item.role === "apprentice")
+  const canUseSupervision = access.some((item) => ["admin", "instructor", "apprentice"].includes(item.role))
+  const canUsePracticeRecords = access.some((item) => ["admin", "facilitator", "practitioner", "apprentice"].includes(item.role))
 
   return {
     roleLinks: access.map((item) => ({
@@ -76,21 +86,19 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
         ]
       : []),
     
-    {
+    ...(canUsePracticeRecords ? [{
       title: dictionary.clients,
       url: `/${locale}/dashboard/clients`,
       icon: UsersIcon,
-    },
-    {
+    }, {
       title: dictionary.sessions,
       url: `/${locale}/dashboard/sessions`,
       icon: ClipboardListIcon,
-    },
-    {
+    }, {
       title: dictionary.locations,
       url: `/${locale}/dashboard/locations`,
       icon: MapPinnedIcon,
-    },
+    }] : []),
     ...(canManageUsers
       ? [
           {
@@ -109,10 +117,29 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
     }
   ],
   documents: [
+    ...(isTrainee ? [{
+      name: dictionary.firstSteps,
+      url: `/${locale}/dashboard/first-steps`,
+      icon: ListChecksIcon,
+    }] : []),
+    ...(canUseSupervision ? [{
+      name: dictionary.supervision,
+      url: `/${locale}/dashboard/supervision`,
+      icon: HandshakeIcon,
+    }, {
+      name: dictionary.training,
+      url: `/${locale}/dashboard/training`,
+      icon: GraduationCapIcon,
+    }] : []),
     {
       name: dictionary.practitionerMap,
       url: `/${locale}/practitioners`,
       icon: MapIcon,
+    },
+    {
+      name: dictionary.communityDirectory,
+      url: `/${locale}/dashboard/community`,
+      icon: UsersIcon,
     },
     {
       name: dictionary.locationMap,

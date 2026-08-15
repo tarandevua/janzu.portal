@@ -106,7 +106,7 @@ Decide:
 
 #### TASK-002: Approve and record DEC-01 through DEC-04
 
-**Status:** Blocked  
+**Status:** Done
 **Priority:** P0  
 **Dependencies:** Stakeholder approval
 
@@ -116,7 +116,7 @@ Decide:
 
 #### TASK-101: Add First Steps onboarding
 
-**Status:** Planned  
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** DEC-01, DEC-02
 
@@ -136,6 +136,8 @@ Decide:
 - Completion state persists across devices.
 - The guide remains accessible after completion.
 - Every checklist item links to a real action or guide.
+
+**Verification:** First Steps derives persistent progress from versioned Learning Alliance events, field-level profile visibility, structured training records, active supervision, and guide completion. English and Spanish routes remain accessible after completion.
 
 #### TASK-102: Add calendar guidance
 
@@ -181,7 +183,7 @@ Decide:
 
 #### TASK-201: Implement real Instructor authorization
 
-**Status:** Blocked  
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** DEC-01
 
@@ -194,9 +196,11 @@ Decide:
 - Existing Manager accounts migrate without accidental privilege gain or loss.
 - Permission tests cover every role and sensitive action.
 
+**Verification:** Forward-only migrations replace `manager` with `instructor`, remove inherited administrative permissions, bind actors to authenticated users, and scope supervision data to active assignments.
+
 #### TASK-202: Add Instructor–Trainee assignment
 
-**Status:** Planned  
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** TASK-201
 
@@ -208,6 +212,8 @@ Decide:
 - An Instructor sees only assigned Trainees.
 - Current and historical assignments are preserved.
 - Assignment events generate in-app notifications and audit records.
+
+**Verification:** Request, accept, decline, transfer, end, and administrative assignment RPCs preserve history, enforce one active Instructor, and emit audit and notification records.
 
 #### TASK-203: Add an Instructor supervision dashboard
 
@@ -225,7 +231,7 @@ Decide:
 
 #### TASK-301: Add complete profile visibility controls
 
-**Status:** Blocked  
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** DEC-03
 
@@ -235,6 +241,8 @@ Decide:
 - Public queries never return private or community-only fields.
 - Visibility changes take effect immediately and are audited.
 - Safe defaults are applied to new and existing profiles.
+
+**Verification:** Profiles use private-by-default field audiences, separate public/community projections, verified-role public eligibility, and no exact-coordinate projection.
 
 #### TASK-302: Separate public and community maps
 
@@ -251,7 +259,7 @@ Decide:
 
 #### TASK-303: Add WhatsApp with explicit consent
 
-**Status:** Blocked  
+**Status:** Planned
 **Priority:** P2  
 **Dependencies:** DEC-03, TASK-301
 
@@ -266,7 +274,7 @@ Decide:
 
 #### TASK-401: Add structured training history
 
-**Status:** Blocked  
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** DEC-02, DEC-04
 
@@ -278,6 +286,8 @@ Decide:
 - Unverified claims cannot unlock certification.
 - Corrections preserve an audit trail.
 - Trainees, assigned Instructors, and Administrators receive appropriate access.
+
+**Verification:** Level 1/2 claims, relationship-scoped verification, derived verified level, correction/review audit snapshots, RLS, UI, and localized guidance are implemented.
 
 #### TASK-402: Implement a certification state machine
 

@@ -10,8 +10,11 @@ import { getPractitionerProfileByUserId } from "@/server/repositories/practition
 import { toCertificationSummary } from "@/server/services/certification.service";
 import { listPublicEvents } from "@/server/services/event.service";
 import { listMyNotifications } from "@/server/services/notification.service";
+import { getMyOnboardingProgress } from "@/server/services/onboarding.service";
+import type { Locale } from "@/lib/i18n/config";
 
 type ApprenticeDashboardData = {
+  onboarding: Awaited<ReturnType<typeof getMyOnboardingProgress>>;
   profile: PractitionerProfile | null;
   profileCompletion: {
     completedFields: number;
@@ -144,19 +147,22 @@ async function countMyEventRsvps(supabase: SupabaseServerClient, userId: string)
 
 export async function getApprenticeDashboardData(
   supabase: SupabaseServerClient,
-  userId: string
+  userId: string,
+  locale: Locale
 ): Promise<ApprenticeDashboardData> {
   const profile = await getPractitionerProfileByUserId(supabase, userId);
-  const [profileData, events, notificationSummary, rsvps] = await Promise.all([
+  const [profileData, events, notificationSummary, rsvps, onboarding] = await Promise.all([
     getApprenticeProfileData(supabase, profile),
     listPublicEvents(supabase, userId),
     listMyNotifications(supabase, userId),
     countMyEventRsvps(supabase, userId),
+    getMyOnboardingProgress(supabase, userId, locale),
   ]);
   const recentLocations = profileData.locations.slice(0, 5);
   const upcomingEvents = events.slice(0, 5);
 
   return {
+    onboarding,
     profile,
     profileCompletion: getProfileCompletion(profile),
     certification: profileData.certification,

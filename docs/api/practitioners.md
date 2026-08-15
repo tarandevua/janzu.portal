@@ -22,13 +22,16 @@ Cookie: sb-access-token=<session>
   "longitude": 2.17,
   "languages": ["English", "Spanish"],
   "website": "https://example.com",
-  "profileImageUrl": "https://example.com/profile.jpg",
-  "isPublic": true
+  "profileImageUrl": "https://example.com/profile.jpg"
 }
 ```
+
+Profile content updates do not change visibility. Members configure directory and field audiences separately on the dashboard profile page. The server enforces private, authenticated-community, and public maximums from DEC-03.
 
 ## Public practitioners
 
 ```http
 GET /api/practitioners
 ```
+
+This endpoint returns only verified Facilitators and Instructors who opted into the public directory. Every field is projected independently, and exact coordinates are never returned. Authenticated community profiles use the separate `list_community_practitioner_profiles` projection.

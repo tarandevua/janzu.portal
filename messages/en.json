@@ -33,7 +33,7 @@
         "title": "Admin dashboard",
         "description": "Manage users, approvals, certification decisions, and platform operations."
       },
-      "manager": {
+      "instructor": {
         "title": "Instructor dashboard",
         "description": "Coordinate operational reviews, events, approved locations, and practitioner support."
       },
@@ -53,7 +53,7 @@
     "sidebar": {
       "roles": {
         "admin": "Admin",
-        "manager": "Instructor",
+        "instructor": "Instructor",
         "facilitator": "Facilitator",
         "practitioner": "Practitioner",
         "apprentice": "Trainee"
@@ -73,8 +73,17 @@
       "profile": "Profile",
       "notifications": "Notifications",
       "knowledgeBase": "Knowledge Base",
+      "firstSteps": "First Steps",
+      "supervision": "Instructor relationship",
+      "training": "Training history",
+      "communityDirectory": "Community directory",
       "logout": "Log out",
       "loggingOut": "Logging out..."
+    },
+    "instructorData": {
+      "description": "Review only the Trainees who have an active relationship with you.",
+      "supervision": "Supervision requests",
+      "training": "Training review"
     },
     "practitionerData": {
       "setupTitle": "Complete your profile.",
@@ -137,7 +146,11 @@
       "location": "Location",
       "publicProfile": "Public profile",
       "privateProfile": "Private profile",
-      "notStarted": "Create your profile to start tracking progress."
+      "notStarted": "Create your profile to start tracking progress.",
+      "firstSteps": "First Steps"
+      ,"firstStepsDescription": "Follow your next valid onboarding action. Progress is saved across devices."
+      ,"continueFirstSteps": "Continue"
+      ,"reviewFirstSteps": "Review guide"
     },
     "adminData": {
       "users": "Users",
@@ -218,7 +231,7 @@
   "practitioners": {
     "form": {
       "title": "Profile",
-      "description": "Manage the information that can appear on your public profile.",
+      "description": "Manage your profile information. Visibility is configured separately and defaults to private.",
       "fullName": "Display Name",
       "officialFullName": "Official Full Name",
       "officialFullNameHelp": "Use your legal or certificate name here. This name is used for certification review and certificate records.",
@@ -232,7 +245,7 @@
       "latitude": "Latitude",
       "longitude": "Longitude",
       "mapPickerTitle": "Drop your practice pins on the map",
-      "mapPickerDescription": "Click each public practice area you want to add to your profile. You can add more than one pin, then drag any pin to adjust it.",
+      "mapPickerDescription": "Add private practice coordinates for your own records. Directories expose only the city or region audience you choose, never these exact coordinates.",
       "selectedCoordinates": "Selected coordinates",
       "noCoordinatesSelected": "No practice pins selected yet.",
       "removeLocation": "Remove location",
@@ -257,6 +270,29 @@
       "avatarBucket": "Cloudflare R2 bucket was not found. Check the bucket name and account ID.",
       "avatarUpload": "Profile image could not be uploaded. Check R2 settings and try again."
     },
+    "visibility": {
+      "title": "Profile visibility",
+      "description": "Choose the audience for each field. Private is the default. Public visibility is available only to verified Facilitators and Instructors.",
+      "directory": "Directory listing",
+      "displayName": "Display name",
+      "profileImage": "Profile image",
+      "bio": "Bio",
+      "languages": "Languages",
+      "location": "City, region, and country",
+      "website": "Website and booking link",
+      "socialLinks": "Social links",
+      "private": "Private",
+      "community": "Authenticated community",
+      "public": "Public",
+      "publicUnavailable": "Trainee profiles cannot be public. You may still opt into the authenticated community directory.",
+      "save": "Save visibility",
+      "saved": "Visibility settings saved.",
+      "invalid": "Check the visibility settings and try again."
+    },
+    "community": {
+      "title": "Community directory",
+      "description": "Authenticated members who opted into community visibility. Fields remain filtered by each member's choices."
+    },
     "public": {
       "title": "Find Janzu practitioners",
       "description": "Explore public practitioner profiles by location, language, and practice focus.",
@@ -268,6 +304,7 @@
       "apprenticePin": "Trainee",
       "participantPin": "Certified Professional",
       "facilitatorPin": "Facilitator",
+      "instructorPin": "Instructor",
       "emptyGroup": "No public profiles are available in this group yet.",
       "viewDetails": "View details"
     }
@@ -673,6 +710,97 @@
     "next": "Next",
     "page": "Page"
   },
+  "firstSteps": {
+    "title": "First Steps",
+    "description": "Follow the next valid action for your Trainee journey. Progress is saved across devices and this guide always remains available.",
+    "progress": "Progress",
+    "complete": "Complete",
+    "open": "Open",
+    "learningAlliance": "Learning Alliance",
+    "learningAllianceDescription": "Acknowledge the current operational agreement. This is revocable and is not a legal signature or certification gate.",
+    "agreementStatement": "I intend to participate respectfully, protect private session and feedback information, communicate boundaries and availability clearly, keep portal records honest, and seek support when a safety or relationship concern arises.",
+    "agreementNonLegal": "This acknowledgement is non-legal, may be revoked at any time, and does not automatically change certification status.",
+    "version": "Policy version",
+    "accept": "Accept acknowledgement",
+    "revoke": "Revoke acknowledgement",
+    "profile": "Complete profile and visibility",
+    "profileDescription": "Add your profile details and deliberately choose the audience for each eligible field.",
+    "training": "Record training history",
+    "trainingDescription": "Submit official Level 1 or Level 2 training for verification.",
+    "instructor": "Select an Instructor",
+    "instructorDescription": "Send a request and wait for the Instructor to accept it.",
+    "guidance": "Portal guidance",
+    "calendar": "Calendar guidance",
+    "calendarDescription": "Understand time zones, recurring availability, booking states, and cancellation history.",
+    "sessions": "Session guidance",
+    "sessionsDescription": "Learn the private Session Participant and session-record workflow.",
+    "feedback": "Feedback guidance",
+    "feedbackDescription": "Learn how exact links, validation, notifications, and privacy work.",
+    "markComplete": "Mark understood",
+    "markIncomplete": "Mark for review",
+    "allianceAccepted": "Learning Alliance acknowledgement recorded.",
+    "allianceRevoked": "Learning Alliance acknowledgement revoked. The checklist item is incomplete.",
+    "guideUpdated": "Guide progress updated.",
+    "invalid": "The First Steps update was invalid."
+  },
+  "training": {
+    "title": "Training history",
+    "description": "Record official Level 1 or Level 2 training. Claims do not affect certification until an authorized Instructor or Administrator verifies them.",
+    "addTitle": "Add training record",
+    "level": "Training level",
+    "level1": "Level 1",
+    "level2": "Level 2",
+    "cohort": "Cohort",
+    "location": "Training location",
+    "startedOn": "Start date",
+    "completedOn": "Completion date",
+    "teachingInstructor": "Teaching Instructor",
+    "courseworkComplete": "All mandatory coursework completed",
+    "evidence": "Evidence reference",
+    "notes": "Private notes",
+    "submit": "Submit record",
+    "records": "Training records",
+    "empty": "No training records yet.",
+    "claimed": "Awaiting verification",
+    "verified": "Verified",
+    "rejected": "Needs correction",
+    "approve": "Verify",
+    "reject": "Request correction",
+    "rejectionReason": "Correction reason",
+    "submitted": "Training record submitted.",
+    "correct": "Correct and resubmit",
+    "corrected": "Training record corrected and resubmitted.",
+    "invalid": "Check the training record and try again."
+  },
+  "supervision": {
+    "title": "Instructor relationship",
+    "description": "Request, review, transfer, or end a supervision relationship.",
+    "chooseInstructor": "Choose an Instructor",
+    "chooseInstructorDescription": "Your selection sends a request. The Instructor must accept before the relationship becomes active.",
+    "instructor": "Instructor",
+    "trainee": "Trainee",
+    "request": "Send request",
+    "requests": "Requests",
+    "history": "Current and previous relationships",
+    "empty": "No supervision relationships yet.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "end": "End",
+    "reason": "Reason",
+    "status": "Status",
+    "pending": "Pending",
+    "active": "Active",
+    "declined": "Declined",
+    "ended": "Ended",
+    "cancelled": "Cancelled",
+    "training": "Training history",
+    "adminAssign": "Administrative assignment",
+    "assign": "Assign Instructor",
+    "requested": "Instructor request sent.",
+    "accepted": "Instructor request accepted.",
+    "assigned": "Instructor assigned.",
+    "invalid": "Check the request and try again."
+  },
   "userManagement": {
     "title": "User management",
     "description": "Manage portal users and role assignments. Instructors can assign trainee, practitioner, and facilitator roles; administrators can manage all roles.",
@@ -743,7 +871,7 @@
     "forbidden": "Administrator or instructor access is required to manage users.",
     "roleLabels": {
       "admin": "Admin",
-      "manager": "Instructor",
+      "instructor": "Instructor",
       "facilitator": "Facilitator",
       "practitioner": "Practitioner",
       "apprentice": "Trainee"
