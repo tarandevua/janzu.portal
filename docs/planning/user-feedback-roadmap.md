@@ -8,26 +8,26 @@ Use this roadmap together with [Agent Implementation Playbook](./agent-implement
 
 ## Status definitions
 
-| Status | Meaning |
-| --- | --- |
-| Done | Implemented and verified in the repository. Deployment may still need confirmation. |
-| Verify | Implemented, but must be tested against a migrated environment. |
-| Blocked | A product, privacy, or certification decision is required. |
-| Ready | Requirements and dependencies are sufficiently defined. |
-| Planned | Depends on earlier work. |
+| Status  | Meaning                                                                             |
+| ------- | ----------------------------------------------------------------------------------- |
+| Done    | Implemented and verified in the repository. Deployment may still need confirmation. |
+| Verify  | Implemented, but must be tested against a migrated environment.                     |
+| Blocked | A product, privacy, or certification decision is required.                          |
+| Ready   | Requirements and dependencies are sufficiently defined.                             |
+| Planned | Depends on earlier work.                                                            |
 
 ## Work already completed
 
-| ID | Outcome | Status |
-| --- | --- | --- |
-| DONE-01 | Visible `Apprentice` terminology changed to Trainee. | Done |
-| DONE-02 | Visible `Manager` terminology changed to Instructor. | Done |
-| DONE-03 | Visible `Client` terminology changed to Session Participant. | Done |
-| DONE-04 | English and Spanish terminology updated without renaming internal database tables, routes, or role values. | Done |
-| DONE-05 | Portal roles documented in the English and Spanish knowledge base. | Done |
-| DONE-06 | Obsolete feedback “next sprint” placeholder removed. | Done |
-| DONE-07 | Feedback notifications contain participant name, session date, rating, unread state, and an exact feedback link. | Done |
-| DONE-08 | Exact feedback links open the corresponding feedback detail panel. | Done |
+| ID      | Outcome                                                                                                          | Status |
+| ------- | ---------------------------------------------------------------------------------------------------------------- | ------ |
+| DONE-01 | Visible `Apprentice` terminology changed to Trainee.                                                             | Done   |
+| DONE-02 | Visible `Manager` terminology changed to Instructor.                                                             | Done   |
+| DONE-03 | Visible `Client` terminology changed to Session Participant.                                                     | Done   |
+| DONE-04 | English and Spanish terminology updated without renaming internal database tables, routes, or role values.       | Done   |
+| DONE-05 | Portal roles documented in the English and Spanish knowledge base.                                               | Done   |
+| DONE-06 | Obsolete feedback “next sprint” placeholder removed.                                                             | Done   |
+| DONE-07 | Feedback notifications contain participant name, session date, rating, unread state, and an exact feedback link. | Done   |
+| DONE-08 | Exact feedback links open the corresponding feedback detail panel.                                               | Done   |
 
 ## Important current constraints
 
@@ -116,7 +116,7 @@ Decide:
 
 #### TASK-101: Add First Steps onboarding
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** DEC-01, DEC-02
 
@@ -158,7 +158,7 @@ Decide:
 
 #### TASK-103: Send a welcome email
 
-**Status:** Planned  
+**Status:** Ready
 **Priority:** P1  
 **Dependencies:** TASK-101, TASK-501
 
@@ -365,7 +365,7 @@ Decide:
 
 #### TASK-501: Define the notification event matrix
 
-**Status:** Ready  
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** DEC-01, DEC-02
 
@@ -373,9 +373,11 @@ Decide:
 
 **Deliverable:** For each event, document recipients, channel, required data, destination link, localization, preference behavior, and idempotency key.
 
+**Verification:** Accepted decision `DEC-06-notification-event-matrix.md` defines the stable event types, server-derived recipients, channel and preference behavior, safe metadata, exact authorized destinations, English/Spanish locale rules, idempotency keys, delivery states, and retry expectations for every listed event family.
+
 #### TASK-502: Build transactional email infrastructure
 
-**Status:** Planned  
+**Status:** Ready
 **Priority:** P1  
 **Dependencies:** TASK-501
 

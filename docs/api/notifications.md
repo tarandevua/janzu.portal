@@ -2,6 +2,8 @@
 
 Sprint 12 adds database-backed notifications for authenticated users.
 
+The approved cross-workflow recipient, localization, preference, privacy, and idempotency contract is [DEC-06: Notification event matrix](../decisions/DEC-06-notification-event-matrix.md). Existing Sprint 12 event names remain legacy implementation details until their source workflow adopts the corresponding stable DEC-06 event type through a forward-only migration.
+
 ## List my notifications
 
 ```http
