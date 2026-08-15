@@ -413,7 +413,10 @@
     "repeatBiweekly": "Cada 2 semanas",
     "repeatMonthly": "Cada mes",
     "repeatCount": "Ocurrencias",
-    "cancelSeries": "Cancelar serie"
+    "cancelSeries": "Cancelar serie",
+    "calendarGuidanceTitle": "Como funciona la disponibilidad del calendario",
+    "calendarGuidanceDescription": "Descubre que vista usar, que pueden ver los visitantes, como cambian los estados de reserva y como se muestran los horarios.",
+    "calendarGuidanceLink": "Leer la guia del calendario"
   },
   "feedback": {
     "title": "Feedback de sesion",

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState, useTransition, type FormEvent } from "react";
+import Link from "next/link";
+import type { Route } from "next";
 import { toast } from "sonner";
-import { CalendarPlusIcon, XIcon } from "lucide-react";
+import { BookOpenIcon, CalendarPlusIcon, XIcon } from "lucide-react";
 import {
   cancelAvailabilitySeriesInline,
   cancelAvailabilitySlotInline,
@@ -70,6 +72,9 @@ type SessionAvailabilityManagerProps = {
     repeatMonthly: string;
     repeatCount: string;
     cancelSeries: string;
+    calendarGuidanceTitle: string;
+    calendarGuidanceDescription: string;
+    calendarGuidanceLink: string;
   };
 };
 
@@ -204,8 +209,8 @@ export function SessionAvailabilityManager({
         <CardTitle>{dictionary.availabilityTitle}</CardTitle>
         <CardDescription>{dictionary.availabilityDescription}</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-5">
-        <Tabs defaultValue="quick-add" className="grid gap-4">
+      <CardContent className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start">
+        <Tabs defaultValue="quick-add" className="min-w-0 grid gap-4">
           <TabsList className="h-auto w-full justify-start overflow-x-auto">
             <TabsTrigger value="quick-add">{dictionary.quickAddView}</TabsTrigger>
             <TabsTrigger value="calendar">{dictionary.calendarView}</TabsTrigger>
@@ -319,6 +324,29 @@ export function SessionAvailabilityManager({
             />
           </TabsContent>
         </Tabs>
+        <aside
+          aria-labelledby="calendar-guidance-title"
+          className="grid gap-3 rounded-lg border bg-muted/30 p-4 xl:sticky xl:top-6"
+        >
+          <div className="flex items-start gap-3">
+            <BookOpenIcon className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+            <div className="grid gap-1">
+              <h3 id="calendar-guidance-title" className="text-sm font-semibold">
+                {dictionary.calendarGuidanceTitle}
+              </h3>
+              <p className="text-sm leading-6 text-muted-foreground">
+                {dictionary.calendarGuidanceDescription}
+              </p>
+            </div>
+          </div>
+          <Button asChild variant="outline" className="w-full">
+            <Link
+              href={`/${locale}/dashboard/knowledge-base/sessions/calendar-and-booking` as Route}
+            >
+              {dictionary.calendarGuidanceLink}
+            </Link>
+          </Button>
+        </aside>
       </CardContent>
     </Card>
   );

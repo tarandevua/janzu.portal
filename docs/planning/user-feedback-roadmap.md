@@ -141,7 +141,8 @@ Decide:
 
 #### TASK-102: Add calendar guidance
 
-**Status:** Ready  
+**Status:** Done
+
 **Priority:** P1  
 **Dependencies:** None
 
@@ -152,6 +153,8 @@ Decide:
 - Contextual guidance appears beside the calendar.
 - Full English and Spanish articles match current behavior.
 - Desktop and mobile instructions are verified.
+
+**Verification:** The availability calendar now includes a localized, responsive guidance panel linked to matching English and Spanish knowledge-base articles. Automated tests cover dictionary parity, article scope, visitor privacy, booking and cancellation states, time zones, and localized routes. Browser verification covers the adjacent desktop panel, stacked mobile panel, mobile Week-view scrolling, and the authenticated route boundary.
 
 #### TASK-103: Send a welcome email
 

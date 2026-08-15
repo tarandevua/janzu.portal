@@ -413,7 +413,10 @@
     "repeatBiweekly": "Every 2 weeks",
     "repeatMonthly": "Every month",
     "repeatCount": "Occurrences",
-    "cancelSeries": "Cancel series"
+    "cancelSeries": "Cancel series",
+    "calendarGuidanceTitle": "How calendar availability works",
+    "calendarGuidanceDescription": "Learn which view to use, what visitors can see, how booking states change, and how times are displayed.",
+    "calendarGuidanceLink": "Read the calendar guide"
   },
   "feedback": {
     "title": "Session feedback",

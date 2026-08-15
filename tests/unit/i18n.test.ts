@@ -48,4 +48,14 @@ describe("i18n config", () => {
     expect(en.notifications.participant).toBe("Session participant");
     expect(es.notifications.participant).toBe("Participante de sesión");
   });
+
+  it("links contextual calendar guidance in both supported languages", () => {
+    expect(en.sessions.calendarGuidanceTitle).toBeTruthy();
+    expect(en.sessions.calendarGuidanceDescription).toMatch(/visitors|booking states|times/i);
+    expect(en.sessions.calendarGuidanceLink).toMatch(/calendar guide/i);
+
+    expect(es.sessions.calendarGuidanceTitle).toBeTruthy();
+    expect(es.sessions.calendarGuidanceDescription).toMatch(/visitantes|estados de reserva|horarios/i);
+    expect(es.sessions.calendarGuidanceLink).toMatch(/guia del calendario/i);
+  });
 });
