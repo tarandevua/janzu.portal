@@ -1,4 +1,5 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
+import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getClientEnv } from "@/lib/env";
 import type { ManagedUserFilters, Role } from "@/server/models/rbac.model";
@@ -99,7 +100,7 @@ export async function inviteManagedUser(
     email: string;
     fullName?: string | null;
     role: Role;
-    locale: string;
+    locale: Locale;
     roleLabel: string;
   }
 ) {
@@ -111,7 +112,8 @@ export async function inviteManagedUser(
 
   const admin = createSupabaseAdminClient();
   const env = getClientEnv();
-  const redirectTo = `${env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")}/${input.locale}/dashboard`;
+  const siteUrl = env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+  const redirectTo = `${siteUrl}/${input.locale}/auth/callback?locale=${input.locale}`;
   const normalizedEmail = input.email.trim().toLowerCase();
   const { data: existingUser, error: existingUserError } = await admin
     .from("users")
@@ -130,6 +132,7 @@ export async function inviteManagedUser(
     options: {
       data: {
         full_name: input.fullName ?? undefined,
+        preferred_locale: input.locale,
       },
       redirectTo,
     },
@@ -140,7 +143,11 @@ export async function inviteManagedUser(
   }
 
   const targetUserId = existingUser?.id ?? linkData.user?.id;
-  const inviteUrl = linkData.properties?.action_link;
+  const tokenHash = linkData.properties?.hashed_token;
+  const verificationType = linkData.properties?.verification_type;
+  const inviteUrl = tokenHash && (verificationType === "invite" || verificationType === "magiclink")
+    ? `${redirectTo}&token_hash=${encodeURIComponent(tokenHash)}&type=${verificationType}`
+    : null;
 
   if (!targetUserId || !inviteUrl) {
     throw new Error("Invite link could not be generated.");

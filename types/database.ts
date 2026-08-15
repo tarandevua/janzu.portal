@@ -10,6 +10,8 @@ export type Database = {
           full_name: string | null;
           official_full_name: string | null;
           is_deleted: boolean;
+          preferred_locale: "en" | "es" | null;
+          activated_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -19,6 +21,8 @@ export type Database = {
           full_name?: string | null;
           official_full_name?: string | null;
           is_deleted?: boolean;
+          preferred_locale?: "en" | "es" | null;
+          activated_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -28,6 +32,86 @@ export type Database = {
           full_name?: string | null;
           official_full_name?: string | null;
           is_deleted?: boolean;
+          preferred_locale?: "en" | "es" | null;
+          activated_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      welcome_email_deliveries: {
+        Row: {
+          id: string;
+          user_id: string;
+          event_type: "welcome.activated";
+          idempotency_key: string;
+          recipient_email: string;
+          recipient_name: string | null;
+          locale: "en" | "es";
+          role_names: Database["public"]["Enums"]["app_role"][];
+          template_version: string;
+          status:
+            | "sending"
+            | "provider_accepted"
+            | "retry_scheduled"
+            | "failed_permanent";
+          attempt_count: number;
+          provider_message_id: string | null;
+          failure_code: string | null;
+          failure_message: string | null;
+          last_attempt_at: string | null;
+          next_attempt_at: string | null;
+          provider_accepted_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          event_type?: "welcome.activated";
+          idempotency_key: string;
+          recipient_email: string;
+          recipient_name?: string | null;
+          locale: "en" | "es";
+          role_names?: Database["public"]["Enums"]["app_role"][];
+          template_version?: string;
+          status:
+            | "sending"
+            | "provider_accepted"
+            | "retry_scheduled"
+            | "failed_permanent";
+          attempt_count?: number;
+          provider_message_id?: string | null;
+          failure_code?: string | null;
+          failure_message?: string | null;
+          last_attempt_at?: string | null;
+          next_attempt_at?: string | null;
+          provider_accepted_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          event_type?: "welcome.activated";
+          idempotency_key?: string;
+          recipient_email?: string;
+          recipient_name?: string | null;
+          locale?: "en" | "es";
+          role_names?: Database["public"]["Enums"]["app_role"][];
+          template_version?: string;
+          status?:
+            | "sending"
+            | "provider_accepted"
+            | "retry_scheduled"
+            | "failed_permanent";
+          attempt_count?: number;
+          provider_message_id?: string | null;
+          failure_code?: string | null;
+          failure_message?: string | null;
+          last_attempt_at?: string | null;
+          next_attempt_at?: string | null;
+          provider_accepted_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1096,6 +1180,24 @@ export type Database = {
           actor_user_id: string;
           target_user_id: string;
           target_role: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
+        };
+        Returns: undefined;
+      };
+      claim_welcome_email_delivery: {
+        Args: {
+          target_user_id: string;
+          target_locale: "en" | "es";
+        };
+        Returns: Database["public"]["Tables"]["welcome_email_deliveries"]["Row"][];
+      };
+      record_welcome_email_result: {
+        Args: {
+          target_delivery_id: string;
+          target_succeeded: boolean;
+          target_provider_message_id?: string | null;
+          target_failure_code?: string | null;
+          target_failure_message?: string | null;
+          target_retryable?: boolean;
         };
         Returns: undefined;
       };

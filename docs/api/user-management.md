@@ -54,6 +54,8 @@ Content-Type: application/json
 The invite flow:
 
 - Generates a Supabase Auth invite link for new users, or a magic link for existing users.
+- Routes the one-time token through the localized server callback so invitation acceptance establishes an SSR session.
+- Seeds the invited member's preferred locale from the Administrator's active portal language.
 - Assigns the selected portal role.
 - Sends the invite email through Brevo transactional email.
 

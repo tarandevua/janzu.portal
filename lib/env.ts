@@ -6,8 +6,12 @@ const clientEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1)
 });
 
-const serverEnvSchema = clientEnvSchema.extend({
+const supabaseAdminEnvSchema = clientEnvSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+});
+
+const emailEnvSchema = z.object({
+  NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
   BREVO_API_KEY: z.string().min(1),
   BREVO_SENDER_EMAIL: z.string().email(),
   BREVO_SENDER_NAME: z.string().min(1).default("Janzu Community Portal")
@@ -28,12 +32,18 @@ export function getClientEnv() {
   });
 }
 
-export function getServerEnv() {
-  return serverEnvSchema.parse({
+export function getSupabaseAdminEnv() {
+  return supabaseAdminEnvSchema.parse({
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  });
+}
+
+export function getEmailEnv() {
+  return emailEnvSchema.parse({
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     BREVO_API_KEY: process.env.BREVO_API_KEY,
     BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL,
     BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME

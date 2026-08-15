@@ -14,13 +14,17 @@ type CookieToSet = {
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
+  const tokenHash = requestUrl.searchParams.get("token_hash");
+  const verificationType = requestUrl.searchParams.get("type");
   const localeParam = requestUrl.searchParams.get("locale");
   const locale = isLocale(localeParam) ? localeParam : defaultLocale;
   const siteUrl = getClientEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
   const redirectTo = new URL(`/${locale}/dashboard`, siteUrl);
   let response = NextResponse.redirect(redirectTo);
 
-  if (!code) {
+  const isSupportedTokenType = verificationType === "invite" || verificationType === "magiclink";
+
+  if (!code && (!tokenHash || !isSupportedTokenType)) {
     return NextResponse.redirect(new URL(`/${locale}/login?status=invalid-link`, siteUrl));
   }
 
@@ -41,7 +45,12 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { error } = code
+    ? await supabase.auth.exchangeCodeForSession(code)
+    : await supabase.auth.verifyOtp({
+        token_hash: tokenHash as string,
+        type: verificationType as "invite" | "magiclink",
+      });
 
   if (error) {
     return NextResponse.redirect(new URL(`/${locale}/login?status=invalid-link`, siteUrl));

@@ -158,7 +158,7 @@ Decide:
 
 #### TASK-103: Send a welcome email
 
-**Status:** Ready
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** TASK-101, TASK-501
 
@@ -168,6 +168,8 @@ Decide:
 - It includes role, First Steps link, certification overview, privacy explanation, and support path.
 - It uses the user’s preferred language.
 - Delivery status and failures are recorded.
+
+**Verification:** Migration `202608150010_welcome_email_delivery.sql` atomically records first activation, preferred locale, one lifetime idempotency key, provider acceptance, and bounded retry/permanent failure states. The authenticated dashboard boundary derives the member server-side, service-role-only functions mutate delivery state, and localized English/Spanish templates include role, First Steps, certification, privacy, and support guidance. Unit tests cover the migration contract and both templates; `task_103_welcome_email.sql` covers migrated idempotency, locale, retries, status, and function grants.
 
 #### TASK-104: Add a professional role-claim workflow
 
