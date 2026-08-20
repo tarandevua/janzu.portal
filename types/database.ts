@@ -117,6 +117,128 @@ export type Database = {
         };
         Relationships: [];
       };
+      email_preferences: {
+        Row: {
+          user_id: string;
+          preference_key: Database["public"]["Enums"]["email_preference_key"];
+          enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          preference_key: Database["public"]["Enums"]["email_preference_key"];
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          preference_key?: Database["public"]["Enums"]["email_preference_key"];
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      transactional_email_events: {
+        Row: {
+          id: string;
+          event_type: Database["public"]["Enums"]["transactional_email_event_type"];
+          event_key: string;
+          metadata: Json;
+          occurred_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_type: Database["public"]["Enums"]["transactional_email_event_type"];
+          event_key: string;
+          metadata?: Json;
+          occurred_at: string;
+          created_at?: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
+      transactional_email_deliveries: {
+        Row: {
+          id: string;
+          event_id: string;
+          recipient_user_id: string;
+          recipient_email: string;
+          recipient_name: string | null;
+          locale: "en" | "es";
+          template_key: Database["public"]["Enums"]["transactional_email_event_type"];
+          template_version: string;
+          destination_path: string;
+          idempotency_key: string;
+          required: boolean;
+          preference_key: Database["public"]["Enums"]["email_preference_key"] | null;
+          status: Database["public"]["Enums"]["transactional_email_status"];
+          attempt_count: number;
+          provider_message_id: string | null;
+          failure_code: string | null;
+          failure_message: string | null;
+          last_attempt_at: string | null;
+          next_attempt_at: string | null;
+          provider_accepted_at: string | null;
+          delivered_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          recipient_user_id: string;
+          recipient_email: string;
+          recipient_name?: string | null;
+          locale: "en" | "es";
+          template_key: Database["public"]["Enums"]["transactional_email_event_type"];
+          template_version?: string;
+          destination_path: string;
+          idempotency_key: string;
+          required: boolean;
+          preference_key?: Database["public"]["Enums"]["email_preference_key"] | null;
+          status?: Database["public"]["Enums"]["transactional_email_status"];
+          attempt_count?: number;
+          provider_message_id?: string | null;
+          failure_code?: string | null;
+          failure_message?: string | null;
+          last_attempt_at?: string | null;
+          next_attempt_at?: string | null;
+          provider_accepted_at?: string | null;
+          delivered_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["transactional_email_deliveries"]["Insert"]>;
+        Relationships: [];
+      };
+      transactional_email_attempts: {
+        Row: {
+          id: string;
+          delivery_id: string;
+          attempt_number: number;
+          outcome: "sending" | "provider_accepted" | "retry_scheduled" | "failed_permanent";
+          provider_message_id: string | null;
+          failure_code: string | null;
+          started_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          delivery_id: string;
+          attempt_number: number;
+          outcome: "sending" | "provider_accepted" | "retry_scheduled" | "failed_permanent";
+          provider_message_id?: string | null;
+          failure_code?: string | null;
+          started_at?: string;
+          completed_at?: string | null;
+        };
+        Update: never;
+        Relationships: [];
+      };
       roles: {
         Row: {
           id: string;
@@ -1201,6 +1323,46 @@ export type Database = {
         };
         Returns: undefined;
       };
+      enqueue_transactional_email: {
+        Args: {
+          target_event_type: Database["public"]["Enums"]["transactional_email_event_type"];
+          target_event_key: string;
+          target_event_metadata: Json;
+          target_occurred_at: string;
+          target_recipient_user_id: string;
+          target_locale: "en" | "es";
+          target_template_key: Database["public"]["Enums"]["transactional_email_event_type"];
+          target_template_version: string;
+          target_destination_path: string;
+          target_idempotency_key: string;
+          target_required: boolean;
+          target_preference_key?: Database["public"]["Enums"]["email_preference_key"] | null;
+        };
+        Returns: Database["public"]["Tables"]["transactional_email_deliveries"]["Row"][];
+      };
+      claim_transactional_email_deliveries: {
+        Args: { batch_size?: number };
+        Returns: Database["public"]["Tables"]["transactional_email_deliveries"]["Row"][];
+      };
+      record_transactional_email_result: {
+        Args: {
+          target_delivery_id: string;
+          target_succeeded: boolean;
+          target_provider_message_id?: string | null;
+          target_failure_code?: string | null;
+          target_failure_message?: string | null;
+          target_retryable?: boolean;
+        };
+        Returns: undefined;
+      };
+      record_transactional_email_webhook: {
+        Args: {
+          target_provider_message_id: string;
+          target_event: string;
+          target_failure_code?: string | null;
+        };
+        Returns: undefined;
+      };
       remove_user_role: {
         Args: {
           actor_user_id: string;
@@ -1551,6 +1713,57 @@ export type Database = {
       training_record_status: "claimed" | "verified" | "rejected";
       learning_alliance_action: "accepted" | "revoked";
       onboarding_guide_key: "calendar" | "sessions" | "feedback";
+      email_preference_key:
+        | "session_updates"
+        | "booking_requests"
+        | "feedback_updates"
+        | "supervision_updates"
+        | "certification_decisions";
+      transactional_email_status:
+        | "pending"
+        | "sending"
+        | "provider_accepted"
+        | "delivered"
+        | "retry_scheduled"
+        | "failed_permanent"
+        | "suppressed";
+      transactional_email_event_type:
+        | "session.registered"
+        | "booking.requested"
+        | "feedback.received"
+        | "session.validated"
+        | "session.validation_removed"
+        | "instructor_assignment.requested"
+        | "instructor_assignment.accepted"
+        | "instructor_assignment.declined"
+        | "instructor_assignment.cancelled"
+        | "instructor_assignment.ended"
+        | "instructor_assignment.transferred"
+        | "certification.milestone_25_reached"
+        | "certification.level_2_readiness_approved"
+        | "certification.level_2_readiness_rejected"
+        | "certification.level_2_readiness_revision_required"
+        | "certification.level_2_readiness_overridden"
+        | "certification.milestone_50_reached"
+        | "assessment.readiness_requested"
+        | "assessment.readiness_approved"
+        | "assessment.readiness_rejected"
+        | "assessment.assessor_assigned"
+        | "assessment.scheduled"
+        | "assessment.revision_required"
+        | "assessment.passed"
+        | "assessment.failed"
+        | "assessment.remediation_verified"
+        | "certification.approved"
+        | "certification.suspended"
+        | "certification.revoked"
+        | "certification.reinstated"
+        | "certification.overridden"
+        | "certificate.issued"
+        | "certificate.replaced"
+        | "certificate.revoked"
+        | "role.assigned"
+        | "role.removed";
     };
     CompositeTypes: Record<string, never>;
   };

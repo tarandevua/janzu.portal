@@ -17,6 +17,11 @@ const emailEnvSchema = z.object({
   BREVO_SENDER_NAME: z.string().min(1).default("Janzu Community Portal")
 });
 
+const emailOperationsEnvSchema = z.object({
+  EMAIL_WORKER_SECRET: z.string().min(24),
+  BREVO_WEBHOOK_SECRET: z.string().min(24),
+});
+
 const r2EnvSchema = z.object({
   CLOUDFLARE_R2_ACCOUNT_ID: z.string().min(1),
   CLOUDFLARE_R2_ACCESS_KEY_ID: z.string().min(1),
@@ -47,6 +52,13 @@ export function getEmailEnv() {
     BREVO_API_KEY: process.env.BREVO_API_KEY,
     BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL,
     BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME
+  });
+}
+
+export function getEmailOperationsEnv() {
+  return emailOperationsEnvSchema.parse({
+    EMAIL_WORKER_SECRET: process.env.EMAIL_WORKER_SECRET,
+    BREVO_WEBHOOK_SECRET: process.env.BREVO_WEBHOOK_SECRET,
   });
 }
 

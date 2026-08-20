@@ -895,6 +895,19 @@
     "spanish": "Spanish",
     "system": "System",
     "light": "Light",
-    "dark": "Dark"
+    "dark": "Dark",
+    "emailTitle": "Email notifications",
+    "emailDescription": "Choose which optional workflow updates are also sent by email. In-app notifications stay on.",
+    "requiredEmailNotice": "Account access, trusted authorization, certification, certificate, and role emails are required and cannot be turned off.",
+    "sessionUpdates": "Session updates",
+    "bookingRequests": "Booking requests",
+    "feedbackUpdates": "Feedback updates",
+    "supervisionUpdates": "Instructor relationship updates",
+    "certificationDecisions": "Certification decisions for people you support",
+    "saveEmailPreferences": "Save email preferences",
+    "emailPreferencesSaved": "Email preferences saved.",
+    "emailPreferencesInvalid": "Email preferences could not be saved. Review the options and try again.",
+    "emailPreferencesFailed": "Email preferences are temporarily unavailable. Try again.",
+    "savingEmailPreferences": "Saving email preferences..."
   }
 }

@@ -895,6 +895,19 @@
     "spanish": "Espanol",
     "system": "Sistema",
     "light": "Claro",
-    "dark": "Oscuro"
+    "dark": "Oscuro",
+    "emailTitle": "Notificaciones por correo",
+    "emailDescription": "Elige qué actualizaciones opcionales de los flujos también se envían por correo. Las notificaciones del portal siguen activas.",
+    "requiredEmailNotice": "Los correos sobre acceso a la cuenta, autorizaciones de confianza, certificación, certificados y roles son obligatorios y no se pueden desactivar.",
+    "sessionUpdates": "Actualizaciones de sesiones",
+    "bookingRequests": "Solicitudes de reserva",
+    "feedbackUpdates": "Actualizaciones de feedback",
+    "supervisionUpdates": "Actualizaciones de la relación con el Instructor",
+    "certificationDecisions": "Decisiones de certificación de las personas que apoyas",
+    "saveEmailPreferences": "Guardar preferencias de correo",
+    "emailPreferencesSaved": "Se guardaron las preferencias de correo.",
+    "emailPreferencesInvalid": "No se pudieron guardar las preferencias de correo. Revisa las opciones e inténtalo de nuevo.",
+    "emailPreferencesFailed": "Las preferencias de correo no están disponibles temporalmente. Inténtalo de nuevo.",
+    "savingEmailPreferences": "Guardando preferencias de correo..."
   }
 }

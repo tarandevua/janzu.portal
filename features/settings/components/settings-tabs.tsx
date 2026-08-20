@@ -38,6 +38,7 @@ type SettingsTabsProps = {
   canManageAdminSettings: boolean;
   dictionary: SettingsDictionary;
   adminSettings?: ReactNode;
+  emailPreferences: ReactNode;
 };
 
 function buildLocalizedPath(pathname: string, locale: Locale, searchParams: URLSearchParams) {
@@ -64,6 +65,7 @@ export function SettingsTabs({
   canManageAdminSettings,
   dictionary,
   adminSettings,
+  emailPreferences,
 }: SettingsTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -142,6 +144,7 @@ export function SettingsTabs({
             </div>
           </CardContent>
         </Card>
+        <div className="mt-4">{emailPreferences}</div>
       </TabsContent>
 
       {canManageAdminSettings ? (

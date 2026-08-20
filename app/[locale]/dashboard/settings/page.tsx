@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { SettingsTabs } from "@/features/settings/components/settings-tabs";
+import { EmailPreferencesForm } from "@/features/settings/components/email-preferences-form";
 import { AuthSettingsForm } from "@/features/user-management/components/auth-settings-form";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getAdminAuthSettings } from "@/server/services/platform-settings.service";
+import { getMyEmailPreferences } from "@/server/services/transactional-email.service";
 import { getPrimaryRole, getRoleAccessList, hasAnyRole } from "@/server/services/rbac.service";
 
 type SettingsPageProps = {
@@ -34,9 +36,10 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
   }
 
   const canManageAdminSettings = hasAnyRole(roles, ["admin"]);
-  const authSettings = canManageAdminSettings
-    ? await getAdminAuthSettings(supabase, data.user.id)
-    : null;
+  const [authSettings, emailPreferences] = await Promise.all([
+    canManageAdminSettings ? getAdminAuthSettings(supabase, data.user.id) : null,
+    getMyEmailPreferences(supabase, data.user.id),
+  ]);
 
   return (
     <JanzuDashboardFrame
@@ -65,6 +68,14 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
                   dictionary={dictionary.userManagement}
                 />
               ) : null
+            }
+            emailPreferences={
+              <EmailPreferencesForm
+                locale={locale}
+                preferences={emailPreferences}
+                status={status}
+                dictionary={dictionary.settings}
+              />
             }
           />
         </div>

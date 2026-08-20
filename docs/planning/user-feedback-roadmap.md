@@ -379,7 +379,7 @@ Decide:
 
 #### TASK-502: Build transactional email infrastructure
 
-**Status:** Ready
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** TASK-501
 
@@ -390,6 +390,8 @@ Decide:
 - Failures are recorded and retryable.
 - Sensitive feedback text is not embedded in email.
 - Links target authorized portal records.
+
+**Verification:** The forward-only outbox migration, service-role-only enqueue/worker/webhook boundaries, typed English/Spanish templates, private optional preference management, retry attempts, delivery states, automated coverage, and operational documentation are implemented. Repository validation and isolated migrated-database SQL/RLS verification pass; deployment migration and provider configuration remain operational steps.
 
 ### Stage 6 — Veteran community onboarding
 

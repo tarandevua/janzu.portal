@@ -25,6 +25,7 @@ type BrevoEmail = {
   subject: string;
   htmlContent: string;
   textContent: string;
+  deliveryId?: string;
 };
 
 export class EmailDeliveryError extends Error {
@@ -84,6 +85,7 @@ async function sendBrevoEmail(email: BrevoEmail) {
         subject: email.subject,
         htmlContent: email.htmlContent,
         textContent: email.textContent,
+        ...(email.deliveryId ? { tags: [`delivery:${email.deliveryId}`] } : {}),
       }),
     });
   } catch {
@@ -109,6 +111,10 @@ async function sendBrevoEmail(email: BrevoEmail) {
     messageId?: unknown;
   } | null;
   return typeof result?.messageId === "string" ? result.messageId : null;
+}
+
+export function sendTransactionalEmailMessage(input: BrevoEmail & { deliveryId: string }) {
+  return sendBrevoEmail(input);
 }
 
 export async function sendInviteEmail({
