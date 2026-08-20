@@ -9,6 +9,13 @@ import {
 } from "@/server/repositories/client.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 
+export class PractitionerProfileRequiredError extends Error {
+  constructor() {
+    super("Practitioner profile is required before managing session participants.");
+    this.name = "PractitionerProfileRequiredError";
+  }
+}
+
 export async function requirePractitionerId(
   supabase: SupabaseServerClient,
   userId: string
@@ -16,7 +23,7 @@ export async function requirePractitionerId(
   const profile = await getPractitionerProfileByUserId(supabase, userId);
 
   if (!profile) {
-    throw new Error("Practitioner profile is required before managing session participants.");
+    throw new PractitionerProfileRequiredError();
   }
 
   return profile.id;
