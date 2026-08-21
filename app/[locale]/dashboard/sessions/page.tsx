@@ -2,6 +2,7 @@ import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import { PractitionerProfileRequiredAlert } from "@/components/dashboard/practitioner-profile-required-alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SessionRequestList } from "@/features/session-requests/components/session-request-list";
 import { AdminSessionList } from "@/features/sessions/components/admin-session-list";
@@ -203,9 +204,7 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
     redirect(`/${locale}/dashboard`);
   }
 
-  if (!practitioner && !canReviewAllSessions) {
-    redirect(`/${locale}/dashboard/profile`);
-  }
+  const practitionerProfileRequired = !practitioner && !canReviewAllSessions;
 
   const availableTabValues: SessionDashboardTab[] = [
     ...(canUseSessionHistory && practitioner ? (["history"] as const) : []),
@@ -275,27 +274,36 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          {practitioner ? (
-            <div className="flex justify-end">
-              <DashboardActionDrawer
-                title={dictionary.sessions.formTitle}
-                description={dictionary.sessions.formDescription}
-                triggerLabel={dictionary.sessions.formTitle}
-                cancelLabel={dictionary.common.cancel}
-                closeLabel={dictionary.common.close}
-                defaultOpen={shouldOpenCreateDrawer}
-              >
-                <SessionForm
-                  locale={locale}
-                  clients={clients}
-                  status={status}
-                  variant="plain"
-                  dictionary={dictionary.sessions}
-                />
-              </DashboardActionDrawer>
-            </div>
-          ) : null}
-          <SessionDashboardTabs
+          {practitionerProfileRequired ? (
+            <PractitionerProfileRequiredAlert
+              href={`/${locale}/dashboard/profile`}
+              title={dictionary.clients.profileRequiredTitle}
+              description={dictionary.clients.profileRequiredDescription}
+              actionLabel={dictionary.clients.profileRequiredAction}
+            />
+          ) : (
+            <>
+              {practitioner ? (
+                <div className="flex justify-end">
+                  <DashboardActionDrawer
+                    title={dictionary.sessions.formTitle}
+                    description={dictionary.sessions.formDescription}
+                    triggerLabel={dictionary.sessions.formTitle}
+                    cancelLabel={dictionary.common.cancel}
+                    closeLabel={dictionary.common.close}
+                    defaultOpen={shouldOpenCreateDrawer}
+                  >
+                    <SessionForm
+                      locale={locale}
+                      clients={clients}
+                      status={status}
+                      variant="plain"
+                      dictionary={dictionary.sessions}
+                    />
+                  </DashboardActionDrawer>
+                </div>
+              ) : null}
+              <SessionDashboardTabs
             activeTab={activeTab}
             tabs={{
               ...(canUseSessionHistory && practitioner
@@ -396,7 +404,9 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
                   }
                 : {}),
             }}
-          />
+              />
+            </>
+          )}
         </div>
       </div>
     </JanzuDashboardFrame>

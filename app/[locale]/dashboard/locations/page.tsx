@@ -2,6 +2,7 @@ import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import { PractitionerProfileRequiredAlert } from "@/components/dashboard/practitioner-profile-required-alert";
 import { DeletedLocationList } from "@/features/locations/components/deleted-location-list";
 import {
   LocationDashboardTabs,
@@ -71,9 +72,7 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
     redirect(`/${locale}/dashboard`);
   }
 
-  if (!practitioner && !canApproveLocations) {
-    redirect(`/${locale}/dashboard/profile`);
-  }
+  const practitionerProfileRequired = !practitioner && !canApproveLocations;
 
   const [myLocations, reviewLocations, deletedLocations] = await Promise.all([
     practitioner ? listMyLocations(supabase, data.user.id) : Promise.resolve([]),
@@ -147,26 +146,37 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          {practitioner ? (
-            <div className="flex justify-end">
-              <DashboardActionDrawer
-                title={dictionary.locations.formTitle}
-                description={dictionary.locations.formDescription}
-                triggerLabel={dictionary.locations.formTitle}
-                cancelLabel={dictionary.common.cancel}
-                closeLabel={dictionary.common.close}
-                defaultOpen={shouldOpenCreateDrawer}
-              >
-                <LocationForm
-                  locale={locale}
-                  status={status}
-                  variant="plain"
-                  dictionary={dictionary.locations}
-                />
-              </DashboardActionDrawer>
-            </div>
-          ) : null}
-          <LocationDashboardTabs activeTab={activeTab} tabs={availableTabs} />
+          {practitionerProfileRequired ? (
+            <PractitionerProfileRequiredAlert
+              href={`/${locale}/dashboard/profile`}
+              title={dictionary.clients.profileRequiredTitle}
+              description={dictionary.clients.profileRequiredDescription}
+              actionLabel={dictionary.clients.profileRequiredAction}
+            />
+          ) : (
+            <>
+              {practitioner ? (
+                <div className="flex justify-end">
+                  <DashboardActionDrawer
+                    title={dictionary.locations.formTitle}
+                    description={dictionary.locations.formDescription}
+                    triggerLabel={dictionary.locations.formTitle}
+                    cancelLabel={dictionary.common.cancel}
+                    closeLabel={dictionary.common.close}
+                    defaultOpen={shouldOpenCreateDrawer}
+                  >
+                    <LocationForm
+                      locale={locale}
+                      status={status}
+                      variant="plain"
+                      dictionary={dictionary.locations}
+                    />
+                  </DashboardActionDrawer>
+                </div>
+              ) : null}
+              <LocationDashboardTabs activeTab={activeTab} tabs={availableTabs} />
+            </>
+          )}
         </div>
       </div>
     </JanzuDashboardFrame>

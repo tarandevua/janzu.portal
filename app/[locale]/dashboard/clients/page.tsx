@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { PractitionerProfileRequiredAlert } from "@/components/dashboard/practitioner-profile-required-alert";
 import { ClientCreateDrawer } from "@/features/clients/components/client-create-drawer";
 import { ClientList } from "@/features/clients/components/client-list";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -90,19 +88,12 @@ export default async function ClientsPage({ params, searchParams }: ClientsPageP
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
           {!clientsPageData ? (
-            <Alert>
-              <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <span>
-                  <strong>{dictionary.clients.profileRequiredTitle}</strong>{" "}
-                  {dictionary.clients.profileRequiredDescription}
-                </span>
-                <Button asChild size="sm">
-                  <Link href={`/${locale}/dashboard/profile`}>
-                    {dictionary.clients.profileRequiredAction}
-                  </Link>
-                </Button>
-              </AlertDescription>
-            </Alert>
+            <PractitionerProfileRequiredAlert
+              href={`/${locale}/dashboard/profile`}
+              title={dictionary.clients.profileRequiredTitle}
+              description={dictionary.clients.profileRequiredDescription}
+              actionLabel={dictionary.clients.profileRequiredAction}
+            />
           ) : (
             <>
               <div className="flex justify-end">

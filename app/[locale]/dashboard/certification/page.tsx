@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
+import { PractitionerProfileRequiredAlert } from "@/components/dashboard/practitioner-profile-required-alert";
 import { CertificationApprovalQueue } from "@/features/certification/components/certification-approval-queue";
 import { CertificationProgressCard } from "@/features/certification/components/certification-progress-card";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -42,9 +43,7 @@ export default async function CertificationPage({ params, searchParams }: Certif
     redirect(`/${locale}/dashboard`);
   }
 
-  if (!practitioner && !canApproveCertifications) {
-    redirect(`/${locale}/dashboard/profile`);
-  }
+  const practitionerProfileRequired = !practitioner && !canApproveCertifications;
 
   const [progress, approvalCandidates] = await Promise.all([
     practitioner
@@ -69,17 +68,31 @@ export default async function CertificationPage({ params, searchParams }: Certif
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          {progress ? (
-            <CertificationProgressCard progress={progress} dictionary={dictionary.certification} />
-          ) : null}
-          {canApproveCertifications ? (
-            <CertificationApprovalQueue
-              locale={locale}
-              candidates={approvalCandidates}
-              status={status}
-              dictionary={dictionary.certification}
+          {practitionerProfileRequired ? (
+            <PractitionerProfileRequiredAlert
+              href={`/${locale}/dashboard/profile`}
+              title={dictionary.clients.profileRequiredTitle}
+              description={dictionary.clients.profileRequiredDescription}
+              actionLabel={dictionary.clients.profileRequiredAction}
             />
-          ) : null}
+          ) : (
+            <>
+              {progress ? (
+                <CertificationProgressCard
+                  progress={progress}
+                  dictionary={dictionary.certification}
+                />
+              ) : null}
+              {canApproveCertifications ? (
+                <CertificationApprovalQueue
+                  locale={locale}
+                  candidates={approvalCandidates}
+                  status={status}
+                  dictionary={dictionary.certification}
+                />
+              ) : null}
+            </>
+          )}
         </div>
       </div>
     </JanzuDashboardFrame>
