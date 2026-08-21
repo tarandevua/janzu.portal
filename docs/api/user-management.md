@@ -59,6 +59,10 @@ The invite flow:
 - Assigns the selected portal role.
 - Sends the invite email through Brevo transactional email.
 
+From user details, an Administrator can resend an invitation while both the portal
+activation timestamp and Supabase Auth last-sign-in timestamp are empty. Eligibility
+is checked again on the server before a fresh one-time magic link is sent through Brevo.
+
 Required server environment:
 
 ```bash

@@ -12,6 +12,7 @@ export type ManagedUser = {
   email: string;
   fullName: string | null;
   createdAt: string;
+  canResendInvite: boolean;
   roles: Role[];
   practitionerId: string | null;
   practitionerIsPublic: boolean | null;

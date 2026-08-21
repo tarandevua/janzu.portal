@@ -3,6 +3,7 @@ import {
   authSettingsSchema,
   userPublicProfileSchema,
   userInviteSchema,
+  userInviteResendSchema,
   userRoleMutationSchema,
 } from "@/server/validators/user-management.schema";
 
@@ -45,6 +46,16 @@ describe("userInviteSchema", () => {
         role: "practitioner",
       })
     ).toThrow();
+  });
+});
+
+describe("userInviteResendSchema", () => {
+  it("accepts only a valid target user ID", () => {
+    expect(userInviteResendSchema.parse({
+      userId: "38ec640a-d72b-4c27-944e-3ff5e63d4b9c",
+    }).userId).toBe("38ec640a-d72b-4c27-944e-3ff5e63d4b9c");
+
+    expect(() => userInviteResendSchema.parse({ userId: "invalid" })).toThrow();
   });
 });
 

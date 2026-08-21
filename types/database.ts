@@ -1281,6 +1281,7 @@ export type Database = {
           email: string;
           full_name: string | null;
           created_at: string;
+          can_resend_invite: boolean;
           roles: ("admin" | "instructor" | "facilitator" | "practitioner" | "apprentice")[];
           practitioner_id: string | null;
           practitioner_is_public: boolean | null;

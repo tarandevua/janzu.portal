@@ -23,6 +23,16 @@ type PractitionerVisibilityRpcClient = {
   ): Promise<{ error: { message: string } | null }>;
 };
 
+export class UserInviteResendError extends Error {
+  constructor(
+    message: string,
+    readonly code: "not_eligible" | "link_generation_failed"
+  ) {
+    super(message);
+    this.name = "UserInviteResendError";
+  }
+}
+
 export async function listUsersForManagement(
   supabase: SupabaseServerClient,
   actorUserId: string,
@@ -159,5 +169,90 @@ export async function inviteManagedUser(
     toName: input.fullName,
     inviteUrl,
     roleLabel: input.roleLabel,
+  });
+}
+
+export async function resendManagedUserInvite(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  targetUserId: string,
+  fallbackLocale: Locale
+) {
+  const actorRoles = await listUserRoles(supabase, actorUserId);
+
+  if (!hasPermission(actorRoles, "users:manage")) {
+    throw new Error("User management access is required.");
+  }
+
+  const admin = createSupabaseAdminClient();
+  const [targetResult, authResult, targetRoles] = await Promise.all([
+    admin
+      .from("users")
+      .select("email, full_name, preferred_locale, activated_at, is_deleted")
+      .eq("id", targetUserId)
+      .maybeSingle(),
+    admin.auth.admin.getUserById(targetUserId),
+    listUserRoles(supabase, targetUserId),
+  ]);
+
+  if (targetResult.error) {
+    throw new Error(targetResult.error.message);
+  }
+
+  if (authResult.error) {
+    throw new UserInviteResendError(
+      authResult.error.message,
+      "link_generation_failed"
+    );
+  }
+
+  const target = targetResult.data;
+  const authUser = authResult.data.user;
+
+  if (
+    !target
+    || target.is_deleted
+    || target.activated_at
+    || authUser.last_sign_in_at
+  ) {
+    throw new UserInviteResendError(
+      "Only unused, unactivated accounts can receive another invite.",
+      "not_eligible"
+    );
+  }
+
+  const email = (authUser.email ?? target.email).trim().toLowerCase();
+  const locale = target.preferred_locale ?? fallbackLocale;
+  const env = getClientEnv();
+  const siteUrl = env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+  const redirectTo = `${siteUrl}/${locale}/auth/callback?locale=${locale}`;
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "magiclink",
+    email,
+    options: { redirectTo },
+  });
+
+  if (linkError) {
+    throw new UserInviteResendError(linkError.message, "link_generation_failed");
+  }
+
+  const tokenHash = linkData.properties?.hashed_token;
+  const verificationType = linkData.properties?.verification_type;
+  const inviteUrl = tokenHash && verificationType === "magiclink"
+    ? `${redirectTo}&token_hash=${encodeURIComponent(tokenHash)}&type=${verificationType}`
+    : null;
+
+  if (!inviteUrl) {
+    throw new UserInviteResendError(
+      "Invite link could not be generated.",
+      "link_generation_failed"
+    );
+  }
+
+  await sendInviteEmail({
+    toEmail: email,
+    toName: target.full_name,
+    inviteUrl,
+    roleLabel: targetRoles.join(", ") || "member",
   });
 }

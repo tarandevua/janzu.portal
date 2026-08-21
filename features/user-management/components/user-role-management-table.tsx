@@ -4,7 +4,8 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useState, useTransition, type FormEvent, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
-import { EyeIcon, PlusIcon, XIcon } from "lucide-react";
+import { EyeIcon, MailIcon, PlusIcon, XIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,6 +47,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   assignUserRole,
   removeUserRole,
+  resendUserInvite,
   updateUserPublicProfile,
 } from "@/features/user-management/actions";
 import type { Locale } from "@/lib/i18n/config";
@@ -67,6 +69,8 @@ type UserManagementDictionary = {
   close: string;
   detailsTitle: string;
   detailsDescription: string;
+  resendInvite: string;
+  resendSending: string;
   userId: string;
   practitionerProfile: string;
   profileStatus: string;
@@ -104,6 +108,13 @@ type UserManagementDictionary = {
   empty: string;
   assigned: string;
   removed: string;
+  resent: string;
+  resendFailed: string;
+  resendNotEligible: string;
+  resendEmailNotConfigured: string;
+  resendProviderUnavailable: string;
+  resendProviderRejected: string;
+  resendLinkFailed: string;
   publicProfileUpdated: string;
   publicProfileInvalid: string;
   invalid: string;
@@ -142,6 +153,59 @@ function DetailItem({ label, value }: { label: string; value: string | number })
       <dt className="text-xs font-medium uppercase text-muted-foreground">{label}</dt>
       <dd className="break-words text-sm font-medium">{value}</dd>
     </div>
+  );
+}
+
+function ResendInviteButton({
+  locale,
+  userId,
+  dictionary,
+}: {
+  locale: Locale;
+  userId: string;
+  dictionary: UserManagementDictionary;
+}) {
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const toastId = toast.loading(dictionary.resendSending);
+
+    startTransition(() => {
+      void resendUserInvite(locale, formData)
+        .then((result) => {
+          if (result.ok) {
+            toast.success(dictionary.resent, { id: toastId });
+            return;
+          }
+
+          const message = {
+            invalid: dictionary.resendFailed,
+            "not-eligible": dictionary.resendNotEligible,
+            "email-not-configured": dictionary.resendEmailNotConfigured,
+            "provider-unavailable": dictionary.resendProviderUnavailable,
+            "provider-rejected": dictionary.resendProviderRejected,
+            "link-generation-failed": dictionary.resendLinkFailed,
+            error: dictionary.resendFailed,
+          }[result.status];
+
+          toast.error(message, { id: toastId });
+        })
+        .catch(() => {
+          toast.error(dictionary.resendFailed, { id: toastId });
+        });
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="hidden" name="userId" value={userId} />
+      <Button type="submit" variant="outline" disabled={isPending}>
+        <MailIcon className="h-4 w-4" />
+        {isPending ? dictionary.resendSending : dictionary.resendInvite}
+      </Button>
+    </form>
   );
 }
 
@@ -291,6 +355,13 @@ function UserDetailsDrawer({
                   {dictionary.assignRole}
                 </Button>
               </form>
+              {managedUser.canResendInvite ? (
+                <ResendInviteButton
+                  locale={locale}
+                  userId={managedUser.userId}
+                  dictionary={dictionary}
+                />
+              ) : null}
             </section>
 
             <section className="grid gap-3">

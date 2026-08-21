@@ -37,6 +37,7 @@ function toManagedUser(row: ManagedUserRow): ManagedUser {
     email: row.email,
     fullName: row.full_name,
     createdAt: row.created_at,
+    canResendInvite: row.can_resend_invite,
     roles: normalizeRoles(row.roles),
     practitionerId: row.practitioner_id,
     practitionerIsPublic: row.practitioner_is_public,
