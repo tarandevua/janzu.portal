@@ -4,7 +4,7 @@ TASK-502 implements the reusable outbox contract from DEC-06. Later workflow tas
 
 ## Internal processing endpoint
 
-`POST /api/internal/email/process` claims up to ten due deliveries with `FOR UPDATE SKIP LOCKED`, sends the typed localized template, and records provider acceptance or a normalized failure. It requires `Authorization: Bearer <EMAIL_WORKER_SECRET>` and is intended for a private scheduler. Repeated calls reuse the original delivery and its database-unique idempotency key.
+`POST /api/internal/email/process` claims up to ten due deliveries with `FOR UPDATE SKIP LOCKED`, sends the typed localized template, and records provider acceptance or a normalized failure. It requires `Authorization: Bearer <EMAIL_WORKER_SECRET>` and is intended for a private scheduler. Repeated calls reuse the original delivery, and the delivery UUID is sent to Brevo as its provider idempotency key. A delivery abandoned in `sending` is reclaimable after ten minutes so the retry remains inside Brevo's provider-idempotency window.
 
 Retryable failures are scheduled after approximately 1 minute, 5 minutes, 30 minutes, 2 hours, and 12 hours, with six total attempts. Permanent provider rejection is not retried.
 

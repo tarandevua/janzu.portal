@@ -85,7 +85,12 @@ async function sendBrevoEmail(email: BrevoEmail) {
         subject: email.subject,
         htmlContent: email.htmlContent,
         textContent: email.textContent,
-        ...(email.deliveryId ? { tags: [`delivery:${email.deliveryId}`] } : {}),
+        ...(email.deliveryId
+          ? {
+              headers: { idempotencyKey: email.deliveryId },
+              tags: [`delivery:${email.deliveryId}`],
+            }
+          : {}),
       }),
     });
   } catch {

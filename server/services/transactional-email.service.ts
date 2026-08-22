@@ -72,6 +72,8 @@ function toFailureResult(error: unknown): TransactionalEmailResult {
 
 async function deliverOne(delivery: TransactionalEmailDelivery) {
   const admin = createSupabaseAdminClient();
+  let result: TransactionalEmailResult;
+
   try {
     const siteUrl = getEmailEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
     const template = buildTransactionalEmailTemplate({
@@ -81,37 +83,30 @@ async function deliverOne(delivery: TransactionalEmailDelivery) {
       destinationUrl: `${siteUrl}${delivery.destinationPath}`,
       metadata: delivery.eventMetadata,
     });
-    const providerMessageId = normalizeProviderMessageId(
-      await sendTransactionalEmailMessage({
-        toEmail: delivery.recipientEmail,
-        toName: delivery.recipientName ?? delivery.recipientEmail,
-        deliveryId: delivery.id,
-        ...template,
-      })
-    );
-    await recordTransactionalEmailResult(admin, delivery.id, {
+    result = {
       succeeded: true,
-      providerMessageId,
-    });
-    console.info({
-      eventType: delivery.eventType,
-      deliveryId: delivery.id,
-      recipientUserId: delivery.recipientUserId,
-      attempt: delivery.attemptCount,
-      outcome: "provider_accepted",
-    });
+      providerMessageId: normalizeProviderMessageId(
+        await sendTransactionalEmailMessage({
+          toEmail: delivery.recipientEmail,
+          toName: delivery.recipientName ?? delivery.recipientEmail,
+          deliveryId: delivery.id,
+          ...template,
+        })
+      ),
+    };
   } catch (error) {
-    const result = toFailureResult(error);
-    await recordTransactionalEmailResult(admin, delivery.id, result);
-    console.info({
-      eventType: delivery.eventType,
-      deliveryId: delivery.id,
-      recipientUserId: delivery.recipientUserId,
-      attempt: delivery.attemptCount,
-      outcome: result.succeeded ? "provider_accepted" : "failed",
-      ...(!result.succeeded ? { failureCode: result.failureCode } : {}),
-    });
+    result = toFailureResult(error);
   }
+
+  await recordTransactionalEmailResult(admin, delivery.id, result);
+  console.info({
+    eventType: delivery.eventType,
+    deliveryId: delivery.id,
+    recipientUserId: delivery.recipientUserId,
+    attempt: delivery.attemptCount,
+    outcome: result.succeeded ? "provider_accepted" : "failed",
+    ...(!result.succeeded ? { failureCode: result.failureCode } : {}),
+  });
 }
 
 export async function processTransactionalEmailBatch(batchSize = 10) {

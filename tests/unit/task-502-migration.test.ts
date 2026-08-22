@@ -6,6 +6,13 @@ const migration = readFileSync(
   resolve(process.cwd(), "supabase/migrations/202608200001_transactional_email_infrastructure.sql"),
   "utf8"
 );
+const idempotencyWindowMigration = readFileSync(
+  resolve(
+    process.cwd(),
+    "supabase/migrations/202608220001_transactional_email_idempotency_window.sql"
+  ),
+  "utf8"
+);
 
 describe("TASK-502 migration", () => {
   it("enforces durable idempotency, retries, and suppression", () => {
@@ -21,5 +28,11 @@ describe("TASK-502 migration", () => {
     expect(migration).toContain("Members can update their email preferences");
     expect(migration).toContain("from public, anon, authenticated");
     expect(migration).toContain("to service_role");
+  });
+
+  it("reclaims abandoned sends before provider idempotency expires", () => {
+    expect(idempotencyWindowMigration).toContain("interval '10 minutes'");
+    expect(idempotencyWindowMigration).not.toContain("interval '15 minutes'");
+    expect(idempotencyWindowMigration).toContain("for update skip locked");
   });
 });

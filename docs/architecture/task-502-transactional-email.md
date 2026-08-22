@@ -16,6 +16,6 @@ Every destination is relative to the configured portal origin and must identify 
 
 ## Failure and remediation
 
-The worker distinguishes provider acceptance from verified delivery. Network, rate-limit, server, deferred, and soft-bounce outcomes reuse the same row and follow the approved backoff. Invalid, blocked, spam, hard-bounce, unsubscribe, validation, and configuration failures become permanent.
+The worker distinguishes provider acceptance from verified delivery. Network, rate-limit, server, deferred, and soft-bounce outcomes reuse the same row and follow the approved backoff. Every provider submission uses the durable delivery UUID as Brevo's idempotency key, and an abandoned `sending` lease is reclaimed after ten minutes. Invalid, blocked, spam, hard-bounce, unsubscribe, validation, and configuration failures become permanent.
 
 To remediate a deployment, disable the scheduler, retain all outbox rows, correct configuration or code, and resume claims. Do not delete or recreate delivery rows. Reversing the schema is intentionally not automated because it would destroy operational and idempotency history.
