@@ -881,6 +881,7 @@
     "publicProfileUpdated": "Visibilidad del perfil actualizada.",
     "publicProfileInvalid": "No se pudo actualizar la visibilidad del perfil.",
     "invited": "Invitacion enviada.",
+    "inviteCreatedEmailFailed": "El usuario fue creado, pero no se pudo enviar el correo de invitacion. Contacta con soporte tecnico para resolver el problema del correo.",
     "inviteFailed": "No se pudo enviar la invitacion. Intentalo de nuevo.",
     "invalid": "No se pudo procesar ese cambio de rol.",
     "inviteInvalid": "No se pudo enviar esa invitacion. Revisa el correo y el rol.",

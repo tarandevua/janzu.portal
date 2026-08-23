@@ -105,7 +105,7 @@ export async function updateUserPublicProfile(locale: Locale, formData: FormData
 
 export type InviteUserResult =
   | { ok: true; status: "invited" }
-  | { ok: false; status: "invalid" | "error" };
+  | { ok: false; status: "invalid" | "created-email-failed" | "error" };
 
 export async function inviteUser(
   locale: Locale,
@@ -136,7 +136,14 @@ export async function inviteUser(
       locale,
       roleLabel: parsed.data.role,
     });
-  } catch {
+  } catch (error) {
+    if (
+      error instanceof EmailDeliveryError
+      && error.code === "email_provider_http_401"
+    ) {
+      return { ok: false, status: "created-email-failed" };
+    }
+
     return { ok: false, status: "error" };
   }
 

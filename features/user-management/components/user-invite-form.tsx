@@ -29,6 +29,7 @@ type UserInviteFormProps = {
     assignRole: string;
     invite: string;
     invited: string;
+    inviteCreatedEmailFailed: string;
     inviteInvalid: string;
     inviteFailed: string;
     roleLabels: Record<Role, string>;
@@ -56,6 +57,12 @@ export function UserInviteForm({
 
       if (result.ok) {
         toast.success(dictionary.invited);
+        form.reset();
+        return;
+      }
+
+      if (result.status === "created-email-failed") {
+        toast.warning(dictionary.inviteCreatedEmailFailed);
         form.reset();
         return;
       }
