@@ -164,6 +164,11 @@ export async function inviteManagedUser(
   }
 
   await assignRoleToUser(supabase, actorUserId, targetUserId, input.role);
+
+  if (!existingUser && input.role !== "apprentice") {
+    await removeRoleFromUser(supabase, actorUserId, targetUserId, "apprentice");
+  }
+
   await sendInviteEmail({
     toEmail: normalizedEmail,
     toName: input.fullName,
