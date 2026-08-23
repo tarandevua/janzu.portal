@@ -18,28 +18,32 @@ import type { Locale } from "@/lib/i18n/config";
 import { roles, type Role } from "@/server/models/rbac.model";
 import { canManageUserRole } from "@/server/services/rbac.service";
 
+export type UserInviteDictionary = {
+  inviteTitle: string;
+  inviteDescription: string;
+  fullName: string;
+  email: string;
+  assignRole: string;
+  invite: string;
+  invited: string;
+  inviteCreatedEmailFailed: string;
+  inviteInvalid: string;
+  inviteFailed: string;
+  roleLabels: Record<Role, string>;
+};
+
 type UserInviteFormProps = {
   locale: Locale;
   actorRoles: Role[];
-  dictionary: {
-    inviteTitle: string;
-    inviteDescription: string;
-    fullName: string;
-    email: string;
-    assignRole: string;
-    invite: string;
-    invited: string;
-    inviteCreatedEmailFailed: string;
-    inviteInvalid: string;
-    inviteFailed: string;
-    roleLabels: Record<Role, string>;
-  };
+  dictionary: UserInviteDictionary;
+  onUserCreated?: () => void;
 };
 
 export function UserInviteForm({
   locale,
   actorRoles,
   dictionary,
+  onUserCreated,
 }: UserInviteFormProps) {
   const action = inviteUser.bind(null, locale);
   const [isPending, setIsPending] = useState(false);
@@ -58,12 +62,14 @@ export function UserInviteForm({
       if (result.ok) {
         toast.success(dictionary.invited);
         form.reset();
+        onUserCreated?.();
         return;
       }
 
       if (result.status === "created-email-failed") {
         toast.warning(dictionary.inviteCreatedEmailFailed);
         form.reset();
+        onUserCreated?.();
         return;
       }
 

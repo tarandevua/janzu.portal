@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
-import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
-import { UserInviteForm } from "@/features/user-management/components/user-invite-form";
+import { UserInviteDrawer } from "@/features/user-management/components/user-invite-drawer";
 import { UserRoleManagementTable } from "@/features/user-management/components/user-role-management-table";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -116,20 +115,14 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
           <div className="flex justify-end">
-            <DashboardActionDrawer
-              title={dictionary.userManagement.inviteTitle}
-              description={dictionary.userManagement.inviteDescription}
-              triggerLabel={dictionary.userManagement.invite}
+            <UserInviteDrawer
+              locale={locale}
+              actorRoles={roles}
+              dictionary={dictionary.userManagement}
               cancelLabel={dictionary.common.cancel}
               closeLabel={dictionary.common.close}
               defaultOpen={shouldOpenCreateDrawer}
-            >
-              <UserInviteForm
-                locale={locale}
-                actorRoles={roles}
-                dictionary={dictionary.userManagement}
-              />
-            </DashboardActionDrawer>
+            />
           </div>
           <UserRoleManagementTable
             locale={locale}
