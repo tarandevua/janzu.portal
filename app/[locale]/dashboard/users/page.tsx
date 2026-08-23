@@ -127,7 +127,6 @@ export default async function UsersPage({ params, searchParams }: UsersPageProps
               <UserInviteForm
                 locale={locale}
                 actorRoles={roles}
-                status={status}
                 dictionary={dictionary.userManagement}
               />
             </DashboardActionDrawer>

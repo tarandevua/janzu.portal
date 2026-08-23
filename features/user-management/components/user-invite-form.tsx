@@ -1,4 +1,8 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
 import { SendIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +21,6 @@ import { canManageUserRole } from "@/server/services/rbac.service";
 type UserInviteFormProps = {
   locale: Locale;
   actorRoles: Role[];
-  status?: string;
   dictionary: {
     inviteTitle: string;
     inviteDescription: string;
@@ -27,6 +30,7 @@ type UserInviteFormProps = {
     invite: string;
     invited: string;
     inviteInvalid: string;
+    inviteFailed: string;
     roleLabels: Record<Role, string>;
   };
 };
@@ -34,50 +38,65 @@ type UserInviteFormProps = {
 export function UserInviteForm({
   locale,
   actorRoles,
-  status,
   dictionary,
 }: UserInviteFormProps) {
   const action = inviteUser.bind(null, locale);
+  const [isPending, setIsPending] = useState(false);
   const assignableRoles = roles.filter((role) => canManageUserRole(actorRoles, role));
   const defaultRole = assignableRoles.includes("apprentice") ? "apprentice" : assignableRoles[0];
 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    setIsPending(true);
+
+    try {
+      const result = await action(new FormData(form));
+
+      if (result.ok) {
+        toast.success(dictionary.invited);
+        form.reset();
+        return;
+      }
+
+      toast.error(result.status === "invalid" ? dictionary.inviteInvalid : dictionary.inviteFailed);
+    } catch {
+      toast.error(dictionary.inviteFailed);
+    } finally {
+      setIsPending(false);
+    }
+  }
+
   return (
-    <>
-        {status === "invited" ? (
-          <p className="mb-4 text-sm font-medium text-emerald-700">{dictionary.invited}</p>
-        ) : null}
-        {status === "invite-invalid" ? (
-          <p className="mb-4 text-sm font-medium text-destructive">{dictionary.inviteInvalid}</p>
-        ) : null}
-        <form action={action} className="grid gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="fullName">{dictionary.fullName}</Label>
-            <Input id="fullName" name="fullName" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">{dictionary.email}</Label>
-            <Input id="email" name="email" type="email" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="role">{dictionary.assignRole}</Label>
-            <Select name="role" defaultValue={defaultRole} required>
-              <SelectTrigger id="role">
-                <SelectValue placeholder={dictionary.assignRole} />
-              </SelectTrigger>
-              <SelectContent>
-                {assignableRoles.map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {dictionary.roleLabels[role]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button type="submit">
-            <SendIcon className="h-4 w-4" />
-            {dictionary.invite}
-          </Button>
-        </form>
-     </>
+    <form onSubmit={handleSubmit} className="grid gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="fullName">{dictionary.fullName}</Label>
+        <Input id="fullName" name="fullName" disabled={isPending} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="email">{dictionary.email}</Label>
+        <Input id="email" name="email" type="email" disabled={isPending} required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="role">{dictionary.assignRole}</Label>
+        <Select name="role" defaultValue={defaultRole} disabled={isPending} required>
+          <SelectTrigger id="role">
+            <SelectValue placeholder={dictionary.assignRole} />
+          </SelectTrigger>
+          <SelectContent>
+            {assignableRoles.map((role) => (
+              <SelectItem key={role} value={role}>
+                {dictionary.roleLabels[role]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <Button type="submit" disabled={isPending}>
+        <SendIcon className="h-4 w-4" />
+        {dictionary.invite}
+      </Button>
+    </form>
   );
 }

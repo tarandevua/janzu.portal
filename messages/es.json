@@ -881,6 +881,7 @@
     "publicProfileUpdated": "Visibilidad del perfil actualizada.",
     "publicProfileInvalid": "No se pudo actualizar la visibilidad del perfil.",
     "invited": "Invitacion enviada.",
+    "inviteFailed": "No se pudo enviar la invitacion. Intentalo de nuevo.",
     "invalid": "No se pudo procesar ese cambio de rol.",
     "inviteInvalid": "No se pudo enviar esa invitacion. Revisa el correo y el rol.",
     "forbidden": "Se requiere acceso de administrador o instructor para gestionar usuarios.",

@@ -881,6 +881,7 @@
     "publicProfileUpdated": "Profile visibility updated.",
     "publicProfileInvalid": "Profile visibility could not be updated.",
     "invited": "Invite sent.",
+    "inviteFailed": "The invitation could not be sent. Please try again.",
     "invalid": "That role change could not be processed.",
     "inviteInvalid": "That invite could not be sent. Check the email and role.",
     "forbidden": "Administrator or instructor access is required to manage users.",

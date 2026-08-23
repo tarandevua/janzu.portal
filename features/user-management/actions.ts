@@ -103,7 +103,14 @@ export async function updateUserPublicProfile(locale: Locale, formData: FormData
   redirect(`/${locale}/dashboard/users?status=public-profile-updated`);
 }
 
-export async function inviteUser(locale: Locale, formData: FormData) {
+export type InviteUserResult =
+  | { ok: true; status: "invited" }
+  | { ok: false; status: "invalid" | "error" };
+
+export async function inviteUser(
+  locale: Locale,
+  formData: FormData
+): Promise<InviteUserResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -120,17 +127,20 @@ export async function inviteUser(locale: Locale, formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/users?status=invite-invalid`);
+    return { ok: false, status: "invalid" };
   }
 
-  await inviteManagedUser(supabase, user.id, {
-    ...parsed.data,
-    locale,
-    roleLabel: parsed.data.role,
-  });
+  try {
+    await inviteManagedUser(supabase, user.id, {
+      ...parsed.data,
+      locale,
+      roleLabel: parsed.data.role,
+    });
+  } catch {
+    return { ok: false, status: "error" };
+  }
 
-  revalidatePath(`/${locale}/dashboard/users`);
-  redirect(`/${locale}/dashboard/users?status=invited`);
+  return { ok: true, status: "invited" };
 }
 
 export type ResendUserInviteResult =
