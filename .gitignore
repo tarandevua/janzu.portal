@@ -5,7 +5,11 @@ dist
 coverage
 .env
 .env*.local
+.env*.import
+.env*.test
 !.env.example
 *.tsbuildinfo
 .DS_Store
 TODO.md
+supabase/.temp
+supabase-backup/

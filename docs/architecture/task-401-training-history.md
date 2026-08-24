@@ -30,4 +30,4 @@ DEC-04 historical recognition requires a two-person process and additional evide
 
 ## Migration
 
-`202608240001_task_401_training_history_read_model.sql` adds an authorized read function without changing existing records. It is forward-only and has no backfill. If remediation is needed, deploy another migration that replaces or revokes the function.
+`202608240001_task_401_training_history_read_model.sql` adds an authorized read function without changing existing records. `202608240002_fix_end_supervision_enum_assignment.sql` forward-fixes the existing TASK-202 relationship-ending RPC required to verify removal of former-Instructor access. Neither migration has a backfill. If remediation is needed, deploy another forward migration that replaces or revokes the affected function.

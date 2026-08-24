@@ -9,6 +9,26 @@ values
   ('14010000-0000-4000-8000-000000000003', 'task-401-unrelated@example.test', '{"full_name":"Unrelated 401"}'::jsonb),
   ('14010000-0000-4000-8000-000000000004', 'task-401-admin@example.test', '{"full_name":"Administrator 401"}'::jsonb);
 
+-- Keep the fixture deterministic even when an environment suppresses or has
+-- not installed the auth.users -> public.users synchronization trigger.
+insert into public.users (id, email, full_name, official_full_name)
+values
+  ('14010000-0000-4000-8000-000000000001', 'task-401-trainee@example.test', 'Trainee 401', 'Trainee 401'),
+  ('14010000-0000-4000-8000-000000000002', 'task-401-instructor@example.test', 'Instructor 401', 'Instructor 401'),
+  ('14010000-0000-4000-8000-000000000003', 'task-401-unrelated@example.test', 'Unrelated 401', 'Unrelated 401'),
+  ('14010000-0000-4000-8000-000000000004', 'task-401-admin@example.test', 'Administrator 401', 'Administrator 401')
+on conflict (id) do update
+set
+  email = excluded.email,
+  full_name = excluded.full_name,
+  official_full_name = excluded.official_full_name;
+
+insert into public.user_roles (user_id, role_id)
+select '14010000-0000-4000-8000-000000000001', roles.id
+from public.roles
+where roles.name = 'apprentice'
+on conflict do nothing;
+
 insert into public.user_roles (user_id, role_id)
 select users.id, roles.id
 from public.users
