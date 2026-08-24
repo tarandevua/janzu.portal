@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { correctTraining, submitTrainingRecord, reviewTraining } from "@/features/training/actions";
 import type { Locale } from "@/lib/i18n/config";
-import type { TrainingRecord } from "@/server/models/training.model";
+import {
+  formatTrainingDate,
+  formatTrainingDateTime,
+  type TrainingLevel,
+  type TrainingRecord,
+} from "@/server/models/training.model";
 
 type Dictionary = {
   title: string;
   description: string;
+  guide: string;
   addTitle: string;
   level: string;
   level1: string;
@@ -27,6 +34,14 @@ type Dictionary = {
   submit: string;
   records: string;
   empty: string;
+  currentLevel: string;
+  noVerifiedLevel: string;
+  recordDetails: string;
+  yes: string;
+  no: string;
+  notProvided: string;
+  verifier: string;
+  verifiedAt: string;
   claimed: string;
   verified: string;
   rejected: string;
@@ -35,6 +50,7 @@ type Dictionary = {
   rejectionReason: string;
   submitted: string;
   invalid: string;
+  error: string;
   correct: string;
   corrected: string;
 };
@@ -59,6 +75,7 @@ export function TrainingWorkspace({
   locale,
   traineeUserId,
   records,
+  currentLevel,
   canSubmit,
   canReview,
   dictionary,
@@ -67,6 +84,7 @@ export function TrainingWorkspace({
   locale: Locale;
   traineeUserId: string;
   records: TrainingRecord[];
+  currentLevel: TrainingLevel | null;
   canSubmit: boolean;
   canReview: boolean;
   dictionary: Dictionary;
@@ -84,7 +102,10 @@ export function TrainingWorkspace({
       ) : null}
       {canSubmit ? (
         <Card>
-          <CardHeader><CardTitle>{dictionary.addTitle}</CardTitle><CardDescription>{dictionary.description}</CardDescription></CardHeader>
+          <CardHeader>
+            <CardTitle>{dictionary.addTitle}</CardTitle>
+            <CardDescription>{dictionary.description}</CardDescription>
+          </CardHeader>
           <CardContent>
             <form action={submitAction} className="grid gap-4 md:grid-cols-2">
               <TrainingFields dictionary={dictionary} />
@@ -95,12 +116,41 @@ export function TrainingWorkspace({
       ) : null}
 
       <Card>
-        <CardHeader><CardTitle>{dictionary.records}</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>{dictionary.records}</CardTitle>
+          <CardDescription>
+            {dictionary.currentLevel}: {currentLevel
+              ? currentLevel === "level_1" ? dictionary.level1 : dictionary.level2
+              : dictionary.noVerifiedLevel}
+          </CardDescription>
+          <Link
+            className="w-fit text-sm font-medium text-primary underline-offset-4 hover:underline"
+            href={`/${locale}/dashboard/knowledge-base/certification/training-history`}
+          >
+            {dictionary.guide}
+          </Link>
+        </CardHeader>
         <CardContent className="grid gap-3">
           {records.length === 0 ? <p className="text-sm text-muted-foreground">{dictionary.empty}</p> : records.map((record) => (
             <div className="grid gap-3 rounded-md border p-4" key={record.id}>
               <div className="flex flex-wrap items-center justify-between gap-2"><div className="font-medium">{record.level === "level_1" ? dictionary.level1 : dictionary.level2} · {record.cohort}</div><Badge variant={record.status === "verified" ? "default" : "secondary"}>{dictionary[record.status]}</Badge></div>
-              <div className="text-sm text-muted-foreground">{record.startedOn} — {record.completedOn} · {record.location} · {record.teachingInstructorName}</div>
+              <div className="text-sm text-muted-foreground">
+                {formatTrainingDate(record.startedOn, locale)} — {formatTrainingDate(record.completedOn, locale)} · {record.location} · {record.teachingInstructorName}
+              </div>
+              <details>
+                <summary className="cursor-pointer text-sm font-medium">{dictionary.recordDetails}</summary>
+                <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+                  <div><dt className="font-medium">{dictionary.courseworkComplete}</dt><dd className="text-muted-foreground">{record.courseworkComplete ? dictionary.yes : dictionary.no}</dd></div>
+                  <div><dt className="font-medium">{dictionary.evidence}</dt><dd className="break-words text-muted-foreground">{record.evidenceReference ?? dictionary.notProvided}</dd></div>
+                  <div className="sm:col-span-2"><dt className="font-medium">{dictionary.notes}</dt><dd className="whitespace-pre-wrap break-words text-muted-foreground">{record.notes ?? dictionary.notProvided}</dd></div>
+                  {record.verifiedBy ? (
+                    <>
+                      <div><dt className="font-medium">{dictionary.verifier}</dt><dd className="text-muted-foreground">{record.verifiedByName ?? dictionary.notProvided}</dd></div>
+                      <div><dt className="font-medium">{dictionary.verifiedAt}</dt><dd className="text-muted-foreground">{record.verifiedAt ? formatTrainingDateTime(record.verifiedAt, locale) : dictionary.notProvided}</dd></div>
+                    </>
+                  ) : null}
+                </dl>
+              </details>
               {record.rejectionReason ? <p className="text-sm text-destructive">{record.rejectionReason}</p> : null}
               {canSubmit && record.status !== "verified" ? (
                 <details>

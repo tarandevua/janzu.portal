@@ -41,6 +41,7 @@ export default async function TrainingPage({
           locale={locale}
           traineeUserId={targetTraineeId}
           records={workspace.records}
+          currentLevel={workspace.currentLevel}
           canSubmit={workspace.canSubmit}
           canReview={workspace.canReview}
           dictionary={dictionary.training}

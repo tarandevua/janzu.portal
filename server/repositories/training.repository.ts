@@ -4,8 +4,9 @@ import type { Database } from "@/types/database";
 
 type TrainingRow = Database["public"]["Tables"]["training_history"]["Row"];
 type ReviewArgs = Database["public"]["Functions"]["review_training_record"]["Args"];
+type TrainingHistoryRow = Database["public"]["Functions"]["list_training_history"]["Returns"][number];
 
-function toTrainingRecord(row: TrainingRow): TrainingRecord {
+function toTrainingRecord(row: TrainingHistoryRow): TrainingRecord {
   return {
     id: row.id,
     traineeUserId: row.trainee_user_id,
@@ -20,6 +21,8 @@ function toTrainingRecord(row: TrainingRow): TrainingRecord {
     notes: row.notes,
     status: row.status,
     verifiedBy: row.verified_by,
+    verifiedByName: row.verified_by_name,
+    verifiedUnderAssignmentId: row.verified_under_assignment_id,
     verifiedAt: row.verified_at,
     rejectionReason: row.rejection_reason,
     createdAt: row.created_at,
@@ -29,16 +32,42 @@ function toTrainingRecord(row: TrainingRow): TrainingRecord {
 
 export async function listTrainingRecords(
   supabase: SupabaseServerClient,
+  actorUserId: string,
   traineeUserId: string
 ) {
-  const { data, error } = await supabase
-    .from("training_history")
-    .select("*")
-    .eq("trainee_user_id", traineeUserId)
-    .order("created_at", { ascending: false });
+  const client = supabase as unknown as {
+    rpc(
+      name: "list_training_history",
+      args: Database["public"]["Functions"]["list_training_history"]["Args"]
+    ): Promise<{ data: TrainingHistoryRow[] | null; error: { message: string } | null }>;
+  };
+  const { data, error } = await client.rpc("list_training_history", {
+    actor_user_id: actorUserId,
+    target_trainee_user_id: traineeUserId,
+  });
 
   if (error) throw new Error(error.message);
-  return ((data ?? []) as TrainingRow[]).map(toTrainingRecord);
+  return (data ?? []).map(toTrainingRecord);
+}
+
+export async function getCurrentVerifiedTrainingLevel(
+  supabase: SupabaseServerClient,
+  traineeUserId: string
+) {
+  const client = supabase as unknown as {
+    rpc(
+      name: "current_verified_training_level",
+      args: Database["public"]["Functions"]["current_verified_training_level"]["Args"]
+    ): Promise<{
+      data: Database["public"]["Functions"]["current_verified_training_level"]["Returns"];
+      error: { message: string } | null;
+    }>;
+  };
+  const { data, error } = await client.rpc("current_verified_training_level", {
+    target_trainee_user_id: traineeUserId,
+  });
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 export async function insertTrainingRecord(
@@ -65,7 +94,7 @@ export async function insertTrainingRecord(
     .single();
 
   if (error) throw new Error(error.message);
-  return toTrainingRecord(data as TrainingRow);
+  return toTrainingRecord({ ...(data as TrainingRow), verified_by_name: null });
 }
 
 export async function correctTrainingRecord(
@@ -99,7 +128,7 @@ export async function correctTrainingRecord(
     .single();
 
   if (error) throw new Error(error.message);
-  return toTrainingRecord(data as TrainingRow);
+  return toTrainingRecord({ ...(data as TrainingRow), verified_by_name: null });
 }
 
 export async function reviewTrainingRecord(
@@ -123,5 +152,5 @@ export async function reviewTrainingRecord(
   });
 
   if (error || !data) throw new Error(error?.message ?? "Training review failed.");
-  return toTrainingRecord(data);
+  return toTrainingRecord({ ...data, verified_by_name: null });
 }

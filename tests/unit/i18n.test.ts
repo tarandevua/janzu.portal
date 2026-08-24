@@ -58,4 +58,14 @@ describe("i18n config", () => {
     expect(es.sessions.calendarGuidanceDescription).toMatch(/visitantes|estados de reserva|horarios/i);
     expect(es.sessions.calendarGuidanceLink).toMatch(/guia del calendario/i);
   });
+
+  it("localizes the complete structured training-history read model", () => {
+    for (const dictionary of [en.training, es.training]) {
+      expect(dictionary.currentLevel).toBeTruthy();
+      expect(dictionary.recordDetails).toBeTruthy();
+      expect(dictionary.verifier).toBeTruthy();
+      expect(dictionary.verifiedAt).toBeTruthy();
+      expect(dictionary.error).toBeTruthy();
+    }
+  });
 });

@@ -46,7 +46,11 @@ export async function submitTrainingRecord(locale: Locale, formData: FormData) {
   if (!parsed.success) finish(locale, "invalid");
 
   const { supabase, user } = await requireUser(locale);
-  await submitMyTrainingRecord(supabase, user.id, parsed.data);
+  try {
+    await submitMyTrainingRecord(supabase, user.id, parsed.data);
+  } catch {
+    finish(locale, "error");
+  }
   finish(locale, "submitted");
 }
 
@@ -66,7 +70,11 @@ export async function correctTraining(locale: Locale, formData: FormData) {
   if (!parsed.success) finish(locale, "invalid");
 
   const { supabase, user } = await requireUser(locale);
-  await correctMyTrainingRecord(supabase, user.id, parsed.data.recordId, parsed.data);
+  try {
+    await correctMyTrainingRecord(supabase, user.id, parsed.data.recordId, parsed.data);
+  } catch {
+    finish(locale, "error");
+  }
   finish(locale, "corrected");
 }
 
@@ -82,12 +90,16 @@ export async function reviewTraining(locale: Locale, formData: FormData) {
   if (!parsed.success) finish(locale, "invalid", traineeId);
 
   const { supabase, user } = await requireUser(locale);
-  await reviewTraineeTrainingRecord(
-    supabase,
-    user.id,
-    parsed.data.recordId,
-    parsed.data.decision === "approve",
-    parsed.data.reason
-  );
+  try {
+    await reviewTraineeTrainingRecord(
+      supabase,
+      user.id,
+      parsed.data.recordId,
+      parsed.data.decision === "approve",
+      parsed.data.reason
+    );
+  } catch {
+    finish(locale, "error", traineeId);
+  }
   finish(locale, parsed.data.decision === "approve" ? "verified" : "rejected", traineeId);
 }

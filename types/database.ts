@@ -1433,6 +1433,14 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["training_history"]["Row"];
       };
+      list_training_history: {
+        Args: { actor_user_id: string; target_trainee_user_id: string };
+        Returns: Array<
+          Database["public"]["Tables"]["training_history"]["Row"] & {
+            verified_by_name: string | null;
+          }
+        >;
+      };
       current_verified_training_level: {
         Args: { target_trainee_user_id: string };
         Returns: "level_1" | "level_2" | null;

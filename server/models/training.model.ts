@@ -15,6 +15,8 @@ export type TrainingRecord = {
   notes: string | null;
   status: TrainingRecordStatus;
   verifiedBy: string | null;
+  verifiedByName: string | null;
+  verifiedUnderAssignmentId: string | null;
   verifiedAt: string | null;
   rejectionReason: string | null;
   createdAt: string;
@@ -33,3 +35,22 @@ export type TrainingRecordInput = Pick<
   | "evidenceReference"
   | "notes"
 >;
+
+export function formatTrainingDate(value: string, locale: "en" | "es") {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
+}
+
+export function formatTrainingDateTime(value: string, locale: "en" | "es") {
+  return new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short",
+  }).format(new Date(value));
+}

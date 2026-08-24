@@ -752,6 +752,7 @@
   "training": {
     "title": "Training history",
     "description": "Record official Level 1 or Level 2 training. Claims do not affect certification until an authorized Instructor or Administrator verifies them.",
+    "guide": "Read the training history guide",
     "addTitle": "Add training record",
     "level": "Training level",
     "level1": "Level 1",
@@ -767,6 +768,14 @@
     "submit": "Submit record",
     "records": "Training records",
     "empty": "No training records yet.",
+    "currentLevel": "Current verified level",
+    "noVerifiedLevel": "No verified level yet",
+    "recordDetails": "Record details",
+    "yes": "Yes",
+    "no": "No",
+    "notProvided": "Not provided",
+    "verifier": "Reviewed by",
+    "verifiedAt": "Reviewed on",
     "claimed": "Awaiting verification",
     "verified": "Verified",
     "rejected": "Needs correction",
@@ -776,7 +785,8 @@
     "submitted": "Training record submitted.",
     "correct": "Correct and resubmit",
     "corrected": "Training record corrected and resubmitted.",
-    "invalid": "Check the training record and try again."
+    "invalid": "Check the training record and try again.",
+    "error": "The training history update could not be completed. Try again."
   },
   "supervision": {
     "title": "Instructor relationship",

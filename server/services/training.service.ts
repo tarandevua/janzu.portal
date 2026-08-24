@@ -3,6 +3,7 @@ import type { TrainingRecordInput } from "@/server/models/training.model";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import {
   correctTrainingRecord,
+  getCurrentVerifiedTrainingLevel,
   insertTrainingRecord,
   listTrainingRecords,
   reviewTrainingRecord,
@@ -14,14 +15,18 @@ export async function getTrainingWorkspace(
   actorUserId: string,
   targetTraineeUserId: string
 ) {
-  const roles = await listUserRoles(supabase, actorUserId);
+  const [roles, records, currentLevel] = await Promise.all([
+    listUserRoles(supabase, actorUserId),
+    listTrainingRecords(supabase, actorUserId, targetTraineeUserId),
+    getCurrentVerifiedTrainingLevel(supabase, targetTraineeUserId),
+  ]);
   if (targetTraineeUserId !== actorUserId && !hasAnyRole(roles, ["admin", "instructor"])) {
     throw new Error("Training history access is not authorized.");
   }
 
-  const records = await listTrainingRecords(supabase, targetTraineeUserId);
   return {
     records,
+    currentLevel,
     roles,
     canSubmit: targetTraineeUserId === actorUserId && hasRole(roles, "apprentice"),
     canReview: targetTraineeUserId !== actorUserId && hasAnyRole(roles, ["admin", "instructor"]),

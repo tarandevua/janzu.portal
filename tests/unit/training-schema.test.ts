@@ -4,6 +4,10 @@ import {
   trainingRecordSchema,
   trainingReviewSchema,
 } from "@/server/validators/training.schema";
+import {
+  formatTrainingDate,
+  formatTrainingDateTime,
+} from "@/server/models/training.model";
 
 const validRecord = {
   level: "level_1",
@@ -36,11 +40,35 @@ describe("trainingRecordSchema", () => {
     })).toThrow();
   });
 
+  it("enforces the evidence and private-note storage limits", () => {
+    expect(trainingRecordSchema.safeParse({
+      ...validRecord,
+      evidenceReference: "e".repeat(1001),
+    }).success).toBe(false);
+    expect(trainingRecordSchema.safeParse({
+      ...validRecord,
+      notes: "n".repeat(2001),
+    }).success).toBe(false);
+  });
+
   it("validates corrections with a record id", () => {
     expect(trainingCorrectionSchema.safeParse({
       ...validRecord,
       recordId: "31000000-0000-4000-8000-000000000001",
     }).success).toBe(true);
+  });
+});
+
+describe("training date localization", () => {
+  it("formats date-only values without shifting the calendar day", () => {
+    expect(formatTrainingDate("2026-05-01", "en")).toContain("May 1, 2026");
+    expect(formatTrainingDate("2026-05-01", "es")).toContain("1 may 2026");
+  });
+
+  it("formats verification timestamps in the active locale", () => {
+    expect(formatTrainingDateTime("2026-05-01T13:30:00Z", "en")).toMatch(/May 1, 2026/);
+    expect(formatTrainingDateTime("2026-05-01T13:30:00Z", "es")).toMatch(/1 may 2026/);
+    expect(formatTrainingDateTime("2026-05-01T13:30:00Z", "en")).toContain("UTC");
   });
 });
 
