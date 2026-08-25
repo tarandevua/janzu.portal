@@ -4,7 +4,7 @@
 
 The training-history slice contains:
 
-1. `training_history` records for Level 1 and Level 2 claims.
+1. `training_history` records for Level 1, Level 2, and Level 3 claims.
 2. `training_history_audit` before-and-after snapshots for submission, correction, and review.
 3. RLS plus authenticated read/review functions.
 4. Typed repository and service models.

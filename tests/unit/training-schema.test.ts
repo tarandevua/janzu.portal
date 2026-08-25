@@ -22,17 +22,18 @@ const validRecord = {
 };
 
 describe("trainingRecordSchema", () => {
-  it("accepts the approved Level 1 and Level 2 data contract", () => {
+  it("accepts the Level 1, Level 2, and Level 3 data contract", () => {
     expect(trainingRecordSchema.parse(validRecord)).toMatchObject({
       level: "level_1",
       courseworkComplete: true,
       notes: null,
     });
     expect(trainingRecordSchema.parse({ ...validRecord, level: "level_2" }).level).toBe("level_2");
+    expect(trainingRecordSchema.parse({ ...validRecord, level: "level_3" }).level).toBe("level_3");
   });
 
-  it("rejects Level 3 and reversed dates", () => {
-    expect(() => trainingRecordSchema.parse({ ...validRecord, level: "level_3" })).toThrow();
+  it("rejects unknown levels and reversed dates", () => {
+    expect(() => trainingRecordSchema.parse({ ...validRecord, level: "level_4" })).toThrow();
     expect(() => trainingRecordSchema.parse({
       ...validRecord,
       startedOn: "2026-05-10",

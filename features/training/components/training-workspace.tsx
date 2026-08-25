@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { correctTraining, submitTrainingRecord, reviewTraining } from "@/features/training/actions";
+import {
+  correctTraining,
+  reviewTraining,
+  submitTrainingRecord,
+  type TrainingActionState,
+} from "@/features/training/actions";
 import type { Locale } from "@/lib/i18n/config";
 import {
   formatTrainingDate,
@@ -23,6 +33,7 @@ type Dictionary = {
   level: string;
   level1: string;
   level2: string;
+  level3: string;
   cohort: string;
   location: string;
   startedOn: string;
@@ -55,10 +66,22 @@ type Dictionary = {
   corrected: string;
 };
 
+const INITIAL_ACTION_STATE: TrainingActionState = {
+  ok: false,
+  status: "idle",
+  resultId: null,
+};
+
+function trainingLevelLabel(level: TrainingLevel, dictionary: Dictionary) {
+  if (level === "level_1") return dictionary.level1;
+  if (level === "level_2") return dictionary.level2;
+  return dictionary.level3;
+}
+
 function TrainingFields({ dictionary, record }: { dictionary: Dictionary; record?: TrainingRecord }) {
   return (
     <>
-      <div className="grid gap-2"><Label htmlFor={`level-${record?.id ?? "new"}`}>{dictionary.level}</Label><select id={`level-${record?.id ?? "new"}`} name="level" defaultValue={record?.level} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="level_1">{dictionary.level1}</option><option value="level_2">{dictionary.level2}</option></select></div>
+      <div className="grid gap-2"><Label htmlFor={`level-${record?.id ?? "new"}`}>{dictionary.level}</Label><select id={`level-${record?.id ?? "new"}`} name="level" defaultValue={record?.level ?? "level_1"} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="level_1">{dictionary.level1}</option><option value="level_2">{dictionary.level2}</option><option value="level_3">{dictionary.level3}</option></select></div>
       <div className="grid gap-2"><Label htmlFor={`cohort-${record?.id ?? "new"}`}>{dictionary.cohort}</Label><Input id={`cohort-${record?.id ?? "new"}`} name="cohort" defaultValue={record?.cohort} required maxLength={160} /></div>
       <div className="grid gap-2"><Label htmlFor={`location-${record?.id ?? "new"}`}>{dictionary.location}</Label><Input id={`location-${record?.id ?? "new"}`} name="location" defaultValue={record?.location} required maxLength={240} /></div>
       <div className="grid gap-2"><Label htmlFor={`instructor-${record?.id ?? "new"}`}>{dictionary.teachingInstructor}</Label><Input id={`instructor-${record?.id ?? "new"}`} name="teachingInstructorName" defaultValue={record?.teachingInstructorName} required maxLength={160} /></div>
@@ -71,6 +94,90 @@ function TrainingFields({ dictionary, record }: { dictionary: Dictionary; record
   );
 }
 
+function TrainingRecordForm({
+  locale,
+  dictionary,
+  record,
+}: {
+  locale: Locale;
+  dictionary: Dictionary;
+  record?: TrainingRecord;
+}) {
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const handledResultId = useRef<string | null>(null);
+  const action = record
+    ? correctTraining.bind(null, locale)
+    : submitTrainingRecord.bind(null, locale);
+  const [state, formAction, isPending] = useActionState<TrainingActionState, FormData>(
+    action,
+    INITIAL_ACTION_STATE
+  );
+
+  useEffect(() => {
+    if (!state.resultId || handledResultId.current === state.resultId) return;
+    handledResultId.current = state.resultId;
+
+    if (state.ok) {
+      toast.success(dictionary[state.status as keyof Dictionary]);
+      if (!record) formRef.current?.reset();
+      router.refresh();
+    } else {
+      toast.error(dictionary[state.status as keyof Dictionary]);
+    }
+  }, [dictionary, record, router, state.ok, state.resultId, state.status]);
+
+  return (
+    <form ref={formRef} action={formAction} className={record ? "mt-3 grid gap-4 md:grid-cols-2" : "grid gap-4 md:grid-cols-2"}>
+      {record ? <input type="hidden" name="recordId" value={record.id} /> : null}
+      <TrainingFields dictionary={dictionary} record={record} />
+      <Button className="w-fit" type="submit" disabled={isPending}>
+        {record ? dictionary.correct : dictionary.submit}
+      </Button>
+    </form>
+  );
+}
+
+function TrainingReviewForm({
+  locale,
+  traineeUserId,
+  record,
+  dictionary,
+}: {
+  locale: Locale;
+  traineeUserId: string;
+  record: TrainingRecord;
+  dictionary: Dictionary;
+}) {
+  const router = useRouter();
+  const handledResultId = useRef<string | null>(null);
+  const [state, formAction, isPending] = useActionState<TrainingActionState, FormData>(
+    reviewTraining.bind(null, locale),
+    INITIAL_ACTION_STATE
+  );
+
+  useEffect(() => {
+    if (!state.resultId || handledResultId.current === state.resultId) return;
+    handledResultId.current = state.resultId;
+    if (state.ok) {
+      toast.success(dictionary[state.status as keyof Dictionary]);
+      router.refresh();
+    } else {
+      toast.error(dictionary[state.status as keyof Dictionary]);
+    }
+  }, [dictionary, router, state.ok, state.resultId, state.status]);
+
+  return (
+    <form action={formAction} className="flex flex-wrap items-end gap-2">
+      <input type="hidden" name="recordId" value={record.id} />
+      <input type="hidden" name="traineeId" value={traineeUserId} />
+      <div className="grid min-w-60 flex-1 gap-2"><Label htmlFor={`reason-${record.id}`}>{dictionary.rejectionReason}</Label><Input id={`reason-${record.id}`} name="reason" maxLength={1000} /></div>
+      <Button name="decision" value="approve" size="sm" disabled={isPending || !record.courseworkComplete}>{dictionary.approve}</Button>
+      <Button name="decision" value="reject" size="sm" variant="outline" disabled={isPending}>{dictionary.reject}</Button>
+    </form>
+  );
+}
+
 export function TrainingWorkspace({
   locale,
   traineeUserId,
@@ -79,7 +186,6 @@ export function TrainingWorkspace({
   canSubmit,
   canReview,
   dictionary,
-  status,
 }: {
   locale: Locale;
   traineeUserId: string;
@@ -88,18 +194,9 @@ export function TrainingWorkspace({
   canSubmit: boolean;
   canReview: boolean;
   dictionary: Dictionary;
-  status?: string;
 }) {
-  const submitAction = submitTrainingRecord.bind(null, locale);
-  const reviewAction = reviewTraining.bind(null, locale);
-
   return (
     <div className="grid gap-4">
-      {status && dictionary[status as keyof Dictionary] ? (
-        <p className="rounded-md border bg-muted p-3 text-sm" role="status">
-          {dictionary[status as keyof Dictionary]}
-        </p>
-      ) : null}
       {canSubmit ? (
         <Card>
           <CardHeader>
@@ -107,10 +204,7 @@ export function TrainingWorkspace({
             <CardDescription>{dictionary.description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={submitAction} className="grid gap-4 md:grid-cols-2">
-              <TrainingFields dictionary={dictionary} />
-              <Button className="w-fit" type="submit">{dictionary.submit}</Button>
-            </form>
+            <TrainingRecordForm locale={locale} dictionary={dictionary} />
           </CardContent>
         </Card>
       ) : null}
@@ -120,7 +214,7 @@ export function TrainingWorkspace({
           <CardTitle>{dictionary.records}</CardTitle>
           <CardDescription>
             {dictionary.currentLevel}: {currentLevel
-              ? currentLevel === "level_1" ? dictionary.level1 : dictionary.level2
+              ? trainingLevelLabel(currentLevel, dictionary)
               : dictionary.noVerifiedLevel}
           </CardDescription>
           <Link
@@ -133,7 +227,7 @@ export function TrainingWorkspace({
         <CardContent className="grid gap-3">
           {records.length === 0 ? <p className="text-sm text-muted-foreground">{dictionary.empty}</p> : records.map((record) => (
             <div className="grid gap-3 rounded-md border p-4" key={record.id}>
-              <div className="flex flex-wrap items-center justify-between gap-2"><div className="font-medium">{record.level === "level_1" ? dictionary.level1 : dictionary.level2} · {record.cohort}</div><Badge variant={record.status === "verified" ? "default" : "secondary"}>{dictionary[record.status]}</Badge></div>
+              <div className="flex flex-wrap items-center justify-between gap-2"><div className="font-medium">{trainingLevelLabel(record.level, dictionary)} · {record.cohort}</div><Badge variant={record.status === "verified" ? "default" : "secondary"}>{dictionary[record.status]}</Badge></div>
               <div className="text-sm text-muted-foreground">
                 {formatTrainingDate(record.startedOn, locale)} — {formatTrainingDate(record.completedOn, locale)} · {record.location} · {record.teachingInstructorName}
               </div>
@@ -155,21 +249,11 @@ export function TrainingWorkspace({
               {canSubmit && record.status !== "verified" ? (
                 <details>
                   <summary className="cursor-pointer text-sm font-medium">{dictionary.correct}</summary>
-                  <form action={correctTraining.bind(null, locale)} className="mt-3 grid gap-4 md:grid-cols-2">
-                    <input type="hidden" name="recordId" value={record.id} />
-                    <TrainingFields dictionary={dictionary} record={record} />
-                    <Button className="w-fit" type="submit">{dictionary.correct}</Button>
-                  </form>
+                  <TrainingRecordForm locale={locale} dictionary={dictionary} record={record} />
                 </details>
               ) : null}
               {canReview && record.status === "claimed" ? (
-                <form action={reviewAction} className="flex flex-wrap items-end gap-2">
-                  <input type="hidden" name="recordId" value={record.id} />
-                  <input type="hidden" name="traineeId" value={traineeUserId} />
-                  <div className="grid min-w-60 flex-1 gap-2"><Label htmlFor={`reason-${record.id}`}>{dictionary.rejectionReason}</Label><Input id={`reason-${record.id}`} name="reason" maxLength={1000} /></div>
-                  <Button name="decision" value="approve" size="sm" disabled={!record.courseworkComplete}>{dictionary.approve}</Button>
-                  <Button name="decision" value="reject" size="sm" variant="outline">{dictionary.reject}</Button>
-                </form>
+                <TrainingReviewForm locale={locale} traineeUserId={traineeUserId} record={record} dictionary={dictionary} />
               ) : null}
             </div>
           ))}

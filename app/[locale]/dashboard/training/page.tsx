@@ -14,9 +14,10 @@ export default async function TrainingPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ traineeId?: string; status?: string }>;
+  searchParams: Promise<{ traineeId?: string }>;
 }) {
-  const [{ locale }, { traineeId, status }] = await Promise.all([params, searchParams]);
+  const { locale } = await params;
+  const { traineeId } = await searchParams;
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([supabase.auth.getUser(), getDictionary(locale)]);
   if (!data.user) redirect(`/${locale}/login?status=auth-required`);
@@ -45,7 +46,6 @@ export default async function TrainingPage({
           canSubmit={workspace.canSubmit}
           canReview={workspace.canReview}
           dictionary={dictionary.training}
-          status={status}
         />
       </div>
     </JanzuDashboardFrame>

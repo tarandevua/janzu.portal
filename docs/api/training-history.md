@@ -1,6 +1,6 @@
 # Training history contract
 
-Training history supports only `level_1` and `level_2`, matching DEC-02. Trainees submit claims containing cohort, location, dates, teaching Instructor, coursework status, evidence reference, and private notes.
+Training history supports `level_1`, `level_2`, and `level_3`. Trainees submit claims containing cohort, location, dates, teaching Instructor, coursework status, evidence reference, and private notes.
 
 Claims cannot affect certification until verified. Only the active assigned Instructor or an Administrator can review a claim. Instructor verification records the supervision assignment under which it occurred. Rejection requires a reason.
 
@@ -10,7 +10,7 @@ Submission, correction, and review snapshots are append-only in `training_histor
 
 `list_training_history(actor_user_id, target_trainee_user_id)` is the authorized server read model. It binds `actor_user_id` to `auth.uid()`, rejects unrelated and former Instructors, and returns the structured record plus a safe verifier display name. Evidence references and notes remain inside this private projection.
 
-`current_verified_training_level(target_trainee_user_id)` derives the highest verified Level 1/Level 2 record. It applies the same Trainee, active-Instructor, and Administrator boundary. Claimed and rejected records are excluded.
+`current_verified_training_level(target_trainee_user_id)` derives the highest verified Level 1/Level 2/Level 3 record. It applies the same Trainee, active-Instructor, and Administrator boundary. Claimed and rejected records are excluded.
 
 Both functions revoke `PUBLIC` and anonymous execution and are granted only to authenticated callers. The underlying tables keep RLS enabled.
 

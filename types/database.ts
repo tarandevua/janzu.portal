@@ -336,7 +336,7 @@ export type Database = {
         Row: {
           id: string;
           trainee_user_id: string;
-          level: "level_1" | "level_2";
+          level: "level_1" | "level_2" | "level_3";
           cohort: string;
           location: string;
           started_on: string;
@@ -356,7 +356,7 @@ export type Database = {
         Insert: {
           id?: string;
           trainee_user_id: string;
-          level: "level_1" | "level_2";
+          level: "level_1" | "level_2" | "level_3";
           cohort: string;
           location: string;
           started_on: string;
@@ -376,7 +376,7 @@ export type Database = {
         Update: {
           id?: string;
           trainee_user_id?: string;
-          level?: "level_1" | "level_2";
+          level?: "level_1" | "level_2" | "level_3";
           cohort?: string;
           location?: string;
           started_on?: string;
@@ -1443,7 +1443,7 @@ export type Database = {
       };
       current_verified_training_level: {
         Args: { target_trainee_user_id: string };
-        Returns: "level_1" | "level_2" | null;
+        Returns: "level_1" | "level_2" | "level_3" | null;
       };
       record_learning_alliance_action: {
         Args: {
@@ -1718,7 +1718,7 @@ export type Database = {
         | "training_history_reviewed";
       profile_visibility: "private" | "community" | "public";
       supervision_status: "pending" | "active" | "declined" | "ended" | "cancelled";
-      training_level: "level_1" | "level_2";
+      training_level: "level_1" | "level_2" | "level_3";
       training_record_status: "claimed" | "verified" | "rejected";
       learning_alliance_action: "accepted" | "revoked";
       onboarding_guide_key: "calendar" | "sessions" | "feedback";

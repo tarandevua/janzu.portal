@@ -6,7 +6,7 @@ const optionalText = (max: number) => z.preprocess(
 );
 
 export const trainingRecordSchema = z.object({
-  level: z.enum(["level_1", "level_2"]),
+  level: z.enum(["level_1", "level_2", "level_3"]),
   cohort: z.string().trim().min(1).max(160),
   location: z.string().trim().min(1).max(240),
   startedOn: z.string().date(),
