@@ -1,6 +1,14 @@
 export type TrainingLevel = "level_1" | "level_2" | "level_3";
 export type TrainingRecordStatus = "claimed" | "verified" | "rejected";
 
+export type TrainingSubject = {
+  traineeUserId: string;
+  displayName: string;
+  profileImageUrl: string | null;
+  activeAssignmentId: string | null;
+  activeInstructorName: string | null;
+};
+
 export type TrainingRecord = {
   id: string;
   traineeUserId: string;

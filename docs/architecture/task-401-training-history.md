@@ -11,6 +11,7 @@ The training-history slice contains:
 5. Server actions for submission, correction, approval, and rejection.
 6. A localized English/Spanish workspace with loading, empty, success, validation, and failure states.
 7. English and Spanish knowledge-base guidance.
+8. Exact, idempotent submission/correction notifications to the active Instructor.
 
 ## Authorization and privacy
 
@@ -21,6 +22,9 @@ The training-history slice contains:
 - Actor-bearing security-definer functions require `actor_user_id = auth.uid()`.
 - Evidence references and notes are private and are not included in public/community profile projections, notifications, email, or logs.
 - Verifier display data is returned only inside the authorized read model. The audit record retains the immutable verifier user ID and assignment ID.
+- Reviewer identity returns an operational display name and masks private profile images to `null`.
+- Training notification recipients are derived from the active assignment in the database trigger; clients cannot select a recipient.
+- Event bodies exclude evidence, notes, reasons, contact data, and cohort details.
 
 The current level is derived from verified records. Claimed and rejected records cannot advance it. TASK-402 remains responsible for Level 2 eligibility and the wider certification state machine.
 
@@ -30,4 +34,4 @@ DEC-04 historical recognition requires a two-person process and additional evide
 
 ## Migration
 
-`202608240001_task_401_training_history_read_model.sql` adds an authorized read function without changing existing records. `202608240002_fix_end_supervision_enum_assignment.sql` forward-fixes the existing TASK-202 relationship-ending RPC required to verify removal of former-Instructor access. Neither migration has a backfill. If remediation is needed, deploy another forward migration that replaces or revokes the affected function.
+`202608240001_task_401_training_history_read_model.sql` adds an authorized read function without changing existing records. `202608240002_fix_end_supervision_enum_assignment.sql` forward-fixes the existing TASK-202 relationship-ending RPC required to verify removal of former-Instructor access. `202608250002_add_training_history_notification_types.sql` must commit before `202608250003_training_history_reviewer_context.sql` uses the new enum values. No migration backfills workflow data or notifications. If remediation is needed, deploy another forward migration that replaces or revokes the affected function.

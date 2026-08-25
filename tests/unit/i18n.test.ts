@@ -66,6 +66,10 @@ describe("i18n config", () => {
       expect(dictionary.verifier).toBeTruthy();
       expect(dictionary.verifiedAt).toBeTruthy();
       expect(dictionary.error).toBeTruthy();
+      expect(dictionary.reviewingTitle).toBeTruthy();
+      expect(dictionary.activeInstructor).toBeTruthy();
+      expect(dictionary.noActiveInstructor).toBeTruthy();
+      expect(dictionary.backToSupervision).toBeTruthy();
     }
   });
 });

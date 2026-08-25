@@ -786,6 +786,10 @@
     "submitted": "Training record submitted.",
     "correct": "Correct and resubmit",
     "corrected": "Training record corrected and resubmitted.",
+    "reviewingTitle": "Reviewing training history for",
+    "activeInstructor": "Active Instructor",
+    "noActiveInstructor": "No active Instructor assigned",
+    "backToSupervision": "Back to supervision",
     "invalid": "Check the training record and try again.",
     "error": "The training history update could not be completed. Try again."
   },

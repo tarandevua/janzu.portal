@@ -786,6 +786,10 @@
     "submitted": "Registro de formación enviado.",
     "correct": "Corregir y reenviar",
     "corrected": "Registro de formación corregido y reenviado.",
+    "reviewingTitle": "Revisando el historial de formación de",
+    "activeInstructor": "Instructor activo",
+    "noActiveInstructor": "No hay un Instructor activo asignado",
+    "backToSupervision": "Volver a supervisión",
     "invalid": "Revisa el registro de formación e inténtalo de nuevo.",
     "error": "No se pudo completar la actualización del historial de formación. Inténtalo de nuevo."
   },

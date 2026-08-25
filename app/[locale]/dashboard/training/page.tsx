@@ -14,10 +14,10 @@ export default async function TrainingPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ traineeId?: string }>;
+  searchParams: Promise<{ traineeId?: string; recordId?: string }>;
 }) {
   const { locale } = await params;
-  const { traineeId } = await searchParams;
+  const { traineeId, recordId } = await searchParams;
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([supabase.auth.getUser(), getDictionary(locale)]);
   if (!data.user) redirect(`/${locale}/login?status=auth-required`);
@@ -41,10 +41,12 @@ export default async function TrainingPage({
         <TrainingWorkspace
           locale={locale}
           traineeUserId={targetTraineeId}
+          subject={workspace.subject}
           records={workspace.records}
           currentLevel={workspace.currentLevel}
           canSubmit={workspace.canSubmit}
           canReview={workspace.canReview}
+          focusRecordId={recordId && UUID_PATTERN.test(recordId) ? recordId : null}
           dictionary={dictionary.training}
         />
       </div>

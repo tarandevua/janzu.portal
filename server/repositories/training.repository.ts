@@ -1,10 +1,15 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
-import type { TrainingRecord, TrainingRecordInput } from "@/server/models/training.model";
+import type {
+  TrainingRecord,
+  TrainingRecordInput,
+  TrainingSubject,
+} from "@/server/models/training.model";
 import type { Database } from "@/types/database";
 
 type TrainingRow = Database["public"]["Tables"]["training_history"]["Row"];
 type ReviewArgs = Database["public"]["Functions"]["review_training_record"]["Args"];
 type TrainingHistoryRow = Database["public"]["Functions"]["list_training_history"]["Returns"][number];
+type TrainingSubjectRow = Database["public"]["Functions"]["get_training_history_subject"]["Returns"][number];
 
 function toTrainingRecord(row: TrainingHistoryRow): TrainingRecord {
   return {
@@ -30,6 +35,16 @@ function toTrainingRecord(row: TrainingHistoryRow): TrainingRecord {
   };
 }
 
+function toTrainingSubject(row: TrainingSubjectRow): TrainingSubject {
+  return {
+    traineeUserId: row.trainee_user_id,
+    displayName: row.display_name,
+    profileImageUrl: row.profile_image_url,
+    activeAssignmentId: row.active_assignment_id,
+    activeInstructorName: row.active_instructor_name,
+  };
+}
+
 export async function listTrainingRecords(
   supabase: SupabaseServerClient,
   actorUserId: string,
@@ -48,6 +63,28 @@ export async function listTrainingRecords(
 
   if (error) throw new Error(error.message);
   return (data ?? []).map(toTrainingRecord);
+}
+
+export async function getTrainingSubject(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  traineeUserId: string
+) {
+  const client = supabase as unknown as {
+    rpc(
+      name: "get_training_history_subject",
+      args: Database["public"]["Functions"]["get_training_history_subject"]["Args"]
+    ): Promise<{ data: TrainingSubjectRow[] | null; error: { message: string } | null }>;
+  };
+  const { data, error } = await client.rpc("get_training_history_subject", {
+    actor_user_id: actorUserId,
+    target_trainee_user_id: traineeUserId,
+  });
+  if (error) throw new Error(error.message);
+
+  const subject = data?.[0];
+  if (!subject) throw new Error("The Trainee is unavailable.");
+  return toTrainingSubject(subject);
 }
 
 export async function getCurrentVerifiedTrainingLevel(

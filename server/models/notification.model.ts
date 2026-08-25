@@ -10,6 +10,8 @@ export type NotificationType =
   | "supervision_accepted"
   | "supervision_declined"
   | "supervision_ended"
+  | "training_history_submitted"
+  | "training_history_corrected"
   | "training_history_reviewed";
 
 export type Notification = {
@@ -23,6 +25,7 @@ export type Notification = {
   participantName: string | null;
   feedbackSessionDate: string | null;
   feedbackRating: number | null;
+  eventKey: string | null;
   readAt: string | null;
   createdAt: string;
   updatedAt: string;

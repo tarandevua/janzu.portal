@@ -1182,6 +1182,8 @@ export type Database = {
             | "supervision_accepted"
             | "supervision_declined"
             | "supervision_ended"
+            | "training_history_submitted"
+            | "training_history_corrected"
             | "training_history_reviewed";
           title: string;
           body: string | null;
@@ -1190,6 +1192,7 @@ export type Database = {
           participant_name: string | null;
           feedback_session_date: string | null;
           feedback_rating: number | null;
+          event_key: string | null;
           read_at: string | null;
           created_at: string;
           updated_at: string;
@@ -1209,6 +1212,8 @@ export type Database = {
             | "supervision_accepted"
             | "supervision_declined"
             | "supervision_ended"
+            | "training_history_submitted"
+            | "training_history_corrected"
             | "training_history_reviewed";
           title: string;
           body?: string | null;
@@ -1217,6 +1222,7 @@ export type Database = {
           participant_name?: string | null;
           feedback_session_date?: string | null;
           feedback_rating?: number | null;
+          event_key?: string | null;
           read_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -1236,6 +1242,8 @@ export type Database = {
             | "supervision_accepted"
             | "supervision_declined"
             | "supervision_ended"
+            | "training_history_submitted"
+            | "training_history_corrected"
             | "training_history_reviewed";
           title?: string;
           body?: string | null;
@@ -1244,6 +1252,7 @@ export type Database = {
           participant_name?: string | null;
           feedback_session_date?: string | null;
           feedback_rating?: number | null;
+          event_key?: string | null;
           read_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -1440,6 +1449,16 @@ export type Database = {
             verified_by_name: string | null;
           }
         >;
+      };
+      get_training_history_subject: {
+        Args: { actor_user_id: string; target_trainee_user_id: string };
+        Returns: Array<{
+          trainee_user_id: string;
+          display_name: string;
+          profile_image_url: string | null;
+          active_assignment_id: string | null;
+          active_instructor_name: string | null;
+        }>;
       };
       current_verified_training_level: {
         Args: { target_trainee_user_id: string };
@@ -1715,6 +1734,8 @@ export type Database = {
         | "supervision_accepted"
         | "supervision_declined"
         | "supervision_ended"
+        | "training_history_submitted"
+        | "training_history_corrected"
         | "training_history_reviewed";
       profile_visibility: "private" | "community" | "public";
       supervision_status: "pending" | "active" | "declined" | "ended" | "cancelled";

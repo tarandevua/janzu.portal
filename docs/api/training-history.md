@@ -14,10 +14,18 @@ Submission, correction, and review snapshots are append-only in `training_histor
 
 Both functions revoke `PUBLIC` and anonymous execution and are granted only to authenticated callers. The underlying tables keep RLS enabled.
 
+`get_training_history_subject(actor_user_id, target_trainee_user_id)` applies the same boundary and returns the operational display name, active assignment context, and only a community/public profile image. A private image is returned as `null` so the UI uses initials.
+
+## Reviewer notifications
+
+Submission and correction audit events notify only the active assigned Instructor at event time. Notifications use `training_history_submitted` or `training_history_corrected`, contain no evidence, notes, correction reasons, contact data, or cohort details, and link to the exact authorized record with `traineeId` and `recordId`. The audit-event ID and recipient form a database-unique `event_key`.
+
+Unassigned claims do not broadcast to all Administrators. They remain available through Administrator-authorized review surfaces. A former Instructor receives no future events and cannot open an old destination after the assignment ends.
+
 ## Historical-recognition boundary
 
 This contract does not convert an ordinary training claim into DEC-04 historical recognition. Historical recognition requires independent senior and Administrator review, primary or corroborating evidence, conflict handling, and append-only decisions. The training-history form must not be used to bypass that process.
 
 ## Migration and remediation
 
-Migration `202608240001_task_401_training_history_read_model.sql` is additive and does not backfill or transform records. Rollback is not required for data safety; remediation is a forward migration that replaces or revokes the read function.
+Migrations `202608250002_add_training_history_notification_types.sql` and `202608250003_training_history_reviewer_context.sql` add the notification types, idempotency key, reviewer identity projection, and audit-trigger emission. They do not backfill old notifications. Deploy them in order after the existing TASK-401 migrations. Remediation is another forward migration that replaces the functions or disables future event emission; existing notification rows can remain as audit-visible delivery history.

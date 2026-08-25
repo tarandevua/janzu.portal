@@ -22,7 +22,7 @@ export function InstructorDashboard({
     <JanzuDashboardFrame locale={locale} access={access} user={user} title={title}>
       <div className="grid gap-4 p-4 md:grid-cols-2 md:p-6">
         <Card><CardHeader><CardTitle>{dictionary.supervision}</CardTitle><CardDescription>{dictionary.description}</CardDescription></CardHeader><CardContent><Button asChild><Link href={`/${locale}/dashboard/supervision`}>{dictionary.supervision}</Link></Button></CardContent></Card>
-        <Card><CardHeader><CardTitle>{dictionary.training}</CardTitle><CardDescription>{dictionary.description}</CardDescription></CardHeader><CardContent><Button asChild variant="outline"><Link href={`/${locale}/dashboard/training`}>{dictionary.training}</Link></Button></CardContent></Card>
+        <Card><CardHeader><CardTitle>{dictionary.training}</CardTitle><CardDescription>{dictionary.description}</CardDescription></CardHeader><CardContent><Button asChild variant="outline"><Link href={`/${locale}/dashboard/supervision`}>{dictionary.training}</Link></Button></CardContent></Card>
       </div>
     </JanzuDashboardFrame>
   );

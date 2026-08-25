@@ -46,8 +46,18 @@ from public.roles
 where roles.name = 'admin'
 on conflict do nothing;
 
-insert into public.practitioners (id, user_id)
-values ('24010000-0000-4000-8000-000000000001', '14010000-0000-4000-8000-000000000001');
+insert into public.practitioners (
+  id,
+  user_id,
+  profile_image_url,
+  profile_image_visibility
+)
+values (
+  '24010000-0000-4000-8000-000000000001',
+  '14010000-0000-4000-8000-000000000001',
+  'https://example.test/task-401-trainee.jpg',
+  'community'
+);
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '14010000-0000-4000-8000-000000000001', true);
@@ -139,6 +149,122 @@ select public.respond_to_supervision(
   true
 );
 
+do $$
+begin
+  if exists (
+    select 1 from public.notifications
+    where user_id = '14010000-0000-4000-8000-000000000002'
+      and type in ('training_history_submitted', 'training_history_corrected')
+  ) then
+    raise exception 'Unassigned training claims generated an Instructor notification';
+  end if;
+
+  if not exists (
+    select 1
+    from public.get_training_history_subject(
+      '14010000-0000-4000-8000-000000000002',
+      '14010000-0000-4000-8000-000000000001'
+    )
+    where display_name = 'Trainee 401'
+      and profile_image_url = 'https://example.test/task-401-trainee.jpg'
+      and active_assignment_id is not null
+      and active_instructor_name = 'Instructor 401'
+  ) then
+    raise exception 'Reviewer identity context is incomplete or incorrectly masked';
+  end if;
+end;
+$$;
+
+reset role;
+update public.practitioners
+set profile_image_visibility = 'private'
+where user_id = '14010000-0000-4000-8000-000000000001';
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '14010000-0000-4000-8000-000000000002', true);
+
+do $$
+begin
+  if exists (
+    select 1
+    from public.get_training_history_subject(
+      '14010000-0000-4000-8000-000000000002',
+      '14010000-0000-4000-8000-000000000001'
+    )
+    where profile_image_url is not null
+  ) then
+    raise exception 'Private Trainee avatar was exposed to the reviewer';
+  end if;
+end;
+$$;
+
+select set_config('request.jwt.claim.sub', '14010000-0000-4000-8000-000000000001', true);
+
+insert into public.training_history (
+  id,
+  trainee_user_id,
+  level,
+  cohort,
+  location,
+  started_on,
+  completed_on,
+  teaching_instructor_name,
+  coursework_complete,
+  evidence_reference,
+  notes
+) values (
+  '34010000-0000-4000-8000-000000000003',
+  '14010000-0000-4000-8000-000000000001',
+  'level_1',
+  'TASK-401 notified Level 1',
+  'Chisinau',
+  '2026-07-10',
+  '2026-07-15',
+  'Instructor 401',
+  true,
+  'Private evidence must not appear',
+  'Private notes must not appear'
+);
+
+update public.training_history
+set cohort = 'TASK-401 corrected notified Level 1'
+where id = '34010000-0000-4000-8000-000000000003';
+
+select set_config('request.jwt.claim.sub', '14010000-0000-4000-8000-000000000002', true);
+
+do $$
+begin
+  if (
+    select count(*) from public.notifications
+    where user_id = '14010000-0000-4000-8000-000000000002'
+      and type in ('training_history_submitted', 'training_history_corrected')
+  ) <> 2 then
+    raise exception 'Submission and correction did not create exactly two Instructor notifications';
+  end if;
+
+  if not exists (
+    select 1 from public.notifications
+    where user_id = '14010000-0000-4000-8000-000000000002'
+      and type = 'training_history_submitted'
+      and href = '/dashboard/training?traineeId=14010000-0000-4000-8000-000000000001&recordId=34010000-0000-4000-8000-000000000003'
+      and event_key like 'training_history.submitted:%:14010000-0000-4000-8000-000000000002'
+      and body not like '%evidence%'
+      and body not like '%notes%'
+  ) then
+    raise exception 'Submission notification is unsafe, duplicated, or not an exact link';
+  end if;
+
+  if not exists (
+    select 1 from public.notifications
+    where user_id = '14010000-0000-4000-8000-000000000002'
+      and type = 'training_history_corrected'
+      and href like '%recordId=34010000-0000-4000-8000-000000000003'
+      and event_key like 'training_history.corrected:%:14010000-0000-4000-8000-000000000002'
+  ) then
+    raise exception 'Correction notification is missing its exact idempotent destination';
+  end if;
+end;
+$$;
+
 select public.review_training_record(
   '14010000-0000-4000-8000-000000000002',
   '34010000-0000-4000-8000-000000000001',
@@ -221,6 +347,24 @@ begin
 end;
 $$;
 
+select set_config('request.jwt.claim.sub', '14010000-0000-4000-8000-000000000001', true);
+update public.training_history
+set cohort = 'TASK-401 corrected after assignment ended'
+where id = '34010000-0000-4000-8000-000000000003';
+
+select set_config('request.jwt.claim.sub', '14010000-0000-4000-8000-000000000002', true);
+do $$
+begin
+  if (
+    select count(*) from public.notifications
+    where user_id = '14010000-0000-4000-8000-000000000002'
+      and type in ('training_history_submitted', 'training_history_corrected')
+  ) <> 2 then
+    raise exception 'A former Instructor received a correction notification';
+  end if;
+end;
+$$;
+
 select set_config('request.jwt.claim.sub', '14010000-0000-4000-8000-000000000004', true);
 do $$
 begin
@@ -230,7 +374,7 @@ begin
       '14010000-0000-4000-8000-000000000004',
       '14010000-0000-4000-8000-000000000001'
     )
-  ) <> 2 then
+  ) <> 3 then
     raise exception 'Administrator could not read the Trainee training history';
   end if;
 end;

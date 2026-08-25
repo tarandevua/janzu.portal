@@ -17,6 +17,7 @@ function toNotification(row: NotificationRow): Notification {
     participantName: row.participant_name,
     feedbackSessionDate: row.feedback_session_date,
     feedbackRating: row.feedback_rating,
+    eventKey: row.event_key,
     readAt: row.read_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

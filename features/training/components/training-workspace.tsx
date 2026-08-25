@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,6 +24,7 @@ import {
   formatTrainingDateTime,
   type TrainingLevel,
   type TrainingRecord,
+  type TrainingSubject,
 } from "@/server/models/training.model";
 
 type Dictionary = {
@@ -64,6 +66,10 @@ type Dictionary = {
   error: string;
   correct: string;
   corrected: string;
+  reviewingTitle: string;
+  activeInstructor: string;
+  noActiveInstructor: string;
+  backToSupervision: string;
 };
 
 const INITIAL_ACTION_STATE: TrainingActionState = {
@@ -76,6 +82,16 @@ function trainingLevelLabel(level: TrainingLevel, dictionary: Dictionary) {
   if (level === "level_1") return dictionary.level1;
   if (level === "level_2") return dictionary.level2;
   return dictionary.level3;
+}
+
+function avatarFallback(name: string) {
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+  return initials || "JT";
 }
 
 function TrainingFields({ dictionary, record }: { dictionary: Dictionary; record?: TrainingRecord }) {
@@ -181,22 +197,62 @@ function TrainingReviewForm({
 export function TrainingWorkspace({
   locale,
   traineeUserId,
+  subject,
   records,
   currentLevel,
   canSubmit,
   canReview,
+  focusRecordId,
   dictionary,
 }: {
   locale: Locale;
   traineeUserId: string;
+  subject: TrainingSubject;
   records: TrainingRecord[];
   currentLevel: TrainingLevel | null;
   canSubmit: boolean;
   canReview: boolean;
+  focusRecordId: string | null;
   dictionary: Dictionary;
 }) {
+  useEffect(() => {
+    if (!focusRecordId) return;
+    const focusedRecord = document.getElementById(`training-record-${focusRecordId}`);
+    focusedRecord?.focus({ preventScroll: true });
+    focusedRecord?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focusRecordId]);
+
   return (
     <div className="grid gap-4">
+      {canReview ? (
+        <Card>
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <Avatar className="h-14 w-14">
+                {subject.profileImageUrl ? (
+                  <AvatarImage src={subject.profileImageUrl} alt={subject.displayName} />
+                ) : null}
+                <AvatarFallback>{avatarFallback(subject.displayName)}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <CardDescription>{dictionary.reviewingTitle}</CardDescription>
+                <CardTitle className="truncate">{subject.displayName}</CardTitle>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {subject.activeInstructorName
+                    ? `${dictionary.activeInstructor}: ${subject.activeInstructorName}`
+                    : dictionary.noActiveInstructor}
+                </p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/${locale}/dashboard/supervision`}>
+                {dictionary.backToSupervision}
+              </Link>
+            </Button>
+          </CardHeader>
+        </Card>
+      ) : null}
+
       {canSubmit ? (
         <Card>
           <CardHeader>
@@ -226,7 +282,12 @@ export function TrainingWorkspace({
         </CardHeader>
         <CardContent className="grid gap-3">
           {records.length === 0 ? <p className="text-sm text-muted-foreground">{dictionary.empty}</p> : records.map((record) => (
-            <div className="grid gap-3 rounded-md border p-4" key={record.id}>
+            <div
+              className={`grid gap-3 rounded-md border p-4 outline-none ${focusRecordId === record.id ? "border-primary ring-2 ring-primary/30" : ""}`}
+              id={`training-record-${record.id}`}
+              key={record.id}
+              tabIndex={-1}
+            >
               <div className="flex flex-wrap items-center justify-between gap-2"><div className="font-medium">{trainingLevelLabel(record.level, dictionary)} · {record.cohort}</div><Badge variant={record.status === "verified" ? "default" : "secondary"}>{dictionary[record.status]}</Badge></div>
               <div className="text-sm text-muted-foreground">
                 {formatTrainingDate(record.startedOn, locale)} — {formatTrainingDate(record.completedOn, locale)} · {record.location} · {record.teachingInstructorName}
