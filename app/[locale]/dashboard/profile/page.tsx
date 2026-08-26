@@ -2,10 +2,14 @@ import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { PractitionerProfileForm } from "@/features/practitioners/components/practitioner-profile-form";
 import { ProfileVisibilityForm } from "@/features/practitioners/components/profile-visibility-form";
+import { ProfileMapPreview } from "@/features/practitioners/components/profile-map-preview";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getMyPractitionerProfile } from "@/server/services/practitioner.service";
+import {
+  getMyPractitionerProfile,
+  previewPractitionerMapPoints,
+} from "@/server/services/practitioner.service";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { getPrimaryRole, getRoleAccessList } from "@/server/services/rbac.service";
 
@@ -31,23 +35,28 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
     redirect(`/${locale}/login?status=auth-required`);
   }
 
-  const [profile, roles] = await Promise.all([
-    getMyPractitionerProfile(supabase, data.user.id),
-    listUserRoles(supabase, data.user.id),
-  ]);
-  const { data: appUser } = await supabase
+  const profilePromise = getMyPractitionerProfile(supabase, data.user.id);
+  const appUserPromise = supabase
     .from("users")
     .select("full_name, official_full_name")
     .eq("id", data.user.id)
     .maybeSingle();
+  const roles = await listUserRoles(supabase, data.user.id);
   const primaryRole = getPrimaryRole(roles);
-  const appUserNames = appUser as AppUserNames | null;
-  const desiredName = appUserNames?.full_name ?? data.user.user_metadata.full_name ?? data.user.email ?? "";
-  const officialFullName = appUserNames?.official_full_name ?? "";
 
   if (!primaryRole) {
     redirect(`/${locale}/dashboard`);
   }
+
+  const [profile, publicMapPreview, communityMapPreview, appUserResult] = await Promise.all([
+    profilePromise,
+    previewPractitionerMapPoints(supabase, data.user.id, "public"),
+    previewPractitionerMapPoints(supabase, data.user.id, "community"),
+    appUserPromise,
+  ]);
+  const appUserNames = appUserResult.data as AppUserNames | null;
+  const desiredName = appUserNames?.full_name ?? data.user.user_metadata.full_name ?? data.user.email ?? "";
+  const officialFullName = appUserNames?.official_full_name ?? "";
 
   return (
     <JanzuDashboardFrame
@@ -72,12 +81,20 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
           status={status}
         />
         {profile ? (
-          <ProfileVisibilityForm
-            locale={locale}
-            profile={profile}
-            canUsePublic={roles.includes("facilitator") || roles.includes("instructor")}
-            dictionary={dictionary.practitioners.visibility}
-          />
+          <>
+            <ProfileVisibilityForm
+              locale={locale}
+              profile={profile}
+              canUsePublic={roles.includes("facilitator") || roles.includes("instructor")}
+              dictionary={dictionary.practitioners.visibility}
+            />
+            <ProfileMapPreview
+              locale={locale}
+              publicPoints={publicMapPreview}
+              communityPoints={communityMapPreview}
+              dictionary={dictionary.practitioners.mapPreview}
+            />
+          </>
         ) : null}
         </div>
       </div>

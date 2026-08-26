@@ -11,31 +11,37 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ClusteredMap } from "@/features/maps/components/clustered-map";
 import type { MapMarker, PractitionerMarkerGroup } from "@/features/maps/types";
 import { stripRichTextHtml } from "@/features/practitioners/utils/profile-text";
+import { toPractitionerMapMarkers } from "@/features/practitioners/utils/map-points";
 import type { Locale } from "@/lib/i18n/config";
-import type { DirectoryPractitionerProfile } from "@/server/models/practitioner.model";
+import type {
+  DirectoryPractitionerProfile,
+  PractitionerMapPoint,
+} from "@/server/models/practitioner.model";
 
 type PublicPractitionerDirectoryDictionary = {
   unknownCity: string;
   emptyMap: string;
+  loadingMap: string;
+  errorMap: string;
   apprenticePin: string;
   participantPin: string;
   facilitatorPin: string;
   instructorPin: string;
   emptyGroup: string;
   viewDetails: string;
+  filterLabel: string;
 };
 
 type PublicPractitionerDirectoryProps = {
   locale: Locale;
   profiles: DirectoryPractitionerProfile[];
+  mapPoints: PractitionerMapPoint[];
   dictionary: PublicPractitionerDirectoryDictionary;
   groups?: PractitionerMarkerGroup[];
   showDetails?: boolean;
 };
 
 const practitionerGroups: PractitionerMarkerGroup[] = ["facilitator", "instructor"];
-const noDirectoryMarkers: MapMarker[] = [];
-
 const groupColorClassName: Record<PractitionerMarkerGroup, string> = {
   apprentice: "bg-[#d97706]",
   participant: "bg-primary",
@@ -64,6 +70,7 @@ function getGroupLabel(dictionary: PublicPractitionerDirectoryDictionary, group:
 export function PublicPractitionerDirectory({
   locale,
   profiles,
+  mapPoints,
   dictionary,
   groups = practitionerGroups,
   showDetails = true,
@@ -73,11 +80,21 @@ export function PublicPractitionerDirectory({
     () => profiles.filter((profile) => !activeGroup || profile.publicGroup === activeGroup),
     [activeGroup, profiles]
   );
+  const filteredMarkers = useMemo<MapMarker[]>(
+    () =>
+      toPractitionerMapMarkers(
+        mapPoints.filter((point) => !activeGroup || point.publicGroup === activeGroup),
+        { locale, detailsLabel: dictionary.viewDetails, includeDetailsLink: showDetails }
+      ),
+    [activeGroup, dictionary.viewDetails, locale, mapPoints, showDetails]
+  );
   return (
     <>
       <ClusteredMap
-        markers={noDirectoryMarkers}
+        markers={filteredMarkers}
         emptyText={dictionary.emptyMap}
+        loadingText={dictionary.loadingMap}
+        errorText={dictionary.errorMap}
         className="min-h-[460px]"
       />
       <ToggleGroup
@@ -87,7 +104,7 @@ export function PublicPractitionerDirectory({
           setActiveGroup(value ? (value as PractitionerMarkerGroup) : null);
         }}
         className="flex-wrap justify-start"
-        aria-label="Filter practitioners by group"
+        aria-label={dictionary.filterLabel}
       >
         {groups.map((group) => (
           <ToggleGroupItem key={group} value={group} className="gap-2">

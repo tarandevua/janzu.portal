@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useTransition, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveProfileVisibilityInline } from "@/features/practitioners/actions";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ export function ProfileVisibilityForm({
   canUsePublic: boolean;
   dictionary: VisibilityDictionary;
 }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const values: ProfileVisibility[] = canUsePublic
     ? ["private", "community", "public"]
@@ -72,6 +74,7 @@ export function ProfileVisibilityForm({
 
         if (result.ok) {
           toast.success(dictionary.saved);
+          router.refresh();
           return;
         }
 

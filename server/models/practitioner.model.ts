@@ -64,6 +64,18 @@ export type DirectoryPractitionerProfile = Pick<
   | "profileImageUrl"
 >;
 
+export type PractitionerMapPoint = {
+  markerId: string;
+  profileId: string;
+  publicGroup: PublicPractitionerGroup;
+  displayName: string;
+  city: string | null;
+  country: string | null;
+  latitude: number;
+  longitude: number;
+  profileImageUrl: string | null;
+};
+
 export type ProfileVisibilityInput = Omit<ProfileVisibilitySettings, "configuredAt">;
 
 export type PractitionerProfileInput = {

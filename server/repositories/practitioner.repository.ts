@@ -7,6 +7,7 @@ import type {
   PractitionerProfileInput,
   ProfileVisibilityInput,
   PractitionerPracticeLocation,
+  PractitionerMapPoint,
   PublicPractitionerGroup,
 } from "@/server/models/practitioner.model";
 
@@ -78,6 +79,18 @@ type PractitionerLocationRow = {
   sort_order: number;
 };
 
+type PractitionerMapRow = {
+  marker_id: string;
+  profile_id: string;
+  public_group: PublicPractitionerGroup;
+  display_name: string;
+  city: string | null;
+  country: string | null;
+  latitude: number;
+  longitude: number;
+  profile_image_url: string | null;
+};
+
 type UserDisplayRow = Pick<Database["public"]["Tables"]["users"]["Row"], "full_name">;
 type CertificationStatusRow = Pick<
   Database["public"]["Tables"]["certification_progress"]["Row"],
@@ -96,6 +109,20 @@ type PublicPractitionerRpcClient = {
     functionName: "list_community_practitioner_profiles",
     args: { actor_user_id: string }
   ): Promise<{ data: DirectoryPractitionerRow[] | null; error: { message: string } | null }>;
+};
+
+type PractitionerMapRpcClient = {
+  rpc(
+    functionName: "list_public_practitioner_map_markers"
+  ): Promise<{ data: PractitionerMapRow[] | null; error: { message: string } | null }>;
+  rpc(
+    functionName: "list_community_practitioner_map_markers",
+    args: { actor_user_id: string }
+  ): Promise<{ data: PractitionerMapRow[] | null; error: { message: string } | null }>;
+  rpc(
+    functionName: "preview_my_practitioner_map_markers",
+    args: { actor_user_id: string; target_audience: "community" | "public" }
+  ): Promise<{ data: PractitionerMapRow[] | null; error: { message: string } | null }>;
 };
 
 function toPracticeLocation(row: PractitionerLocationRow): PractitionerPracticeLocation {
@@ -180,6 +207,20 @@ function toDirectoryProfile(row: DirectoryPractitionerRow): DirectoryPractitione
     facebookUrl: row.facebook_url,
     youtubeUrl: row.youtube_url,
     tiktokUrl: row.tiktok_url,
+    profileImageUrl: row.profile_image_url,
+  };
+}
+
+function toMapPoint(row: PractitionerMapRow): PractitionerMapPoint {
+  return {
+    markerId: row.marker_id,
+    profileId: row.profile_id,
+    publicGroup: row.public_group,
+    displayName: row.display_name,
+    city: row.city,
+    country: row.country,
+    latitude: row.latitude,
+    longitude: row.longitude,
     profileImageUrl: row.profile_image_url,
   };
 }
@@ -353,6 +394,42 @@ export async function listCommunityPractitionerProfiles(
 
   if (error) throw new Error(error.message);
   return (data ?? []).map(toDirectoryProfile);
+}
+
+export async function listPublicPractitionerMapPoints(supabase: SupabaseServerClient) {
+  const client = supabase as unknown as PractitionerMapRpcClient;
+  const { data, error } = await client.rpc("list_public_practitioner_map_markers");
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(toMapPoint);
+}
+
+export async function listCommunityPractitionerMapPoints(
+  supabase: SupabaseServerClient,
+  actorUserId: string
+) {
+  const client = supabase as unknown as PractitionerMapRpcClient;
+  const { data, error } = await client.rpc("list_community_practitioner_map_markers", {
+    actor_user_id: actorUserId,
+  });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(toMapPoint);
+}
+
+export async function previewMyPractitionerMapPoints(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  audience: "community" | "public"
+) {
+  const client = supabase as unknown as PractitionerMapRpcClient;
+  const { data, error } = await client.rpc("preview_my_practitioner_map_markers", {
+    actor_user_id: actorUserId,
+    target_audience: audience,
+  });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(toMapPoint);
 }
 
 export async function upsertPractitionerProfile(

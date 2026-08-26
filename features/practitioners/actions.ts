@@ -140,6 +140,7 @@ export async function savePractitionerProfileInline(
 
   revalidatePath(`/${locale}/dashboard/profile`);
   revalidatePath(`/${locale}/practitioners`);
+  revalidatePath(`/${locale}/dashboard/community`);
   return { ok: true, status: "saved" };
 }
 
@@ -197,6 +198,7 @@ export async function saveProfileVisibilityInline(
 
   revalidatePath(`/${locale}/dashboard/profile`);
   revalidatePath(`/${locale}/practitioners`);
+  revalidatePath(`/${locale}/dashboard/community`);
   revalidatePath(`/${locale}/dashboard/first-steps`);
   return { ok: true, status: "saved" };
 }

@@ -6,10 +6,15 @@ import en from "@/messages/en.json";
 import es from "@/messages/es.json";
 import type { PractitionerProfile } from "@/server/models/practitioner.model";
 
-const { saveVisibility, successToast, errorToast } = vi.hoisted(() => ({
+const { saveVisibility, successToast, errorToast, refresh } = vi.hoisted(() => ({
   saveVisibility: vi.fn(),
   successToast: vi.fn(),
   errorToast: vi.fn(),
+  refresh: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh }),
 }));
 
 vi.mock("@/features/practitioners/actions", () => ({
@@ -59,6 +64,7 @@ describe("ProfileVisibilityForm", () => {
     saveVisibility.mockReset();
     successToast.mockReset();
     errorToast.mockReset();
+    refresh.mockReset();
   });
 
   afterEach(cleanup);
@@ -98,6 +104,7 @@ describe("ProfileVisibilityForm", () => {
     await waitFor(() => {
       expect(saveVisibility).toHaveBeenCalledOnce();
       expect(successToast).toHaveBeenCalledWith(es.practitioners.visibility.saved);
+      expect(refresh).toHaveBeenCalledOnce();
     });
     expect(errorToast).not.toHaveBeenCalled();
     expect(window.location.href).toBe(initialUrl);

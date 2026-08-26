@@ -15,6 +15,7 @@ export type MapMarker = {
   latitude: number;
   longitude: number;
   href?: string;
+  hrefLabel?: string;
   meta?: string | null;
 };
 

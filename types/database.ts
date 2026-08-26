@@ -1658,6 +1658,51 @@ export type Database = {
           profile_image_url: string | null;
         }[];
       };
+      list_public_practitioner_map_markers: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          marker_id: string;
+          profile_id: string;
+          public_group: string;
+          display_name: string;
+          city: string | null;
+          country: string | null;
+          latitude: number;
+          longitude: number;
+          profile_image_url: string | null;
+        }[];
+      };
+      list_community_practitioner_map_markers: {
+        Args: { actor_user_id: string };
+        Returns: {
+          marker_id: string;
+          profile_id: string;
+          public_group: string;
+          display_name: string;
+          city: string | null;
+          country: string | null;
+          latitude: number;
+          longitude: number;
+          profile_image_url: string | null;
+        }[];
+      };
+      preview_my_practitioner_map_markers: {
+        Args: {
+          actor_user_id: string;
+          target_audience: "community" | "public";
+        };
+        Returns: {
+          marker_id: string;
+          profile_id: string;
+          public_group: string;
+          display_name: string;
+          city: string | null;
+          country: string | null;
+          latitude: number;
+          longitude: number;
+          profile_image_url: string | null;
+        }[];
+      };
       list_feedback_participants: {
         Args: {
           actor_user_id: string;

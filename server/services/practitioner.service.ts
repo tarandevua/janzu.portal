@@ -6,6 +6,9 @@ import {
   getPublicPractitionerProfile,
   listPublicPractitionerProfiles,
   listCommunityPractitionerProfiles,
+  listCommunityPractitionerMapPoints,
+  listPublicPractitionerMapPoints,
+  previewMyPractitionerMapPoints,
   upsertPractitionerProfile,
   updatePractitionerProfileVisibility,
 } from "@/server/repositories/practitioner.repository";
@@ -49,4 +52,23 @@ export function findCommunityPractitionerProfiles(
   userId: string
 ) {
   return listCommunityPractitionerProfiles(supabase, userId);
+}
+
+export function findPublicPractitionerMapPoints(supabase: SupabaseServerClient) {
+  return listPublicPractitionerMapPoints(supabase);
+}
+
+export function findCommunityPractitionerMapPoints(
+  supabase: SupabaseServerClient,
+  userId: string
+) {
+  return listCommunityPractitionerMapPoints(supabase, userId);
+}
+
+export function previewPractitionerMapPoints(
+  supabase: SupabaseServerClient,
+  userId: string,
+  audience: "community" | "public"
+) {
+  return previewMyPractitionerMapPoints(supabase, userId, audience);
 }

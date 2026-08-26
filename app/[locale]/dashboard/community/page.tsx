@@ -5,7 +5,10 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
-import { findCommunityPractitionerProfiles } from "@/server/services/practitioner.service";
+import {
+  findCommunityPractitionerMapPoints,
+  findCommunityPractitionerProfiles,
+} from "@/server/services/practitioner.service";
 import { getRoleAccessList } from "@/server/services/rbac.service";
 
 export default async function CommunityDirectoryPage({ params }: { params: Promise<{ locale: Locale }> }) {
@@ -14,9 +17,10 @@ export default async function CommunityDirectoryPage({ params }: { params: Promi
   const [{ data }, dictionary] = await Promise.all([supabase.auth.getUser(), getDictionary(locale)]);
   if (!data.user) redirect(`/${locale}/login?status=auth-required`);
 
-  const [roles, profiles] = await Promise.all([
+  const [roles, profiles, mapPoints] = await Promise.all([
     listUserRoles(supabase, data.user.id),
     findCommunityPractitionerProfiles(supabase, data.user.id),
+    findCommunityPractitionerMapPoints(supabase, data.user.id),
   ]);
 
   return (
@@ -31,6 +35,7 @@ export default async function CommunityDirectoryPage({ params }: { params: Promi
         <PublicPractitionerDirectory
           locale={locale}
           profiles={profiles}
+          mapPoints={mapPoints}
           dictionary={dictionary.practitioners.public}
           groups={["apprentice", "facilitator", "instructor", "participant"]}
           showDetails={false}

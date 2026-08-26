@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ClusteredMap } from "@/features/maps/components/clustered-map";
-import type { MapMarker, PractitionerMarkerGroup } from "@/features/maps/types";
+import type { PractitionerMarkerGroup } from "@/features/maps/types";
+import { toPractitionerMapMarkers } from "@/features/practitioners/utils/map-points";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,10 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listPublicAvailableSlotsByPractitionerId } from "@/server/repositories/session-availability.repository";
-import { findPublicPractitionerProfile } from "@/server/services/practitioner.service";
+import {
+  findPublicPractitionerMapPoints,
+  findPublicPractitionerProfile,
+} from "@/server/services/practitioner.service";
 
 type PractitionerPublicProfilePageProps = {
   params: Promise<{ locale: Locale; id: string }>;
@@ -26,8 +30,6 @@ const groupColorClassName: Record<PractitionerMarkerGroup, string> = {
   facilitator: "bg-[#4f46e5]",
   instructor: "bg-[#0f766e]",
 };
-const noPublicProfileMarkers: MapMarker[] = [];
-
 function getPractitionerName(profile: { displayName?: string | null; city: string | null }, fallback: string) {
   return profile.displayName?.trim() || profile.city || fallback;
 }
@@ -72,7 +74,11 @@ export default async function PractitionerPublicProfilePage({
     getDictionary(locale),
     createSupabaseServerClient(),
   ]);
-  const profile = await findPublicPractitionerProfile(supabase, id);
+  const [profile, availableSlots, publicMapPoints] = await Promise.all([
+    findPublicPractitionerProfile(supabase, id),
+    listPublicAvailableSlotsByPractitionerId(supabase, id),
+    findPublicPractitionerMapPoints(supabase),
+  ]);
 
   if (!profile) {
     notFound();
@@ -82,9 +88,12 @@ export default async function PractitionerPublicProfilePage({
     profile,
     dictionary.practitioners.public.unknownCity
   );
-  const availableSlots = await listPublicAvailableSlotsByPractitionerId(supabase, profile.id);
   const hasAvailableSlots = availableSlots.length > 0;
   const profileLinks = getProfileLinks(profile);
+  const mapMarkers = toPractitionerMapMarkers(
+    publicMapPoints.filter((point) => point.profileId === profile.id),
+    { locale, detailsLabel: dictionary.practitioners.public.viewDetails, includeDetailsLink: false }
+  );
 
   return (
     <main className="min-h-screen bg-muted/40 p-6">
@@ -151,8 +160,10 @@ export default async function PractitionerPublicProfilePage({
               />
             ) : null}
             <ClusteredMap
-              markers={noPublicProfileMarkers}
+              markers={mapMarkers}
               emptyText={dictionary.practitioners.public.emptyMap}
+              loadingText={dictionary.practitioners.public.loadingMap}
+              errorText={dictionary.practitioners.public.errorMap}
               className="min-h-[320px]"
             />
           </CardContent>

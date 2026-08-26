@@ -95,7 +95,7 @@ export function createMarkerPopupHtml(marker: MapMarker) {
       </div>
       ${note ? `<p>${note}</p>` : ""}
       ${description ? `<p>${description}</p>` : ""}
-      ${marker.href ? `<a href="${escapeHtml(marker.href)}">View details</a>` : ""}
+      ${marker.href ? `<a href="${escapeHtml(marker.href)}">${escapeHtml(marker.hrefLabel ?? "View details")}</a>` : ""}
     </div>
   `;
 }

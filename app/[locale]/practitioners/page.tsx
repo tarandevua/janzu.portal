@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { findPublicPractitionerProfiles } from "@/server/services/practitioner.service";
+import {
+  findPublicPractitionerMapPoints,
+  findPublicPractitionerProfiles,
+} from "@/server/services/practitioner.service";
 
 type PractitionersPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -18,10 +21,11 @@ export default async function PractitionersPage({ params }: PractitionersPagePro
     getDictionary(locale),
     createSupabaseServerClient(),
   ]);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const profiles = await findPublicPractitionerProfiles(supabase);
+  const [{ data: { user } }, profiles, mapPoints] = await Promise.all([
+    supabase.auth.getUser(),
+    findPublicPractitionerProfiles(supabase),
+    findPublicPractitionerMapPoints(supabase),
+  ]);
 
   return (
     <main className="min-h-screen bg-muted/40 p-6">
@@ -47,6 +51,7 @@ export default async function PractitionersPage({ params }: PractitionersPagePro
         <PublicPractitionerDirectory
           locale={locale}
           profiles={profiles}
+          mapPoints={mapPoints}
           dictionary={dictionary.practitioners.public}
         />
       </section>

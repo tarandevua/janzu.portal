@@ -251,7 +251,7 @@ Decide:
 
 #### TASK-302: Separate public and community maps
 
-**Status:** Ready  
+**Status:** Done
 **Priority:** P2  
 **Dependencies:** TASK-301
 
@@ -261,6 +261,8 @@ Decide:
 - Authenticated community members see only fields allowed for community visibility.
 - Map role/category comes from verified platform state.
 - Users can preview their public and community views.
+
+**Verification:** Forward-only migration `202608260003_task_302_separate_practitioner_maps.sql` adds distinct anonymous and actor-bound community map projections plus an owner-bound preview. All projections derive categories from verified platform state, apply field audiences, omit exact coordinates and private notes, and emit deterministic 0.1-degree city/region grid-cell centers. SQL integration tests cover public/community authorization and privacy; unit and browser checks cover localized maps, previews, route boundaries, filtering, and responsive layout.
 
 #### TASK-303: Add WhatsApp with explicit consent
 

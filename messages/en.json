@@ -294,14 +294,28 @@
     },
     "community": {
       "title": "Community directory",
-      "description": "Authenticated members who opted into community visibility. Fields remain filtered by each member's choices."
+      "description": "Authenticated members who opted into community visibility. Fields remain filtered by each member's choices, and map markers use approximate city or region locations."
+    },
+    "mapPreview": {
+      "title": "Map visibility preview",
+      "description": "Preview the map information visible with your saved settings. Markers use an approximate city or region location and never expose your stored exact coordinates.",
+      "publicTitle": "Public map",
+      "publicDescription": "What anonymous visitors can see. Public listing is limited to verified Facilitators and Instructors.",
+      "publicEmpty": "Your profile is not currently visible on the public map.",
+      "communityTitle": "Community map",
+      "communityDescription": "What active signed-in community members can see.",
+      "communityEmpty": "Your profile is not currently visible on the community map.",
+      "loading": "Loading map preview...",
+      "error": "The map preview could not be loaded. Try again."
     },
     "public": {
       "title": "Find Janzu practitioners",
       "description": "Explore public practitioner profiles by location, language, and practice focus.",
       "unknownCity": "Janzu practitioner",
       "profileTitle": "Practitioner profile",
-      "emptyMap": "No public practitioner coordinates are available yet.",
+      "emptyMap": "No approved professionals have shared an approximate public map location yet.",
+      "loadingMap": "Loading practitioner map...",
+      "errorMap": "The practitioner map could not be loaded. Try again.",
       "backToPortal": "Back to portal",
       "backToList": "Back to practitioners",
       "apprenticePin": "Trainee",
@@ -309,7 +323,8 @@
       "facilitatorPin": "Facilitator",
       "instructorPin": "Instructor",
       "emptyGroup": "No public profiles are available in this group yet.",
-      "viewDetails": "View details"
+      "viewDetails": "View details",
+      "filterLabel": "Filter practitioners by verified category"
     }
   },
   "clients": {

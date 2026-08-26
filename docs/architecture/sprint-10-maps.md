@@ -18,7 +18,9 @@ Add public clustered maps for practitioners and approved water locations.
 
 ## Data Rules
 
-- Practitioner map shows only public practitioner profiles with valid coordinates.
+- Public practitioner map shows only explicitly opted-in, verified Facilitators and Instructors with public location visibility.
+- The authenticated community map uses its own actor-bound projection and includes only community-visible profiles and fields.
+- Practitioner map coordinates are 0.1-degree city/region grid-cell centers computed before the response leaves PostgreSQL; stored exact coordinates and location notes are never projected.
 - Location map shows only approved public locations.
 - Marker data passed to the browser is limited to public profile/location fields.
 

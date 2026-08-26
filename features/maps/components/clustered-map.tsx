@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { Map as LeafletMap } from "leaflet";
 import type { MapMarker } from "@/features/maps/types";
 import { createMarkerPopupHtml, getMapCenter } from "@/features/maps/utils";
@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 type ClusteredMapProps = {
   markers: MapMarker[];
   emptyText: string;
+  loadingText?: string;
+  errorText?: string;
   className?: string;
 };
 
@@ -48,15 +50,27 @@ function getMarkerLabel(marker: MapMarker) {
     return "P";
   }
 
+  if (marker.practitionerGroup === "instructor") {
+    return "I";
+  }
+
   return "A";
 }
 
-export function ClusteredMap({ markers, emptyText, className }: ClusteredMapProps) {
+export function ClusteredMap({
+  markers,
+  emptyText,
+  loadingText = "",
+  errorText = emptyText,
+  className,
+}: ClusteredMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
     let cancelled = false;
+    setStatus("loading");
 
     async function renderMap() {
       const container = containerRef.current;
@@ -117,10 +131,12 @@ export function ClusteredMap({ markers, emptyText, className }: ClusteredMapProp
       }
 
       mapRef.current = map;
+      setStatus("ready");
     }
 
     void renderMap().catch((error: unknown) => {
       console.error("Janzu map failed to initialize", error);
+      if (!cancelled) setStatus("error");
     });
 
     return () => {
@@ -147,9 +163,16 @@ export function ClusteredMap({ markers, emptyText, className }: ClusteredMapProp
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={cn("min-h-[420px] overflow-hidden rounded-md border bg-muted", className)}
-    />
+    <div className={cn("relative min-h-[420px] overflow-hidden rounded-md border bg-muted", className)}>
+      <div ref={containerRef} className="absolute inset-0" />
+      {status !== "ready" ? (
+        <div
+          role={status === "error" ? "alert" : "status"}
+          className="absolute inset-0 flex items-center justify-center bg-muted p-6 text-sm text-muted-foreground"
+        >
+          {status === "error" ? errorText : loadingText}
+        </div>
+      ) : null}
+    </div>
   );
 }

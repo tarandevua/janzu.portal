@@ -294,14 +294,28 @@
     },
     "community": {
       "title": "Directorio de la comunidad",
-      "description": "Miembros autenticados que eligieron visibilidad comunitaria. Los campos se filtran segun las elecciones de cada miembro."
+      "description": "Miembros autenticados que eligieron visibilidad comunitaria. Los campos se filtran segun las elecciones de cada miembro y los marcadores usan ubicaciones aproximadas de ciudad o region."
+    },
+    "mapPreview": {
+      "title": "Vista previa de visibilidad en el mapa",
+      "description": "Previsualiza la informacion del mapa visible con tu configuracion guardada. Los marcadores usan una ubicacion aproximada de ciudad o region y nunca muestran tus coordenadas exactas guardadas.",
+      "publicTitle": "Mapa publico",
+      "publicDescription": "Lo que pueden ver los visitantes anonimos. La aparicion publica esta limitada a Facilitadores e Instructores verificados.",
+      "publicEmpty": "Tu perfil no esta visible actualmente en el mapa publico.",
+      "communityTitle": "Mapa de la comunidad",
+      "communityDescription": "Lo que pueden ver los miembros activos de la comunidad que iniciaron sesion.",
+      "communityEmpty": "Tu perfil no esta visible actualmente en el mapa de la comunidad.",
+      "loading": "Cargando vista previa del mapa...",
+      "error": "No se pudo cargar la vista previa del mapa. Intentalo de nuevo."
     },
     "public": {
       "title": "Encontrar practicantes de Janzu",
       "description": "Explora perfiles publicos por ubicacion, idioma y enfoque de practica.",
       "unknownCity": "Practicante de Janzu",
       "profileTitle": "Perfil de practicante",
-      "emptyMap": "Aun no hay coordenadas publicas de practicantes disponibles.",
+      "emptyMap": "Aun ningun profesional aprobado ha compartido una ubicacion publica aproximada en el mapa.",
+      "loadingMap": "Cargando mapa de practicantes...",
+      "errorMap": "No se pudo cargar el mapa de practicantes. Intentalo de nuevo.",
       "backToPortal": "Volver al portal",
       "backToList": "Volver a practicantes",
       "apprenticePin": "Persona en formación",
@@ -309,7 +323,8 @@
       "facilitatorPin": "Facilitador",
       "instructorPin": "Instructor",
       "emptyGroup": "Aun no hay perfiles publicos disponibles en este grupo.",
-      "viewDetails": "Ver detalles"
+      "viewDetails": "Ver detalles",
+      "filterLabel": "Filtrar practicantes por categoria verificada"
     }
   },
   "clients": {
