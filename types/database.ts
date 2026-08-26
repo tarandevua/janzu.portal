@@ -1496,6 +1496,25 @@ export type Database = {
           updated_at: string;
         }[];
       };
+      list_instructor_supervision_dashboard: {
+        Args: { actor_user_id: string };
+        Returns: {
+          assignment_id: string;
+          trainee_user_id: string;
+          trainee_name: string;
+          practitioner_id: string | null;
+          current_level: "level_1" | "level_2" | "level_3" | null;
+          verified_training_count: number;
+          latest_verified_training_id: string | null;
+          journey_id: string | null;
+          journey_state: Database["public"]["Enums"]["certification_journey_state"] | null;
+          counted_sessions_count: number;
+          next_session_milestone: number;
+          recent_feedback_id: string | null;
+          recent_feedback_session_date: string | null;
+          recent_feedback_rating: number | null;
+        }[];
+      };
       request_supervision: {
         Args: { actor_user_id: string; target_instructor_user_id: string };
         Returns: Database["public"]["Tables"]["supervision_assignments"]["Row"];

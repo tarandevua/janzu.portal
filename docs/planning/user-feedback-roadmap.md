@@ -205,7 +205,7 @@ Decide:
 
 #### TASK-202: Add Instructor–Trainee assignment
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** TASK-201
 
@@ -222,7 +222,7 @@ Decide:
 
 #### TASK-203: Add an Instructor supervision dashboard
 
-**Status:** Planned  
+**Status:** Done  
 **Priority:** P1  
 **Dependencies:** TASK-202, TASK-401, TASK-402
 
@@ -279,7 +279,7 @@ Decide:
 
 #### TASK-401: Add structured training history
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** DEC-02, DEC-04
 
@@ -296,7 +296,7 @@ Decide:
 
 #### TASK-402: Implement a certification state machine
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** TASK-401
 

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { SupervisionWorkspace } from "@/features/supervision/components/supervision-workspace";
 import { SupervisionStatusToast } from "@/features/supervision/components/supervision-status-toast";
+import { InstructorSupervisionDashboard } from "@/features/supervision/components/instructor-supervision-dashboard";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -39,6 +40,16 @@ export default async function SupervisionPage({
           status={status}
           trainingAccessDeniedMessage={dictionary.supervision.trainingAccessDenied}
         />
+        {workspace.roles.includes("instructor") ? (
+          <div className="mb-4">
+            <InstructorSupervisionDashboard
+              locale={locale}
+              trainees={workspace.dashboardTrainees}
+              dictionary={dictionary.supervision}
+              stateLabels={dictionary.certification.states}
+            />
+          </div>
+        ) : null}
         <SupervisionWorkspace
           locale={locale}
           userId={data.user.id}

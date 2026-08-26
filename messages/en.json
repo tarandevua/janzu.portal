@@ -848,7 +848,31 @@
     "responseError": "The Instructor request response could not be saved. Try again.",
     "cancelError": "The Instructor request could not be cancelled. Try again.",
     "endError": "The Instructor relationship could not be ended. Try again.",
-    "trainingAccessDenied": "You no longer have access to that Trainee's training history. Review your active Instructor relationships."
+    "trainingAccessDenied": "You no longer have access to that Trainee's training history. Review your active Instructor relationships.",
+    "dashboardTitle": "Assigned Trainees",
+    "dashboardDescription": "Review supervision progress from authorized source records. Session Participant identity, contact details, and feedback text are not shown here.",
+    "dashboardEmpty": "No Trainees are actively assigned to you.",
+    "currentLevel": "Current level",
+    "noVerifiedLevel": "No verified level",
+    "level1": "Level 1",
+    "level2": "Level 2",
+    "level3": "Level 3",
+    "verifiedTraining": "Verified training",
+    "verifiedTrainingCount": "{count} verified records",
+    "sessionProgress": "Session progress",
+    "recentFeedback": "Recent feedback",
+    "noRecentFeedback": "No submitted feedback",
+    "ratingOutOfFive": "{rating} of 5",
+    "milestone": "Milestone",
+    "nextAction": "Next action",
+    "nextActions": {
+      "reviewTraining": "Review and verify the training record",
+      "reviewSessionProgress": "Review counted-session progress",
+      "reviewLevel2Milestone": "Review the Level 2 milestone evidence",
+      "reviewAssessmentMilestone": "Review the assessment milestone evidence",
+      "reviewRevision": "Review the required revision",
+      "monitorJourney": "Monitor the certification journey"
+    }
   },
   "userManagement": {
     "title": "User management",

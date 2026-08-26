@@ -80,7 +80,7 @@ export function CertificationJourneyReview({
           </div>
         ) : (
           journeys.map((journey) => (
-            <section key={journey.id} className="grid gap-4 rounded-md border p-4">
+            <section id={`journey-${journey.id}`} key={journey.id} className="grid scroll-mt-6 gap-4 rounded-md border p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h3 className="font-medium">{journey.traineeName}</h3>

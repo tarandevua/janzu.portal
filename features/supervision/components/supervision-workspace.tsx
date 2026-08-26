@@ -55,6 +55,30 @@ type Dictionary = {
   cancelError: string;
   endError: string;
   trainingAccessDenied: string;
+  dashboardTitle: string;
+  dashboardDescription: string;
+  dashboardEmpty: string;
+  currentLevel: string;
+  noVerifiedLevel: string;
+  level1: string;
+  level2: string;
+  level3: string;
+  verifiedTraining: string;
+  verifiedTrainingCount: string;
+  sessionProgress: string;
+  recentFeedback: string;
+  noRecentFeedback: string;
+  ratingOutOfFive: string;
+  milestone: string;
+  nextAction: string;
+  nextActions: {
+    reviewTraining: string;
+    reviewSessionProgress: string;
+    reviewLevel2Milestone: string;
+    reviewAssessmentMilestone: string;
+    reviewRevision: string;
+    monitorJourney: string;
+  };
 };
 
 function PersonSelect({ name, people, label }: { name: string; people: SupervisionPerson[]; label: string }) {
@@ -94,12 +118,14 @@ export function SupervisionWorkspace({
   const isInstructor = roles.includes("instructor");
   const isAdmin = roles.includes("admin");
   const adminAction = adminAssignInstructorAction.bind(null, locale);
+  const rawStatusMessage = status ? dictionary[status as keyof Dictionary] : null;
+  const statusMessage = typeof rawStatusMessage === "string" ? rawStatusMessage : null;
 
   return (
     <div className="grid gap-4">
-      {status && dictionary[status as keyof Dictionary] ? (
+      {statusMessage ? (
         <p role="status" className="rounded-md border bg-muted p-3 text-sm">
-          {dictionary[status as keyof Dictionary]}
+          {statusMessage}
         </p>
       ) : null}
 

@@ -1,6 +1,7 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type {
   SupervisionAssignment,
+  SupervisionDashboardTrainee,
   SupervisionPerson,
 } from "@/server/models/supervision.model";
 import type { Database } from "@/types/database";
@@ -8,6 +9,7 @@ import type { Database } from "@/types/database";
 type Functions = Database["public"]["Functions"];
 type AssignmentRow = Functions["list_supervision_assignments"]["Returns"][number];
 type PersonRow = Functions["list_available_instructors"]["Returns"][number];
+type DashboardRow = Functions["list_instructor_supervision_dashboard"]["Returns"][number];
 
 type SupervisionRpcClient = {
   rpc(
@@ -18,6 +20,10 @@ type SupervisionRpcClient = {
     name: "list_available_instructors" | "list_available_trainees",
     args: Functions["list_available_instructors"]["Args"]
   ): Promise<{ data: PersonRow[] | null; error: { message: string } | null }>;
+  rpc(
+    name: "list_instructor_supervision_dashboard",
+    args: Functions["list_instructor_supervision_dashboard"]["Args"]
+  ): Promise<{ data: DashboardRow[] | null; error: { message: string } | null }>;
   rpc(
     name: "request_supervision",
     args: Functions["request_supervision"]["Args"]
@@ -54,6 +60,38 @@ function toAssignment(row: AssignmentRow): SupervisionAssignment {
 
 function toPerson(row: PersonRow): SupervisionPerson {
   return { userId: row.user_id, displayName: row.display_name };
+}
+
+function toDashboardTrainee(row: DashboardRow): SupervisionDashboardTrainee {
+  return {
+    assignmentId: row.assignment_id,
+    traineeUserId: row.trainee_user_id,
+    traineeName: row.trainee_name,
+    practitionerId: row.practitioner_id,
+    currentLevel: row.current_level,
+    verifiedTrainingCount: row.verified_training_count,
+    latestVerifiedTrainingId: row.latest_verified_training_id,
+    journeyId: row.journey_id,
+    journeyState: row.journey_state,
+    countedSessionsCount: row.counted_sessions_count,
+    nextSessionMilestone: row.next_session_milestone === 50 ? 50 : 25,
+    recentFeedbackId: row.recent_feedback_id,
+    recentFeedbackSessionDate: row.recent_feedback_session_date,
+    recentFeedbackRating: row.recent_feedback_rating,
+  };
+}
+
+export async function listInstructorSupervisionDashboard(
+  supabase: SupabaseServerClient,
+  actorUserId: string
+) {
+  const client = supabase as unknown as SupervisionRpcClient;
+  const { data, error } = await client.rpc("list_instructor_supervision_dashboard", {
+    actor_user_id: actorUserId,
+  });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(toDashboardTrainee);
 }
 
 export async function listSupervisionAssignments(

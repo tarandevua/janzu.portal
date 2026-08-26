@@ -848,7 +848,31 @@
     "responseError": "No se pudo guardar la respuesta a la solicitud de Instructor. Inténtalo de nuevo.",
     "cancelError": "No se pudo cancelar la solicitud de Instructor. Inténtalo de nuevo.",
     "endError": "No se pudo finalizar la relación con el Instructor. Inténtalo de nuevo.",
-    "trainingAccessDenied": "Ya no tienes acceso al historial de formación de esa persona. Revisa tus relaciones activas de Instructor."
+    "trainingAccessDenied": "Ya no tienes acceso al historial de formación de esa persona. Revisa tus relaciones activas de Instructor.",
+    "dashboardTitle": "Personas en formación asignadas",
+    "dashboardDescription": "Revisa el progreso de supervisión desde registros autorizados. Aquí no se muestran la identidad ni los datos de contacto de Participantes de sesiones, ni el texto de sus comentarios.",
+    "dashboardEmpty": "No tienes ninguna persona en formación asignada activamente.",
+    "currentLevel": "Nivel actual",
+    "noVerifiedLevel": "Sin nivel verificado",
+    "level1": "Nivel 1",
+    "level2": "Nivel 2",
+    "level3": "Nivel 3",
+    "verifiedTraining": "Formación verificada",
+    "verifiedTrainingCount": "{count} registros verificados",
+    "sessionProgress": "Progreso de sesiones",
+    "recentFeedback": "Comentarios recientes",
+    "noRecentFeedback": "Sin comentarios enviados",
+    "ratingOutOfFive": "{rating} de 5",
+    "milestone": "Hito",
+    "nextAction": "Próxima acción",
+    "nextActions": {
+      "reviewTraining": "Revisar y verificar el registro de formación",
+      "reviewSessionProgress": "Revisar el progreso de sesiones contabilizadas",
+      "reviewLevel2Milestone": "Revisar la evidencia del hito de Nivel 2",
+      "reviewAssessmentMilestone": "Revisar la evidencia del hito de evaluación",
+      "reviewRevision": "Revisar la corrección requerida",
+      "monitorJourney": "Supervisar el recorrido de certificación"
+    }
   },
   "userManagement": {
     "title": "Gestion de usuarios",

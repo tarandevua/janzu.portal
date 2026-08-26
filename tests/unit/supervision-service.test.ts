@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { listRequestableInstructors } from "@/server/services/supervision.service";
+import {
+  getSupervisionNextActionKey,
+  listRequestableInstructors,
+} from "@/server/services/supervision.service";
 import type {
   SupervisionAssignment,
   SupervisionPerson,
@@ -60,5 +63,16 @@ describe("listRequestableInstructors", () => {
     );
 
     expect(result).toEqual(instructors);
+  });
+});
+
+describe("getSupervisionNextActionKey", () => {
+  it("derives guidance from existing training and journey state without inventing transitions", () => {
+    expect(getSupervisionNextActionKey({ currentLevel: null, journeyState: null })).toBe("reviewTraining");
+    expect(getSupervisionNextActionKey({ currentLevel: "level_1", journeyState: "practicum_in_progress" })).toBe("reviewSessionProgress");
+    expect(getSupervisionNextActionKey({ currentLevel: "level_1", journeyState: "level_2_review_eligible" })).toBe("reviewLevel2Milestone");
+    expect(getSupervisionNextActionKey({ currentLevel: "level_2", journeyState: "assessment_available" })).toBe("reviewAssessmentMilestone");
+    expect(getSupervisionNextActionKey({ currentLevel: "level_2", journeyState: "revision_required" })).toBe("reviewRevision");
+    expect(getSupervisionNextActionKey({ currentLevel: "level_2", journeyState: "certification_approved" })).toBe("monitorJourney");
   });
 });

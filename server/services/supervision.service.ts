@@ -5,6 +5,7 @@ import {
   endSupervision,
   listAvailableInstructors,
   listAvailableTrainees,
+  listInstructorSupervisionDashboard,
   listSupervisionAssignments,
   requestSupervision,
   respondToSupervision,
@@ -12,8 +13,52 @@ import {
 import { hasRole } from "@/server/services/rbac.service";
 import type {
   SupervisionAssignment,
+  SupervisionDashboardTrainee,
   SupervisionPerson,
 } from "@/server/models/supervision.model";
+
+export type SupervisionNextActionKey =
+  | "reviewTraining"
+  | "reviewSessionProgress"
+  | "reviewLevel2Milestone"
+  | "reviewAssessmentMilestone"
+  | "reviewRevision"
+  | "monitorJourney";
+
+export function getSupervisionNextActionKey(
+  trainee: Pick<SupervisionDashboardTrainee, "currentLevel" | "journeyState">
+): SupervisionNextActionKey {
+  if (!trainee.currentLevel || !trainee.journeyState || trainee.journeyState === "level_1_in_progress") {
+    return "reviewTraining";
+  }
+
+  if (
+    trainee.journeyState === "level_1_completed" ||
+    trainee.journeyState === "practicum_in_progress" ||
+    trainee.journeyState === "level_2_completed" ||
+    trainee.journeyState === "advanced_practicum_in_progress"
+  ) {
+    return "reviewSessionProgress";
+  }
+
+  if (
+    trainee.journeyState === "sessions_25_reached" ||
+    trainee.journeyState === "level_2_review_eligible"
+  ) {
+    return "reviewLevel2Milestone";
+  }
+
+  if (
+    trainee.journeyState === "sessions_50_reached" ||
+    trainee.journeyState === "assessment_available" ||
+    trainee.journeyState === "assessment_in_progress"
+  ) {
+    return "reviewAssessmentMilestone";
+  }
+
+  if (trainee.journeyState === "revision_required") return "reviewRevision";
+  return "monitorJourney";
+}
 
 export function listRequestableInstructors(
   instructors: SupervisionPerson[],
@@ -42,17 +87,21 @@ export async function getSupervisionWorkspace(
   const roles = await listUserRoles(supabase, actorUserId);
   const isAdmin = hasRole(roles, "admin");
   const canRequest = hasRole(roles, "apprentice");
-  const [assignments, instructors, trainees] = await Promise.all([
+  const isInstructor = hasRole(roles, "instructor");
+  const [assignments, instructors, trainees, dashboardTrainees] = await Promise.all([
     listSupervisionAssignments(supabase, actorUserId),
     canRequest || isAdmin ? listAvailableInstructors(supabase, actorUserId) : Promise.resolve([]),
     isAdmin ? listAvailableTrainees(supabase, actorUserId) : Promise.resolve([]),
+    isInstructor
+      ? listInstructorSupervisionDashboard(supabase, actorUserId)
+      : Promise.resolve([]),
   ]);
 
   const requestableInstructors = canRequest
     ? listRequestableInstructors(instructors, assignments, actorUserId)
     : [];
 
-  return { assignments, instructors, requestableInstructors, trainees, roles };
+  return { assignments, instructors, requestableInstructors, trainees, dashboardTrainees, roles };
 }
 
 export async function requestMyInstructor(
