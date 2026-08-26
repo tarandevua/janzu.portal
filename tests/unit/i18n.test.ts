@@ -73,5 +73,13 @@ describe("i18n config", () => {
     }
     expect(en.supervision.trainingAccessDenied).toMatch(/no longer have access/i);
     expect(es.supervision.trainingAccessDenied).toMatch(/ya no tienes acceso/i);
+    expect(en.supervision.alreadyPending).toMatch(/already have a pending/i);
+    expect(es.supervision.alreadyPending).toMatch(/ya tienes una solicitud/i);
+    expect(en.supervision.responseError).toMatch(/response could not be saved/i);
+    expect(es.supervision.responseError).toMatch(/no se pudo guardar la respuesta/i);
+    expect(en.supervision.endError).toMatch(/could not be ended/i);
+    expect(es.supervision.endError).toMatch(/no se pudo finalizar/i);
+    expect(en.supervision.requestCancelled).toMatch(/request cancelled/i);
+    expect(es.supervision.requestCancelled).toMatch(/solicitud de Instructor cancelada/i);
   });
 });

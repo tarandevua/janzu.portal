@@ -10,6 +10,30 @@ import {
   respondToSupervision,
 } from "@/server/repositories/supervision.repository";
 import { hasRole } from "@/server/services/rbac.service";
+import type {
+  SupervisionAssignment,
+  SupervisionPerson,
+} from "@/server/models/supervision.model";
+
+export function listRequestableInstructors(
+  instructors: SupervisionPerson[],
+  assignments: SupervisionAssignment[],
+  traineeUserId: string
+) {
+  const unavailableInstructorIds = new Set(
+    assignments
+      .filter(
+        (assignment) =>
+          assignment.traineeUserId === traineeUserId &&
+          (assignment.status === "pending" || assignment.status === "active")
+      )
+      .map((assignment) => assignment.instructorUserId)
+  );
+
+  return instructors.filter(
+    (instructor) => !unavailableInstructorIds.has(instructor.userId)
+  );
+}
 
 export async function getSupervisionWorkspace(
   supabase: SupabaseServerClient,
@@ -24,7 +48,11 @@ export async function getSupervisionWorkspace(
     isAdmin ? listAvailableTrainees(supabase, actorUserId) : Promise.resolve([]),
   ]);
 
-  return { assignments, instructors, trainees, roles };
+  const requestableInstructors = canRequest
+    ? listRequestableInstructors(instructors, assignments, actorUserId)
+    : [];
+
+  return { assignments, instructors, requestableInstructors, trainees, roles };
 }
 
 export async function requestMyInstructor(

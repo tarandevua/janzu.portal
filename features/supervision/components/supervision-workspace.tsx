@@ -9,10 +9,13 @@ import type { Role } from "@/server/models/rbac.model";
 import type { SupervisionAssignment, SupervisionPerson } from "@/server/models/supervision.model";
 import {
   adminAssignInstructorAction,
-  endInstructorAssignment,
-  requestInstructor,
-  respondInstructorRequest,
 } from "@/features/supervision/actions";
+import { InstructorRequestForm } from "@/features/supervision/components/instructor-request-form";
+import {
+  CancelInstructorRequestForm,
+  EndInstructorRelationshipForm,
+  InstructorRequestResponseForm,
+} from "@/features/supervision/components/relationship-action-forms";
 
 type Dictionary = {
   title: string;
@@ -27,6 +30,7 @@ type Dictionary = {
   empty: string;
   accept: string;
   decline: string;
+  cancelRequest: string;
   end: string;
   reason: string;
   status: string;
@@ -40,8 +44,16 @@ type Dictionary = {
   assign: string;
   requested: string;
   accepted: string;
+  requestDeclined: string;
+  requestCancelled: string;
+  relationshipEnded: string;
   assigned: string;
   invalid: string;
+  alreadyPending: string;
+  error: string;
+  responseError: string;
+  cancelError: string;
+  endError: string;
   trainingAccessDenied: string;
 };
 
@@ -63,6 +75,7 @@ export function SupervisionWorkspace({
   roles,
   assignments,
   instructors,
+  requestableInstructors,
   trainees,
   dictionary,
   status,
@@ -72,6 +85,7 @@ export function SupervisionWorkspace({
   roles: Role[];
   assignments: SupervisionAssignment[];
   instructors: SupervisionPerson[];
+  requestableInstructors: SupervisionPerson[];
   trainees: SupervisionPerson[];
   dictionary: Dictionary;
   status?: string;
@@ -79,9 +93,6 @@ export function SupervisionWorkspace({
   const isTrainee = roles.includes("apprentice");
   const isInstructor = roles.includes("instructor");
   const isAdmin = roles.includes("admin");
-  const requestAction = requestInstructor.bind(null, locale);
-  const responseAction = respondInstructorRequest.bind(null, locale);
-  const endAction = endInstructorAssignment.bind(null, locale);
   const adminAction = adminAssignInstructorAction.bind(null, locale);
 
   return (
@@ -96,10 +107,11 @@ export function SupervisionWorkspace({
         <Card>
           <CardHeader><CardTitle>{dictionary.chooseInstructor}</CardTitle><CardDescription>{dictionary.chooseInstructorDescription}</CardDescription></CardHeader>
           <CardContent>
-            <form action={requestAction} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div className="min-w-64 flex-1"><PersonSelect name="instructorUserId" people={instructors} label={dictionary.instructor} /></div>
-              <Button type="submit" disabled={instructors.length === 0}>{dictionary.request}</Button>
-            </form>
+            <InstructorRequestForm
+              locale={locale}
+              instructors={requestableInstructors}
+              dictionary={dictionary}
+            />
           </CardContent>
         </Card>
       ) : null}
@@ -130,20 +142,27 @@ export function SupervisionWorkspace({
               </div>
               <div className="flex flex-wrap items-start gap-2">
                 {isInstructor && assignment.instructorUserId === userId && assignment.status === "pending" ? (
-                  <form action={responseAction} className="flex gap-2">
-                    <input type="hidden" name="assignmentId" value={assignment.id} />
-                    <Button name="decision" value="accept" size="sm">{dictionary.accept}</Button>
-                    <Button name="decision" value="decline" variant="outline" size="sm">{dictionary.decline}</Button>
-                  </form>
+                  <InstructorRequestResponseForm
+                    locale={locale}
+                    assignmentId={assignment.id}
+                    dictionary={dictionary}
+                  />
+                ) : null}
+                {isTrainee && assignment.traineeUserId === userId && assignment.status === "pending" ? (
+                  <CancelInstructorRequestForm
+                    locale={locale}
+                    assignmentId={assignment.id}
+                    dictionary={dictionary}
+                  />
                 ) : null}
                 {assignment.status === "active" ? (
                   <>
                     <Button asChild variant="outline" size="sm"><Link href={`/${locale}/dashboard/training?traineeId=${assignment.traineeUserId}`}>{dictionary.training}</Link></Button>
-                    <form action={endAction} className="flex gap-2">
-                      <input type="hidden" name="assignmentId" value={assignment.id} />
-                      <Input className="h-9 w-44" name="reason" maxLength={500} placeholder={dictionary.reason} />
-                      <Button variant="outline" size="sm">{dictionary.end}</Button>
-                    </form>
+                    <EndInstructorRelationshipForm
+                      locale={locale}
+                      assignmentId={assignment.id}
+                      dictionary={dictionary}
+                    />
                   </>
                 ) : null}
               </div>

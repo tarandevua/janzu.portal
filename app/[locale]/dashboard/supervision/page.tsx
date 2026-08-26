@@ -45,6 +45,7 @@ export default async function SupervisionPage({
           roles={workspace.roles}
           assignments={workspace.assignments}
           instructors={workspace.instructors}
+          requestableInstructors={workspace.requestableInstructors}
           trainees={workspace.trainees}
           dictionary={dictionary.supervision}
           status={status}

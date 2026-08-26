@@ -17,6 +17,23 @@ import {
   supervisionResponseSchema,
 } from "@/server/validators/supervision.schema";
 
+export type InstructorRequestActionResult =
+  | { ok: true; status: "requested" }
+  | { ok: false; status: "invalid" | "alreadyPending" | "error" };
+
+export type RelationshipActionResult =
+  | { ok: true; status: "accepted" | "declined" | "cancelled" | "ended" }
+  | { ok: false; status: "invalid" | "error" };
+
+function isPendingRequestConflict(error: unknown) {
+  return error instanceof Error && error.message.includes("supervision_one_pending_request_idx");
+}
+
+function refreshSupervision(locale: Locale) {
+  revalidatePath(`/${locale}/dashboard/supervision`);
+  revalidatePath(`/${locale}/dashboard/first-steps`);
+}
+
 async function requireUser(locale: Locale) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -30,44 +47,94 @@ function finish(locale: Locale, status: string): never {
   redirect(`/${locale}/dashboard/supervision?status=${status}`);
 }
 
-export async function requestInstructor(locale: Locale, formData: FormData) {
+export async function requestInstructor(
+  locale: Locale,
+  formData: FormData
+): Promise<InstructorRequestActionResult> {
   const parsed = supervisionRequestSchema.safeParse({
     instructorUserId: formData.get("instructorUserId"),
   });
-  if (!parsed.success) finish(locale, "invalid");
+  if (!parsed.success) return { ok: false, status: "invalid" };
 
   const { supabase, user } = await requireUser(locale);
-  await requestMyInstructor(supabase, user.id, parsed.data.instructorUserId);
-  finish(locale, "requested");
+  try {
+    await requestMyInstructor(supabase, user.id, parsed.data.instructorUserId);
+    refreshSupervision(locale);
+    return { ok: true, status: "requested" };
+  } catch (error) {
+    return {
+      ok: false,
+      status: isPendingRequestConflict(error) ? "alreadyPending" : "error",
+    };
+  }
 }
 
-export async function respondInstructorRequest(locale: Locale, formData: FormData) {
+export async function respondInstructorRequest(
+  locale: Locale,
+  formData: FormData
+): Promise<RelationshipActionResult> {
   const parsed = supervisionResponseSchema.safeParse({
     assignmentId: formData.get("assignmentId"),
     decision: formData.get("decision"),
   });
-  if (!parsed.success) finish(locale, "invalid");
+  if (!parsed.success) return { ok: false, status: "invalid" };
 
   const { supabase, user } = await requireUser(locale);
-  await reviewInstructorRequest(
-    supabase,
-    user.id,
-    parsed.data.assignmentId,
-    parsed.data.decision === "accept"
-  );
-  finish(locale, parsed.data.decision === "accept" ? "accepted" : "declined");
+  try {
+    await reviewInstructorRequest(
+      supabase,
+      user.id,
+      parsed.data.assignmentId,
+      parsed.data.decision === "accept"
+    );
+    refreshSupervision(locale);
+    return {
+      ok: true,
+      status: parsed.data.decision === "accept" ? "accepted" : "declined",
+    };
+  } catch {
+    return { ok: false, status: "error" };
+  }
 }
 
-export async function endInstructorAssignment(locale: Locale, formData: FormData) {
+export async function endInstructorAssignment(
+  locale: Locale,
+  formData: FormData
+): Promise<RelationshipActionResult> {
   const parsed = supervisionEndSchema.safeParse({
     assignmentId: formData.get("assignmentId"),
     reason: formData.get("reason"),
   });
-  if (!parsed.success) finish(locale, "invalid");
+  if (!parsed.success) return { ok: false, status: "invalid" };
 
   const { supabase, user } = await requireUser(locale);
-  await endMySupervision(supabase, user.id, parsed.data.assignmentId, parsed.data.reason);
-  finish(locale, "ended");
+  try {
+    await endMySupervision(supabase, user.id, parsed.data.assignmentId, parsed.data.reason);
+    refreshSupervision(locale);
+    return { ok: true, status: "ended" };
+  } catch {
+    return { ok: false, status: "error" };
+  }
+}
+
+export async function cancelInstructorRequest(
+  locale: Locale,
+  formData: FormData
+): Promise<RelationshipActionResult> {
+  const parsed = supervisionEndSchema.safeParse({
+    assignmentId: formData.get("assignmentId"),
+    reason: "",
+  });
+  if (!parsed.success) return { ok: false, status: "invalid" };
+
+  const { supabase, user } = await requireUser(locale);
+  try {
+    await endMySupervision(supabase, user.id, parsed.data.assignmentId, "");
+    refreshSupervision(locale);
+    return { ok: true, status: "cancelled" };
+  } catch {
+    return { ok: false, status: "error" };
+  }
 }
 
 export async function adminAssignInstructorAction(locale: Locale, formData: FormData) {
