@@ -1,4 +1,8 @@
-import { saveProfileVisibility } from "@/features/practitioners/actions";
+"use client";
+
+import React, { useTransition, type FormEvent } from "react";
+import { toast } from "sonner";
+import { saveProfileVisibilityInline } from "@/features/practitioners/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -23,9 +27,12 @@ type VisibilityDictionary = {
   community: string;
   public: string;
   publicUnavailable: string;
+  directoryHelp: string;
   save: string;
+  saving: string;
   saved: string;
   invalid: string;
+  error: string;
 };
 
 const fieldNames = [
@@ -44,18 +51,36 @@ export function ProfileVisibilityForm({
   profile,
   canUsePublic,
   dictionary,
-  status,
 }: {
   locale: Locale;
   profile: PractitionerProfile;
   canUsePublic: boolean;
   dictionary: VisibilityDictionary;
-  status?: string;
 }) {
-  const action = saveProfileVisibility.bind(null, locale);
+  const [isPending, startTransition] = useTransition();
   const values: ProfileVisibility[] = canUsePublic
     ? ["private", "community", "public"]
     : ["private", "community"];
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    startTransition(async () => {
+      try {
+        const result = await saveProfileVisibilityInline(locale, formData);
+
+        if (result.ok) {
+          toast.success(dictionary.saved);
+          return;
+        }
+
+        toast.error(result.status === "invalid" ? dictionary.invalid : dictionary.error);
+      } catch {
+        toast.error(dictionary.error);
+      }
+    });
+  }
 
   return (
     <Card id="visibility">
@@ -64,7 +89,7 @@ export function ProfileVisibilityForm({
         <CardDescription>{dictionary.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={action} className="grid gap-5">
+        <form onSubmit={handleSubmit} className="grid gap-5">
           <div className="grid gap-4 md:grid-cols-2">
             {fieldNames.map((field) => (
               <div className="grid gap-2" key={field}>
@@ -83,19 +108,18 @@ export function ProfileVisibilityForm({
                     </option>
                   ))}
                 </select>
+                {field === "directory" ? (
+                  <p className="text-xs text-muted-foreground">{dictionary.directoryHelp}</p>
+                ) : null}
               </div>
             ))}
           </div>
           {!canUsePublic ? (
             <p className="text-sm text-muted-foreground">{dictionary.publicUnavailable}</p>
           ) : null}
-          {status === "visibility-saved" ? (
-            <p className="text-sm text-emerald-700" role="status">{dictionary.saved}</p>
-          ) : null}
-          {status === "visibility-invalid" ? (
-            <p className="text-sm text-destructive" role="alert">{dictionary.invalid}</p>
-          ) : null}
-          <Button className="w-fit" type="submit">{dictionary.save}</Button>
+          <Button className="w-fit" type="submit" disabled={isPending}>
+            {isPending ? dictionary.saving : dictionary.save}
+          </Button>
         </form>
       </CardContent>
     </Card>

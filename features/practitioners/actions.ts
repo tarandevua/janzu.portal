@@ -157,14 +157,21 @@ export async function savePractitionerProfile(locale: Locale, formData: FormData
   redirect(`/${locale}/dashboard/profile?status=saved`);
 }
 
-export async function saveProfileVisibility(locale: Locale, formData: FormData) {
+export type ProfileVisibilityActionResult =
+  | { ok: true; status: "saved" }
+  | { ok: false; status: "auth-required" | "invalid" | "error" };
+
+export async function saveProfileVisibilityInline(
+  locale: Locale,
+  formData: FormData
+): Promise<ProfileVisibilityActionResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/${locale}/login?status=auth-required`);
+    return { ok: false, status: "auth-required" };
   }
 
   const parsed = profileVisibilitySchema.safeParse({
@@ -179,13 +186,17 @@ export async function saveProfileVisibility(locale: Locale, formData: FormData) 
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/profile?status=visibility-invalid#visibility`);
+    return { ok: false, status: "invalid" };
   }
 
-  await saveMyProfileVisibility(supabase, user.id, parsed.data);
+  try {
+    await saveMyProfileVisibility(supabase, user.id, parsed.data);
+  } catch {
+    return { ok: false, status: "error" };
+  }
 
   revalidatePath(`/${locale}/dashboard/profile`);
   revalidatePath(`/${locale}/practitioners`);
   revalidatePath(`/${locale}/dashboard/first-steps`);
-  redirect(`/${locale}/dashboard/profile?status=visibility-saved#visibility`);
+  return { ok: true, status: "saved" };
 }

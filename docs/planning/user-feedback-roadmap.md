@@ -236,7 +236,7 @@ Decide:
 
 #### TASK-301: Add complete profile visibility controls
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** DEC-03
 
@@ -251,7 +251,7 @@ Decide:
 
 #### TASK-302: Separate public and community maps
 
-**Status:** Planned  
+**Status:** Ready  
 **Priority:** P2  
 **Dependencies:** TASK-301
 

@@ -2,6 +2,7 @@ import type { SupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import type { Database } from "@/types/database";
 import type {
+  DirectoryPractitionerProfile,
   PractitionerProfile,
   PractitionerProfileInput,
   ProfileVisibilityInput,
@@ -50,6 +51,22 @@ type PractitionerRow = {
   updated_at: string;
 };
 
+type DirectoryPractitionerRow = {
+  id: string;
+  public_group: PublicPractitionerGroup;
+  display_name: string | null;
+  bio: string | null;
+  country: string | null;
+  city: string | null;
+  languages: string[];
+  website: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  tiktok_url: string | null;
+  profile_image_url: string | null;
+};
+
 type PractitionerLocationRow = {
   id: string;
   practitioner_id: string;
@@ -70,15 +87,15 @@ type CertificationStatusRow = Pick<
 type PublicPractitionerRpcClient = {
   rpc(
     functionName: "list_public_practitioner_profiles"
-  ): Promise<{ data: PractitionerRow[] | null; error: { message: string } | null }>;
+  ): Promise<{ data: DirectoryPractitionerRow[] | null; error: { message: string } | null }>;
   rpc(
     functionName: "get_public_practitioner_profile",
     args: { target_profile_id: string }
-  ): Promise<{ data: PractitionerRow[] | null; error: { message: string } | null }>;
+  ): Promise<{ data: DirectoryPractitionerRow[] | null; error: { message: string } | null }>;
   rpc(
     functionName: "list_community_practitioner_profiles",
     args: { actor_user_id: string }
-  ): Promise<{ data: PractitionerRow[] | null; error: { message: string } | null }>;
+  ): Promise<{ data: DirectoryPractitionerRow[] | null; error: { message: string } | null }>;
 };
 
 function toPracticeLocation(row: PractitionerLocationRow): PractitionerPracticeLocation {
@@ -146,6 +163,24 @@ function toProfile(
     },
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+function toDirectoryProfile(row: DirectoryPractitionerRow): DirectoryPractitionerProfile {
+  return {
+    id: row.id,
+    publicGroup: row.public_group,
+    displayName: row.display_name,
+    bio: row.bio,
+    country: row.country,
+    city: row.city,
+    languages: row.languages,
+    website: row.website,
+    instagramUrl: row.instagram_url,
+    facebookUrl: row.facebook_url,
+    youtubeUrl: row.youtube_url,
+    tiktokUrl: row.tiktok_url,
+    profileImageUrl: row.profile_image_url,
   };
 }
 
@@ -293,9 +328,7 @@ export async function getPublicPractitionerProfile(
     return null;
   }
 
-  const [profileWithLocations] = await attachPracticeLocations(supabase, [profile]);
-
-  return profileWithLocations;
+  return toDirectoryProfile(profile);
 }
 
 export async function listPublicPractitionerProfiles(supabase: SupabaseServerClient) {
@@ -306,7 +339,7 @@ export async function listPublicPractitionerProfiles(supabase: SupabaseServerCli
     throw new Error(error.message);
   }
 
-  return attachPracticeLocations(supabase, data ?? []);
+  return (data ?? []).map(toDirectoryProfile);
 }
 
 export async function listCommunityPractitionerProfiles(
@@ -319,7 +352,7 @@ export async function listCommunityPractitionerProfiles(
   });
 
   if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => toProfile(row, []));
+  return (data ?? []).map(toDirectoryProfile);
 }
 
 export async function upsertPractitionerProfile(

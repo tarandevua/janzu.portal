@@ -367,29 +367,20 @@ function UserDetailsDrawer({
             <section className="grid gap-3">
               <h3 className="text-sm font-semibold">{dictionary.practitionerProfile}</h3>
               {managedUser.practitionerId ? (
-                <form action={publicProfileAction} className="grid gap-3 rounded-md border p-3">
-                  <input type="hidden" name="userId" value={managedUser.userId} />
-                  <div className="grid gap-2">
-                    <label htmlFor={`isPublic-${managedUser.userId}`} className="text-sm font-medium">
-                      {dictionary.managePublicProfile}
-                    </label>
-                    <Select
-                      name="isPublic"
-                      defaultValue={managedUser.practitionerIsPublic ? "true" : "false"}
-                    >
-                      <SelectTrigger id={`isPublic-${managedUser.userId}`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">{dictionary.publicProfile}</SelectItem>
-                        <SelectItem value="false">{dictionary.privateProfile}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button type="submit" size="sm" className="w-fit">
-                    {dictionary.savePublicProfile}
-                  </Button>
-                </form>
+                <div className="grid gap-3 rounded-md border p-3">
+                  <p className="text-sm text-muted-foreground">
+                    {dictionary.managePublicProfile}
+                  </p>
+                  {managedUser.practitionerIsPublic ? (
+                    <form action={publicProfileAction}>
+                      <input type="hidden" name="userId" value={managedUser.userId} />
+                      <input type="hidden" name="isPublic" value="false" />
+                      <Button type="submit" size="sm" variant="destructive">
+                        {dictionary.savePublicProfile}
+                      </Button>
+                    </form>
+                  ) : null}
+                </div>
               ) : null}
               <dl className="grid gap-3 sm:grid-cols-2">
                 <DetailItem label={dictionary.profileStatus} value={profileStatus} />

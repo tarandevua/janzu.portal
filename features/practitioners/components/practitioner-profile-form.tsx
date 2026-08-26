@@ -88,9 +88,9 @@ function getStatusMessage(
   dictionary: PractitionerProfileFormProps["dictionary"],
   statusValue: PractitionerProfileActionResult["status"] | string
 ) {
-  const messageKey = statusMessages[statusValue as keyof typeof statusMessages] ?? "invalid";
+  const messageKey = statusMessages[statusValue as keyof typeof statusMessages];
 
-  return dictionary[messageKey];
+  return messageKey ? dictionary[messageKey] : null;
 }
 
 function getAvatarFallback(fullName: string) {
@@ -144,7 +144,7 @@ export function PractitionerProfileForm({
 
     startTransition(() => {
       void savePractitionerProfileInline(locale, formData).then((result) => {
-        const nextMessage = getStatusMessage(dictionary, result.status);
+        const nextMessage = getStatusMessage(dictionary, result.status) ?? dictionary.invalid;
 
         if (result.ok) {
           toast.success(nextMessage);

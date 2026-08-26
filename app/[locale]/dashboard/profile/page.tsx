@@ -77,7 +77,6 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
             profile={profile}
             canUsePublic={roles.includes("facilitator") || roles.includes("instructor")}
             dictionary={dictionary.practitioners.visibility}
-            status={status}
           />
         ) : null}
         </div>

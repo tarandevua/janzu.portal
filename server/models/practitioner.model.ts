@@ -47,6 +47,23 @@ export type PractitionerProfile = {
   updatedAt: string;
 };
 
+export type DirectoryPractitionerProfile = Pick<
+  PractitionerProfile,
+  | "id"
+  | "publicGroup"
+  | "displayName"
+  | "bio"
+  | "country"
+  | "city"
+  | "languages"
+  | "website"
+  | "instagramUrl"
+  | "facebookUrl"
+  | "youtubeUrl"
+  | "tiktokUrl"
+  | "profileImageUrl"
+>;
+
 export type ProfileVisibilityInput = Omit<ProfileVisibilitySettings, "configuredAt">;
 
 export type PractitionerProfileInput = {

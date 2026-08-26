@@ -1644,14 +1644,11 @@ export type Database = {
         Args: { actor_user_id: string };
         Returns: {
           id: string;
-          user_id: string;
           public_group: string;
           display_name: string;
           bio: string | null;
           country: string | null;
           city: string | null;
-          latitude: number | null;
-          longitude: number | null;
           languages: string[];
           website: string | null;
           instagram_url: string | null;
@@ -1659,9 +1656,6 @@ export type Database = {
           youtube_url: string | null;
           tiktok_url: string | null;
           profile_image_url: string | null;
-          is_public: boolean;
-          created_at: string;
-          updated_at: string;
         }[];
       };
       list_feedback_participants: {

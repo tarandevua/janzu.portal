@@ -10,10 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ClusteredMap } from "@/features/maps/components/clustered-map";
 import type { MapMarker, PractitionerMarkerGroup } from "@/features/maps/types";
-import { hasValidCoordinates } from "@/features/maps/utils";
 import { stripRichTextHtml } from "@/features/practitioners/utils/profile-text";
 import type { Locale } from "@/lib/i18n/config";
-import type { PractitionerProfile } from "@/server/models/practitioner.model";
+import type { DirectoryPractitionerProfile } from "@/server/models/practitioner.model";
 
 type PublicPractitionerDirectoryDictionary = {
   unknownCity: string;
@@ -28,13 +27,14 @@ type PublicPractitionerDirectoryDictionary = {
 
 type PublicPractitionerDirectoryProps = {
   locale: Locale;
-  profiles: PractitionerProfile[];
+  profiles: DirectoryPractitionerProfile[];
   dictionary: PublicPractitionerDirectoryDictionary;
   groups?: PractitionerMarkerGroup[];
   showDetails?: boolean;
 };
 
 const practitionerGroups: PractitionerMarkerGroup[] = ["facilitator", "instructor"];
+const noDirectoryMarkers: MapMarker[] = [];
 
 const groupColorClassName: Record<PractitionerMarkerGroup, string> = {
   apprentice: "bg-[#d97706]",
@@ -73,31 +73,10 @@ export function PublicPractitionerDirectory({
     () => profiles.filter((profile) => !activeGroup || profile.publicGroup === activeGroup),
     [activeGroup, profiles]
   );
-  const markers: MapMarker[] = useMemo(
-    () =>
-      filteredProfiles.flatMap((profile) =>
-        profile.practiceLocations.filter(hasValidCoordinates).map((location, index) => ({
-          id: `${profile.id}-${index}`,
-          kind: "practitioner" as const,
-          practitionerGroup: profile.publicGroup,
-          title: getPractitionerName(profile, dictionary.unknownCity),
-          description: stripRichTextHtml(profile.bio),
-          imageUrl: profile.profileImageUrl,
-          fallbackText: getAvatarFallback(getPractitionerName(profile, dictionary.unknownCity)),
-          note: location.note,
-          latitude: location.latitude,
-          longitude: location.longitude,
-          href: `/${locale}/practitioners/${profile.id}`,
-          meta: [location.country ?? profile.country, location.city ?? profile.city].filter(Boolean).join(", "),
-        }))
-      ),
-    [dictionary.unknownCity, filteredProfiles, locale]
-  );
-
   return (
     <>
       <ClusteredMap
-        markers={markers}
+        markers={noDirectoryMarkers}
         emptyText={dictionary.emptyMap}
         className="min-h-[460px]"
       />

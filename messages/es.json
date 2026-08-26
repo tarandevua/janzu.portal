@@ -285,9 +285,12 @@
       "community": "Comunidad autenticada",
       "public": "Publico",
       "publicUnavailable": "Los perfiles de Personas en formacion no pueden ser publicos. Aun puedes aparecer en el directorio de la comunidad autenticada.",
+      "directoryHelp": "La audiencia del directorio decide si aparece el perfil. Después, cada campo solo se muestra si su propia audiencia también lo permite.",
       "save": "Guardar visibilidad",
+      "saving": "Guardando visibilidad...",
       "saved": "Configuracion de visibilidad guardada.",
-      "invalid": "Revisa la configuracion de visibilidad e intentalo de nuevo."
+      "invalid": "Revisa la configuracion de visibilidad e intentalo de nuevo.",
+      "error": "No se pudo guardar la visibilidad. Tu configuracion anterior sigue activa. Intentalo de nuevo."
     },
     "community": {
       "title": "Directorio de la comunidad",
@@ -903,8 +906,8 @@
     "userId": "ID de usuario",
     "practitionerProfile": "Perfil de practicante",
     "profileStatus": "Estado del perfil",
-    "managePublicProfile": "Visibilidad del perfil publico",
-    "savePublicProfile": "Guardar visibilidad",
+    "managePublicProfile": "Cada miembro elige la visibilidad de su directorio y de sus campos. Los Administradores pueden retirar un perfil de los directorios cuando sea necesario, pero no pueden incluir a un miembro.",
+    "savePublicProfile": "Retirar de los directorios",
     "publicProfile": "Perfil publico",
     "privateProfile": "Perfil privado",
     "noProfile": "Sin perfil de practicante",

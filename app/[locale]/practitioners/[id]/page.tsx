@@ -3,7 +3,6 @@ import { ArrowLeftIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ClusteredMap } from "@/features/maps/components/clustered-map";
 import type { MapMarker, PractitionerMarkerGroup } from "@/features/maps/types";
-import { formatCoordinate, hasValidCoordinates } from "@/features/maps/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,7 @@ const groupColorClassName: Record<PractitionerMarkerGroup, string> = {
   facilitator: "bg-[#4f46e5]",
   instructor: "bg-[#0f766e]",
 };
+const noPublicProfileMarkers: MapMarker[] = [];
 
 function getPractitionerName(profile: { displayName?: string | null; city: string | null }, fallback: string) {
   return profile.displayName?.trim() || profile.city || fallback;
@@ -63,18 +63,6 @@ function getProfileLinks(profile: {
   ].filter((link): link is [string, string] => Boolean(link[1]));
 }
 
-function getPracticeLocationLabel(location: {
-  city: string | null;
-  country: string | null;
-  latitude: number;
-  longitude: number;
-}) {
-  return (
-    [location.city, location.country].filter(Boolean).join(", ") ||
-    `${formatCoordinate(location.latitude)}, ${formatCoordinate(location.longitude)}`
-  );
-}
-
 export default async function PractitionerPublicProfilePage({
   params,
   searchParams,
@@ -94,24 +82,6 @@ export default async function PractitionerPublicProfilePage({
     profile,
     dictionary.practitioners.public.unknownCity
   );
-  const practiceLocations = profile.practiceLocations.filter(hasValidCoordinates);
-  const hasMultiplePracticeLocations = practiceLocations.length > 1;
-  const marker: MapMarker[] = practiceLocations.map((location, index) => ({
-    id: `${profile.id}-${index}`,
-    kind: "practitioner",
-    practitionerGroup: profile.publicGroup,
-    label: hasMultiplePracticeLocations ? String(index + 1) : undefined,
-    popupVariant: "practice-location",
-    title: hasMultiplePracticeLocations ? `Location ${index + 1}` : "Location",
-    note: location.note,
-    latitude: location.latitude,
-    longitude: location.longitude,
-    meta: getPracticeLocationLabel({
-      ...location,
-      city: location.city ?? profile.city,
-      country: location.country ?? profile.country,
-    }),
-  }));
   const availableSlots = await listPublicAvailableSlotsByPractitionerId(supabase, profile.id);
   const hasAvailableSlots = availableSlots.length > 0;
   const profileLinks = getProfileLinks(profile);
@@ -181,33 +151,10 @@ export default async function PractitionerPublicProfilePage({
               />
             ) : null}
             <ClusteredMap
-              markers={marker}
+              markers={noPublicProfileMarkers}
               emptyText={dictionary.practitioners.public.emptyMap}
               className="min-h-[320px]"
             />
-            {practiceLocations.length > 0 ? (
-              <div className="grid gap-2">
-                {practiceLocations.map((location, index) => {
-                  const locationLabel = getPracticeLocationLabel({
-                    ...location,
-                    city: location.city ?? profile.city,
-                    country: location.country ?? profile.country,
-                  });
-
-                  return (
-                    <div key={`${location.latitude}-${location.longitude}-${index}`} className="rounded-md border p-3">
-                      <div className="flex items-start gap-3">
-                        <Badge variant="secondary">{index + 1}</Badge>
-                        <div className="grid gap-1 text-sm">
-                          <p className="font-medium">{locationLabel}</p>
-                          {location.note ? <p className="text-muted-foreground">{location.note}</p> : null}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
           </CardContent>
         </Card>
         {hasAvailableSlots ? (

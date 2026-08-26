@@ -285,9 +285,12 @@
       "community": "Authenticated community",
       "public": "Public",
       "publicUnavailable": "Trainee profiles cannot be public. You may still opt into the authenticated community directory.",
+      "directoryHelp": "Your directory audience decides whether the profile is listed. Each field is then shown only when its own audience also permits it.",
       "save": "Save visibility",
+      "saving": "Saving visibility...",
       "saved": "Visibility settings saved.",
-      "invalid": "Check the visibility settings and try again."
+      "invalid": "Check the visibility settings and try again.",
+      "error": "Visibility could not be saved. Your previous settings are still active. Try again."
     },
     "community": {
       "title": "Community directory",
@@ -903,8 +906,8 @@
     "userId": "User ID",
     "practitionerProfile": "Practitioner profile",
     "profileStatus": "Profile status",
-    "managePublicProfile": "Public profile visibility",
-    "savePublicProfile": "Save visibility",
+    "managePublicProfile": "Members choose their own directory and field visibility. Administrators may remove a profile from directories when required, but cannot opt a member in.",
+    "savePublicProfile": "Remove from directories",
     "publicProfile": "Public profile",
     "privateProfile": "Private profile",
     "noProfile": "No practitioner profile",
