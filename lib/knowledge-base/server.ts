@@ -97,8 +97,16 @@ const readAllArticles = cache(async (): Promise<KnowledgeArticle[]> => {
         files.map(async (filePath) => {
           const raw = await fs.readFile(filePath, "utf8")
           const parsed = matter(raw)
-          const metadata = frontmatterSchema.parse(parsed.data)
           const relativePath = path.relative(localeRoot, filePath)
+          const metadataResult = frontmatterSchema.safeParse(parsed.data)
+
+          if (!metadataResult.success) {
+            throw new Error(
+              `Invalid knowledge-base frontmatter in ${locale}/${relativePath}: ${metadataResult.error.message}`,
+            )
+          }
+
+          const metadata = metadataResult.data
           const slug = relativePath.replace(/\.mdx$/, "").split(path.sep)
 
           if (!slug.every(isSafeSegment)) {
