@@ -4,10 +4,9 @@ import type { CommunityEvent } from "@/server/models/event.model";
 import type { LocationWithMedia } from "@/server/models/location.model";
 import type { Notification } from "@/server/models/notification.model";
 import type { PractitionerProfile } from "@/server/models/practitioner.model";
-import { syncCertificationProgress } from "@/server/repositories/certification.repository";
 import { listLocationsByPractitionerId } from "@/server/repositories/location.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
-import { toCertificationSummary } from "@/server/services/certification.service";
+import { getCertificationJourney } from "@/server/services/certification.service";
 import { listPublicEvents } from "@/server/services/event.service";
 import { listMyNotifications } from "@/server/services/notification.service";
 import { getMyOnboardingProgress } from "@/server/services/onboarding.service";
@@ -89,7 +88,8 @@ function getProfileCompletion(profile: PractitionerProfile | null) {
 
 async function getApprenticeProfileData(
   supabase: SupabaseServerClient,
-  profile: PractitionerProfile | null
+  profile: PractitionerProfile | null,
+  userId: string
 ) {
   if (!profile) {
     return {
@@ -114,7 +114,7 @@ async function getApprenticeProfileData(
     await Promise.all([
       sessionsCountQuery,
       validatedSessionsCountQuery,
-      syncCertificationProgress(supabase, profile.id),
+      getCertificationJourney(supabase, userId, userId),
       listLocationsByPractitionerId(supabase, profile.id),
     ]);
 
@@ -125,7 +125,7 @@ async function getApprenticeProfileData(
   }
 
   return {
-    certification: toCertificationSummary(certificationProgress),
+    certification: certificationProgress,
     sessionsCount: sessionsCountResult.count ?? 0,
     validatedSessionsCount: validatedSessionsCountResult.count ?? 0,
     locations,
@@ -152,7 +152,7 @@ export async function getApprenticeDashboardData(
 ): Promise<ApprenticeDashboardData> {
   const profile = await getPractitionerProfileByUserId(supabase, userId);
   const [profileData, events, notificationSummary, rsvps, onboarding] = await Promise.all([
-    getApprenticeProfileData(supabase, profile),
+    getApprenticeProfileData(supabase, profile, userId),
     listPublicEvents(supabase, userId),
     listMyNotifications(supabase, userId),
     countMyEventRsvps(supabase, userId),

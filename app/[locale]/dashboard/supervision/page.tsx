@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { SupervisionWorkspace } from "@/features/supervision/components/supervision-workspace";
+import { SupervisionStatusToast } from "@/features/supervision/components/supervision-status-toast";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -34,6 +35,10 @@ export default async function SupervisionPage({
       }}
     >
       <div className="p-4 md:p-6">
+        <SupervisionStatusToast
+          status={status}
+          trainingAccessDeniedMessage={dictionary.supervision.trainingAccessDenied}
+        />
         <SupervisionWorkspace
           locale={locale}
           userId={data.user.id}

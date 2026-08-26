@@ -345,14 +345,13 @@ export function AdminDashboard({
                       {data.certificationCandidates.map((candidate) => (
                         <TableRow key={candidate.id}>
                           <TableCell>
-                            <div className="font-medium">{candidate.practitionerName}</div>
-                            <div className="text-xs text-muted-foreground">{candidate.practitionerEmail}</div>
+                            <div className="font-medium">{candidate.traineeName}</div>
                           </TableCell>
                           <TableCell>
-                            {candidate.validatedSessionsCount}/{candidate.requiredSessionsCount}
+                            {candidate.countedSessionsCount}/{candidate.sessionMilestone}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="secondary">{candidate.status}</Badge>
+                            <Badge variant="secondary">{candidate.state.replaceAll("_", " ")}</Badge>
                           </TableCell>
                         </TableRow>
                       ))}

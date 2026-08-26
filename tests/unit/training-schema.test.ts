@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { isTrainingHistoryAccessDenied } from "@/server/services/training.service";
 import {
   trainingCorrectionSchema,
   trainingRecordSchema,
@@ -80,5 +81,22 @@ describe("trainingReviewSchema", () => {
       decision: "reject",
       reason: "",
     })).toThrow();
+  });
+});
+
+describe("training history authorization errors", () => {
+  it("recognizes the database and service denial without swallowing other failures", () => {
+    expect(
+      isTrainingHistoryAccessDenied(
+        new Error("Training history access is not authorized")
+      )
+    ).toBe(true);
+    expect(
+      isTrainingHistoryAccessDenied(
+        new Error("Training history access is not authorized.")
+      )
+    ).toBe(true);
+    expect(isTrainingHistoryAccessDenied(new Error("Database connection failed"))).toBe(false);
+    expect(isTrainingHistoryAccessDenied("Training history access is not authorized")).toBe(false);
   });
 });

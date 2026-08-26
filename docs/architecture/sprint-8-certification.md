@@ -1,28 +1,7 @@
-# Sprint 8 - Certification Tracking
+# Sprint 8 - legacy certification tracking
 
-> Historical note: the legacy Manager approval described below no longer applies to Instructors. DEC-02 defines the replacement readiness, assessment, and Administrator issuance authorities.
+This document describes the superseded single-threshold implementation retained for migration compatibility. TASK-402 replaces its mutation and UI boundaries with the DEC-02 state machine documented in [TASK-402 certification state machine](./task-402-certification-state-machine.md).
 
-## Goal
+The legacy `certification_progress` table used `in_progress`, `eligible`, and `approved` flags based on a raw 50-validated-session count. Its security-definer synchronization, approval, and queue RPCs are revoked by the TASK-402 forward migration. Existing rows are preserved so older public/community projections do not change unexpectedly before TASK-405 migrates certificate and role activation.
 
-Track practitioner progress toward certification based on 50 validated sessions.
-
-## Included
-
-- `certification_progress` migration.
-- `certification_status` enum.
-- Sync function that counts validated sessions.
-- Trigger from `sessions.is_validated`.
-- Admin and manager approval RPC.
-- Certification approval candidate queue RPC.
-- Backend model, repository, service, and controller.
-- `GET /api/certification/progress`
-- `GET /api/certification/approve`
-- `POST /api/certification/approve`
-- Dashboard certification progress page.
-- Dashboard certification approval queue with final approval action.
-- Unit tests for progress summary calculations.
-
-## Deferred
-
-- Notification triggers.
-- Badge award integration.
+Do not add new workflow behavior to the legacy table. Remediation and later certification work must extend `certification_journeys` and its append-only audit contract.

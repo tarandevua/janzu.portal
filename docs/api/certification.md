@@ -1,31 +1,45 @@
-# Certification API Examples
+# Certification journey API
 
-## Current certification progress
+Certification is represented by one `certification_journeys` state machine per Trainee practitioner profile. The legacy `certification_progress` rows remain read-compatible during migration, but their mutation RPCs are revoked.
+
+## Current journey
 
 ```http
 GET /api/certification/progress
 Cookie: sb-access-token=<session>
 ```
 
-## Approval queue
+Returns the authenticated member's synchronized journey. The response includes the canonical state, DEC-02 counted-session total, verified Level 1/2 record references, next session milestone, and the next non-protected correction state. A practitioner profile is required.
+
+## Authorized journey list
 
 ```http
-GET /api/certification/approve
-Cookie: sb-access-token=<admin-session>
+GET /api/certification/journeys
+Cookie: sb-access-token=<session>
 ```
 
-Returns eligible and approved certification candidates for Administrator review. Instructor readiness and Assessor decisions belong to the future DEC-02 state-machine workflow.
+Administrators receive all journeys. Instructors receive only journeys for Trainees with a current active assignment. Former and unrelated Instructors receive no rows. Other roles receive `403`.
 
-## Final approval
+## Manual correction
 
 ```http
-POST /api/certification/approve
+POST /api/certification/override
 Content-Type: application/json
 Cookie: sb-access-token=<admin-session>
 
 {
-  "practitionerId": "00000000-0000-0000-0000-000000000000"
+  "journeyId": "00000000-0000-0000-0000-000000000000",
+  "expectedState": "level_2_review_eligible",
+  "resultingState": "level_2_completed",
+  "reason": "Correcting an authenticated workflow failure.",
+  "evidenceReference": "internal-decision-record-123"
 }
 ```
 
-The legacy endpoint remains Administrator-only. The DEC-02 certification state machine supersedes its single-threshold model and is tracked separately.
+Only an Administrator can call the server action or RPC. The authenticated actor is bound to `auth.uid()`. Corrections must move exactly one adjacent state, require a reason and evidence reference, and are idempotent when retried after commit. They cannot fabricate `assessment_passed`, `certification_approved`, or `facilitator_activated`.
+
+## Counting and automatic transitions
+
+A session counts when it belongs to the Trainee's practitioner profile, has a Session Participant, is validated, lasts at least 60 minutes, and occurs after verified Level 1 completion. Changes to sessions, verified training, or active supervision recalculate eligibility. Forward transitions are recorded one state at a time; invalidated source eligibility records an audited regression.
+
+This task stops automatic progression at `sessions_50_reached`. TASK-403 implements Level 2 readiness decisions and milestone delivery, TASK-404 implements assessment, and TASK-405 implements approval, certificate issuance, and atomic Facilitator activation.

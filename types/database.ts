@@ -866,6 +866,90 @@ export type Database = {
         };
         Relationships: [];
       };
+      certification_journeys: {
+        Row: {
+          id: string;
+          trainee_user_id: string;
+          practitioner_id: string;
+          state: Database["public"]["Enums"]["certification_journey_state"];
+          counted_sessions_count: number;
+          level_1_training_record_id: string | null;
+          level_2_training_record_id: string | null;
+          state_changed_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          trainee_user_id: string;
+          practitioner_id: string;
+          state?: Database["public"]["Enums"]["certification_journey_state"];
+          counted_sessions_count?: number;
+          level_1_training_record_id?: string | null;
+          level_2_training_record_id?: string | null;
+          state_changed_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          trainee_user_id?: string;
+          practitioner_id?: string;
+          state?: Database["public"]["Enums"]["certification_journey_state"];
+          counted_sessions_count?: number;
+          level_1_training_record_id?: string | null;
+          level_2_training_record_id?: string | null;
+          state_changed_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      certification_journey_audit: {
+        Row: {
+          id: string;
+          journey_id: string;
+          actor_user_id: string | null;
+          action: "automatic_transition" | "eligibility_recalculated" | "manual_override" | "legacy_migration";
+          previous_state: Database["public"]["Enums"]["certification_journey_state"] | null;
+          resulting_state: Database["public"]["Enums"]["certification_journey_state"];
+          previous_counted_sessions: number | null;
+          resulting_counted_sessions: number;
+          reason: string | null;
+          evidence_reference: string | null;
+          metadata: Json;
+          occurred_at: string;
+        };
+        Insert: {
+          id?: string;
+          journey_id: string;
+          actor_user_id?: string | null;
+          action: "automatic_transition" | "eligibility_recalculated" | "manual_override" | "legacy_migration";
+          previous_state?: Database["public"]["Enums"]["certification_journey_state"] | null;
+          resulting_state: Database["public"]["Enums"]["certification_journey_state"];
+          previous_counted_sessions?: number | null;
+          resulting_counted_sessions: number;
+          reason?: string | null;
+          evidence_reference?: string | null;
+          metadata?: Json;
+          occurred_at?: string;
+        };
+        Update: {
+          id?: string;
+          journey_id?: string;
+          actor_user_id?: string | null;
+          action?: "automatic_transition" | "eligibility_recalculated" | "manual_override" | "legacy_migration";
+          previous_state?: Database["public"]["Enums"]["certification_journey_state"] | null;
+          resulting_state?: Database["public"]["Enums"]["certification_journey_state"];
+          previous_counted_sessions?: number | null;
+          resulting_counted_sessions?: number;
+          reason?: string | null;
+          evidence_reference?: string | null;
+          metadata?: Json;
+          occurred_at?: string;
+        };
+        Relationships: [];
+      };
       certification_progress: {
         Row: {
           id: string;
@@ -1654,6 +1738,42 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["certification_progress"]["Row"];
       };
+      sync_certification_journey: {
+        Args: {
+          actor_user_id: string;
+          target_trainee_user_id: string;
+        };
+        Returns: Database["public"]["Tables"]["certification_journeys"]["Row"];
+      };
+      list_certification_journeys: {
+        Args: {
+          actor_user_id: string;
+        };
+        Returns: {
+          id: string;
+          trainee_user_id: string;
+          practitioner_id: string;
+          trainee_name: string;
+          state: Database["public"]["Enums"]["certification_journey_state"];
+          counted_sessions_count: number;
+          level_1_training_record_id: string | null;
+          level_2_training_record_id: string | null;
+          state_changed_at: string;
+          created_at: string;
+          updated_at: string;
+        }[];
+      };
+      override_certification_journey_state: {
+        Args: {
+          actor_user_id: string;
+          target_journey_id: string;
+          expected_state: Database["public"]["Enums"]["certification_journey_state"];
+          resulting_state: Database["public"]["Enums"]["certification_journey_state"];
+          override_reason: string;
+          supporting_evidence_reference: string;
+        };
+        Returns: Database["public"]["Tables"]["certification_journeys"]["Row"];
+      };
       approve_certification: {
         Args: {
           target_practitioner_id: string;
@@ -1717,6 +1837,21 @@ export type Database = {
     Enums: {
       app_role: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
       certification_status: "in_progress" | "eligible" | "approved";
+      certification_journey_state:
+        | "level_1_in_progress"
+        | "level_1_completed"
+        | "practicum_in_progress"
+        | "sessions_25_reached"
+        | "level_2_review_eligible"
+        | "level_2_completed"
+        | "advanced_practicum_in_progress"
+        | "sessions_50_reached"
+        | "assessment_available"
+        | "assessment_in_progress"
+        | "revision_required"
+        | "assessment_passed"
+        | "certification_approved"
+        | "facilitator_activated";
       location_type: "pool" | "spa" | "natural_water";
       approval_status: "pending" | "approved" | "rejected";
       event_type: "retreat" | "training" | "community_gathering";

@@ -42,6 +42,7 @@ type Dictionary = {
   accepted: string;
   assigned: string;
   invalid: string;
+  trainingAccessDenied: string;
 };
 
 function PersonSelect({ name, people, label }: { name: string; people: SupervisionPerson[]; label: string }) {

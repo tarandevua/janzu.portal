@@ -296,7 +296,7 @@ Decide:
 
 #### TASK-402: Implement a certification state machine
 
-**Status:** Planned  
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** TASK-401
 
@@ -322,6 +322,8 @@ Decide:
 - State transitions are rule-driven and idempotent.
 - Manual overrides require authorization, reason, and audit entry.
 - Existing certification records migrate safely.
+
+**Verification:** The canonical journey enum, rule-driven source recalculation, adjacent and idempotent transitions, Administrator-only documented overrides, private audit history, relationship-scoped RLS, legacy-safe backfill, localized UI, and automated coverage are implemented. Migrated-environment verification remains required.
 
 #### TASK-403: Add the 25-session workflow
 

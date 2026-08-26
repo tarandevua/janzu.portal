@@ -1,91 +1,86 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
-  approvePractitionerCertification,
-  getMyCertificationSummary,
-  listCertificationCandidatesForReview,
+  getCertificationJourney,
+  listCertificationJourneysForReview,
+  overrideCertificationState,
 } from "@/server/services/certification.service";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import { hasPermission } from "@/server/services/rbac.service";
+import { certificationOverrideSchema } from "@/server/validators/certification.schema";
 
 async function getUserContext() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   return { supabase, user };
 }
 
+const unauthenticated = () =>
+  NextResponse.json(
+    { data: null, error: { code: "UNAUTHENTICATED", message: "Sign in is required." } },
+    { status: 401 }
+  );
+
 export async function getCurrentCertificationProgress() {
   const { supabase, user } = await getUserContext();
+  if (!user) return unauthenticated();
 
-  if (!user) {
+  try {
+    const progress = await getCertificationJourney(supabase, user.id, user.id);
+    return NextResponse.json({ data: progress, error: null });
+  } catch (error) {
     return NextResponse.json(
-      { data: null, error: { code: "UNAUTHENTICATED", message: "Sign in is required." } },
-      { status: 401 }
+      { data: null, error: { code: "NOT_AVAILABLE", message: (error as Error).message } },
+      { status: 404 }
     );
   }
-
-  const progress = await getMyCertificationSummary(supabase, user.id);
-
-  return NextResponse.json({ data: progress, error: null });
 }
 
-export async function listCertificationApprovalQueue() {
+export async function listCertificationJourneyQueue() {
   const { supabase, user } = await getUserContext();
-
-  if (!user) {
-    return NextResponse.json(
-      { data: null, error: { code: "UNAUTHENTICATED", message: "Sign in is required." } },
-      { status: 401 }
-    );
-  }
+  if (!user) return unauthenticated();
 
   const roles = await listUserRoles(supabase, user.id);
-
-  if (!hasPermission(roles, "certifications:approve")) {
+  if (!roles.includes("instructor") && !hasPermission(roles, "certifications:approve")) {
     return NextResponse.json(
-      { data: null, error: { code: "FORBIDDEN", message: "Certification reviewer access is required." } },
+      { data: null, error: { code: "FORBIDDEN", message: "Certification review access is required." } },
       { status: 403 }
     );
   }
 
-  const candidates = await listCertificationCandidatesForReview(supabase, user.id);
-
-  return NextResponse.json({ data: candidates, error: null });
+  const journeys = await listCertificationJourneysForReview(supabase, user.id);
+  return NextResponse.json({ data: journeys, error: null });
 }
 
-export async function approveCertification(request: NextRequest) {
+export async function overrideCertification(request: NextRequest) {
   const { supabase, user } = await getUserContext();
+  if (!user) return unauthenticated();
 
-  if (!user) {
+  const roles = await listUserRoles(supabase, user.id);
+  if (!hasPermission(roles, "certifications:approve")) {
     return NextResponse.json(
-      { data: null, error: { code: "UNAUTHENTICATED", message: "Sign in is required." } },
-      { status: 401 }
+      { data: null, error: { code: "FORBIDDEN", message: "Administrator access is required." } },
+      { status: 403 }
     );
   }
 
-  const body = await request.json();
-  const practitionerId = typeof body.practitionerId === "string" ? body.practitionerId : "";
-
-  if (!practitionerId) {
+  const parsed = certificationOverrideSchema.safeParse(await request.json());
+  if (!parsed.success) {
     return NextResponse.json(
-      { data: null, error: { code: "VALIDATION_ERROR", message: "Practitioner id is required." } },
+      { data: null, error: { code: "VALIDATION_ERROR", message: "Check the override fields." } },
       { status: 422 }
     );
   }
 
-  const roles = await listUserRoles(supabase, user.id);
-
-  if (!hasPermission(roles, "certifications:approve")) {
+  try {
+    const journey = await overrideCertificationState(supabase, user.id, parsed.data);
+    return NextResponse.json({ data: journey, error: null });
+  } catch (error) {
     return NextResponse.json(
-      { data: null, error: { code: "FORBIDDEN", message: "Certification reviewer access is required." } },
-      { status: 403 }
+      { data: null, error: { code: "TRANSITION_REJECTED", message: (error as Error).message } },
+      { status: 409 }
     );
   }
-
-  const progress = await approvePractitionerCertification(supabase, practitionerId, user.id);
-
-  return NextResponse.json({ data: progress, error: null });
 }

@@ -4,13 +4,12 @@ import type { LocationWithMedia } from "@/server/models/location.model";
 import type { PractitionerProfile } from "@/server/models/practitioner.model";
 import type { SessionRequest } from "@/server/models/session-request.model";
 import type { Session } from "@/server/models/session.model";
-import { syncCertificationProgress } from "@/server/repositories/certification.repository";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 import { listSessionRequestsByPractitionerIdPage } from "@/server/repositories/session-request.repository";
 import { listSessionsByPractitionerIdPage } from "@/server/repositories/session.repository";
 import { findDashboardFeedback } from "@/server/services/feedback.service";
 import { listMyLocations } from "@/server/services/location.service";
-import { toCertificationSummary } from "@/server/services/certification.service";
+import { getCertificationJourney } from "@/server/services/certification.service";
 import type { CertificationSummary } from "@/server/models/certification.model";
 
 type PractitionerDashboardData = {
@@ -79,7 +78,7 @@ export async function getPractitionerDashboardData(
     listSessionsByPractitionerIdPage(supabase, profile.id, 1, 5),
     listSessionRequestsByPractitionerIdPage(supabase, profile.id, 1, 5),
     findDashboardFeedback(supabase, userId, profile.id, 1, 5),
-    syncCertificationProgress(supabase, profile.id),
+    getCertificationJourney(supabase, userId, userId),
     listMyLocations(supabase, userId),
   ]);
 
@@ -96,7 +95,7 @@ export async function getPractitionerDashboardData(
 
   return {
     profile,
-    certification: toCertificationSummary(certificationProgress),
+    certification: certificationProgress,
     counts: {
       clients: clientsCountResult.count ?? 0,
       sessions: sessionsCountResult.count ?? 0,

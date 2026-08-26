@@ -5,7 +5,10 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getRoleAccessList } from "@/server/services/rbac.service";
-import { getTrainingWorkspace } from "@/server/services/training.service";
+import {
+  getTrainingWorkspace,
+  isTrainingHistoryAccessDenied,
+} from "@/server/services/training.service";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -23,7 +26,15 @@ export default async function TrainingPage({
   if (!data.user) redirect(`/${locale}/login?status=auth-required`);
 
   const targetTraineeId = traineeId && UUID_PATTERN.test(traineeId) ? traineeId : data.user.id;
-  const workspace = await getTrainingWorkspace(supabase, data.user.id, targetTraineeId);
+  let workspace;
+  try {
+    workspace = await getTrainingWorkspace(supabase, data.user.id, targetTraineeId);
+  } catch (error) {
+    if (isTrainingHistoryAccessDenied(error)) {
+      redirect(`/${locale}/dashboard/supervision?status=training-access-denied`);
+    }
+    throw error;
+  }
 
   return (
     <JanzuDashboardFrame

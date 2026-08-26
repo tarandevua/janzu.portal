@@ -11,6 +11,12 @@ import {
 } from "@/server/repositories/training.repository";
 import { hasAnyRole, hasRole } from "@/server/services/rbac.service";
 
+const TRAINING_HISTORY_ACCESS_DENIED_MESSAGE = "Training history access is not authorized";
+
+export function isTrainingHistoryAccessDenied(error: unknown) {
+  return error instanceof Error && error.message.includes(TRAINING_HISTORY_ACCESS_DENIED_MESSAGE);
+}
+
 export async function getTrainingWorkspace(
   supabase: SupabaseServerClient,
   actorUserId: string,

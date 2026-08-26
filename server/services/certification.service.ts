@@ -1,55 +1,75 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
-import type { CertificationProgress, CertificationSummary } from "@/server/models/certification.model";
 import {
-  approveCertificationProgress,
-  listCertificationApprovalCandidates,
-  syncCertificationProgress,
+  certificationJourneyStates,
+  type CertificationJourney,
+  type CertificationJourneyState,
+  type CertificationOverride,
+} from "@/server/models/certification.model";
+import {
+  listCertificationJourneys,
+  overrideCertificationJourney,
+  syncCertificationJourney,
 } from "@/server/repositories/certification.repository";
-import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 
-export function toCertificationSummary(progress: CertificationProgress): CertificationSummary {
-  const remainingSessionsCount = Math.max(
-    progress.requiredSessionsCount - progress.validatedSessionsCount,
-    0
-  );
+const protectedApprovalStates = new Set<CertificationJourneyState>([
+  "assessment_passed",
+  "certification_approved",
+  "facilitator_activated",
+]);
+
+export function getCertificationStateIndex(state: CertificationJourneyState) {
+  return certificationJourneyStates.indexOf(state);
+}
+
+export function getNextOverrideState(state: CertificationJourneyState) {
+  const nextState = certificationJourneyStates[getCertificationStateIndex(state) + 1] ?? null;
+  return nextState && !protectedApprovalStates.has(nextState) ? nextState : null;
+}
+
+export function toCertificationJourneySummary(journey: CertificationJourney) {
+  const currentStateIndex = getCertificationStateIndex(journey.state);
+  const sessionMilestone = currentStateIndex < 5 ? 25 : 50;
 
   return {
-    ...progress,
-    remainingSessionsCount,
+    ...journey,
+    currentStateIndex,
+    nextState: getNextOverrideState(journey.state),
+    sessionMilestone: sessionMilestone as 25 | 50,
+    remainingSessionsCount: Math.max(sessionMilestone - journey.countedSessionsCount, 0),
     percentComplete: Math.min(
-      Math.round((progress.validatedSessionsCount / progress.requiredSessionsCount) * 100),
+      Math.round((journey.countedSessionsCount / sessionMilestone) * 100),
       100
     ),
-    isEligible: progress.validatedSessionsCount >= progress.requiredSessionsCount,
+    validatedSessionsCount: journey.countedSessionsCount,
+    requiredSessionsCount: sessionMilestone,
   };
 }
 
-export async function getMyCertificationSummary(
+export async function getCertificationJourney(
   supabase: SupabaseServerClient,
-  userId: string
+  actorUserId: string,
+  traineeUserId: string
 ) {
-  const practitioner = await getPractitionerProfileByUserId(supabase, userId);
-
-  if (!practitioner) {
-    throw new Error("Practitioner profile is required before tracking certification.");
-  }
-
-  const progress = await syncCertificationProgress(supabase, practitioner.id);
-  return toCertificationSummary(progress);
+  return toCertificationJourneySummary(
+    await syncCertificationJourney(supabase, actorUserId, traineeUserId)
+  );
 }
 
-export async function approvePractitionerCertification(
+export async function listCertificationJourneysForReview(
   supabase: SupabaseServerClient,
-  practitionerId: string,
-  approverUserId: string
+  actorUserId: string
 ) {
-  const progress = await approveCertificationProgress(supabase, practitionerId, approverUserId);
-  return toCertificationSummary(progress);
+  return (await listCertificationJourneys(supabase, actorUserId)).map(
+    toCertificationJourneySummary
+  );
 }
 
-export async function listCertificationCandidatesForReview(
+export async function overrideCertificationState(
   supabase: SupabaseServerClient,
-  reviewerUserId: string
+  actorUserId: string,
+  override: CertificationOverride
 ) {
-  return listCertificationApprovalCandidates(supabase, reviewerUserId);
+  return toCertificationJourneySummary(
+    await overrideCertificationJourney(supabase, actorUserId, override)
+  );
 }

@@ -1,8 +1,8 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
-import type { CertificationApprovalCandidate } from "@/server/models/certification.model";
+import type { CertificationJourneySummary } from "@/server/models/certification.model";
 import type { DashboardFeedback } from "@/server/models/feedback.model";
 import type { LocationType } from "@/server/models/location.model";
-import { listCertificationApprovalCandidates } from "@/server/repositories/certification.repository";
+import { listCertificationJourneysForReview } from "@/server/services/certification.service";
 import { listFeedbackDashboard } from "@/server/repositories/feedback.repository";
 import { listManagedUsers } from "@/server/repositories/rbac.repository";
 
@@ -72,7 +72,7 @@ export type AdminDashboardData = {
   recentSessions: AdminRecentSession[];
   recentFeedback: DashboardFeedback[];
   pendingLocations: AdminPendingLocation[];
-  certificationCandidates: CertificationApprovalCandidate[];
+  certificationCandidates: CertificationJourneySummary[];
 };
 
 function toDateKey(date: Date) {
@@ -234,7 +234,7 @@ export async function getAdminDashboardData(
     recentSessionsQuery,
     pendingLocationsQuery,
     listFeedbackDashboard(supabase, actorUserId, null, 1, 5),
-    listCertificationApprovalCandidates(supabase, actorUserId),
+    listCertificationJourneysForReview(supabase, actorUserId),
   ]);
 
   if (sessionActivity.error) {
@@ -250,7 +250,7 @@ export async function getAdminDashboardData(
   }
 
   const pendingCertificationCandidates = certificationCandidates.filter(
-    (candidate) => candidate.status === "eligible"
+    (candidate) => candidate.state === "sessions_50_reached"
   );
 
   return {

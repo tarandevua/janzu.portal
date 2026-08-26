@@ -1,17 +1,17 @@
 import { redirect } from "next/navigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { PractitionerProfileRequiredAlert } from "@/components/dashboard/practitioner-profile-required-alert";
-import { CertificationApprovalQueue } from "@/features/certification/components/certification-approval-queue";
+import { CertificationJourneyReview } from "@/features/certification/components/certification-journey-review";
 import { CertificationProgressCard } from "@/features/certification/components/certification-progress-card";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
-import { syncCertificationProgress } from "@/server/repositories/certification.repository";
 import {
-  listCertificationCandidatesForReview,
-  toCertificationSummary,
+  getCertificationJourney,
+  listCertificationJourneysForReview,
 } from "@/server/services/certification.service";
 import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/services/rbac.service";
 
@@ -28,31 +28,30 @@ export default async function CertificationPage({ params, searchParams }: Certif
     getDictionary(locale),
   ]);
 
-  if (!data.user) {
-    redirect(`/${locale}/login?status=auth-required`);
-  }
+  if (!data.user) redirect(`/${locale}/login?status=auth-required`);
 
   const [roles, practitioner] = await Promise.all([
     listUserRoles(supabase, data.user.id),
     getPractitionerProfileByUserId(supabase, data.user.id),
   ]);
   const primaryRole = getPrimaryRole(roles);
-  const canApproveCertifications = hasPermission(roles, "certifications:approve");
+  if (!primaryRole) redirect(`/${locale}/dashboard`);
 
-  if (!primaryRole) {
-    redirect(`/${locale}/dashboard`);
-  }
-
-  const practitionerProfileRequired = !practitioner && !canApproveCertifications;
-
-  const [progress, approvalCandidates] = await Promise.all([
+  const canOverride = hasPermission(roles, "certifications:approve");
+  const canReview = canOverride || roles.includes("instructor");
+  const [journeyResult, reviewResult] = await Promise.allSettled([
     practitioner
-      ? syncCertificationProgress(supabase, practitioner.id).then(toCertificationSummary)
+      ? getCertificationJourney(supabase, data.user.id, data.user.id)
       : Promise.resolve(null),
-    canApproveCertifications
-      ? listCertificationCandidatesForReview(supabase, data.user.id)
+    canReview
+      ? listCertificationJourneysForReview(supabase, data.user.id)
       : Promise.resolve([]),
   ]);
+
+  const journey = journeyResult.status === "fulfilled" ? journeyResult.value : null;
+  const reviewJourneys = reviewResult.status === "fulfilled" ? reviewResult.value : [];
+  const loadFailed = journeyResult.status === "rejected" || reviewResult.status === "rejected";
+  const practitionerProfileRequired = !practitioner && !canReview;
 
   return (
     <JanzuDashboardFrame
@@ -68,6 +67,11 @@ export default async function CertificationPage({ params, searchParams }: Certif
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+          {loadFailed ? (
+            <Alert>
+              <AlertDescription>{dictionary.certification.loadError}</AlertDescription>
+            </Alert>
+          ) : null}
           {practitionerProfileRequired ? (
             <PractitionerProfileRequiredAlert
               href={`/${locale}/dashboard/profile`}
@@ -75,24 +79,22 @@ export default async function CertificationPage({ params, searchParams }: Certif
               description={dictionary.clients.profileRequiredDescription}
               actionLabel={dictionary.clients.profileRequiredAction}
             />
-          ) : (
-            <>
-              {progress ? (
-                <CertificationProgressCard
-                  progress={progress}
-                  dictionary={dictionary.certification}
-                />
-              ) : null}
-              {canApproveCertifications ? (
-                <CertificationApprovalQueue
-                  locale={locale}
-                  candidates={approvalCandidates}
-                  status={status}
-                  dictionary={dictionary.certification}
-                />
-              ) : null}
-            </>
-          )}
+          ) : null}
+          {journey ? (
+            <CertificationProgressCard
+              progress={journey}
+              dictionary={dictionary.certification}
+            />
+          ) : null}
+          {canReview ? (
+            <CertificationJourneyReview
+              locale={locale}
+              journeys={reviewJourneys}
+              canOverride={canOverride}
+              status={status}
+              dictionary={dictionary.certification}
+            />
+          ) : null}
         </div>
       </div>
     </JanzuDashboardFrame>

@@ -71,5 +71,7 @@ describe("i18n config", () => {
       expect(dictionary.noActiveInstructor).toBeTruthy();
       expect(dictionary.backToSupervision).toBeTruthy();
     }
+    expect(en.supervision.trainingAccessDenied).toMatch(/no longer have access/i);
+    expect(es.supervision.trainingAccessDenied).toMatch(/ya no tienes acceso/i);
   });
 });

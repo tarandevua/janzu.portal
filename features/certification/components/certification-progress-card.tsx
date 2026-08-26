@@ -1,36 +1,25 @@
-import type { CertificationSummary } from "@/server/models/certification.model";
+import { CheckCircle2Icon, CircleIcon, LockKeyholeIcon } from "lucide-react";
+import {
+  certificationJourneyStates,
+  type CertificationJourneyState,
+  type CertificationJourneySummary,
+} from "@/server/models/certification.model";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+type StateLabels = Record<CertificationJourneyState, string>;
+
 type CertificationProgressCardProps = {
-  progress: CertificationSummary;
+  progress: CertificationJourneySummary;
   dictionary: {
-    title: string;
-    description: string;
-    validated: string;
-    required: string;
+    journeyDescription: string;
+    countedSessions: string;
+    nextMilestone: string;
     remaining: string;
-    status: string;
-    inProgress: string;
-    eligible: string;
-    approved: string;
+    currentState: string;
+    states: StateLabels;
   };
 };
-
-function getStatusLabel(
-  status: CertificationSummary["status"],
-  dictionary: CertificationProgressCardProps["dictionary"]
-) {
-  if (status === "approved") {
-    return dictionary.approved;
-  }
-
-  if (status === "eligible") {
-    return dictionary.eligible;
-  }
-
-  return dictionary.inProgress;
-}
 
 export function CertificationProgressCard({
   progress,
@@ -39,41 +28,52 @@ export function CertificationProgressCard({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <CardTitle>{dictionary.title}</CardTitle>
-            <CardDescription>{dictionary.description}</CardDescription>
+            <CardTitle>{progress.traineeName ?? dictionary.states[progress.state]}</CardTitle>
+            <CardDescription>{dictionary.journeyDescription}</CardDescription>
           </div>
-          <Badge variant={progress.status === "approved" ? "default" : "secondary"}>
-            {getStatusLabel(progress.status, dictionary)}
-          </Badge>
+          <Badge>{dictionary.states[progress.state]}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-5">
-        <div className="h-3 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: `${progress.percentComplete}%` }}
-          />
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-4">
+      <CardContent className="grid gap-6">
+        <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-md border p-3">
-            <p className="text-sm text-muted-foreground">{dictionary.validated}</p>
-            <p className="text-2xl font-semibold">{progress.validatedSessionsCount}</p>
+            <p className="text-sm text-muted-foreground">{dictionary.countedSessions}</p>
+            <p className="text-2xl font-semibold">{progress.countedSessionsCount}</p>
           </div>
           <div className="rounded-md border p-3">
-            <p className="text-sm text-muted-foreground">{dictionary.required}</p>
-            <p className="text-2xl font-semibold">{progress.requiredSessionsCount}</p>
+            <p className="text-sm text-muted-foreground">{dictionary.nextMilestone}</p>
+            <p className="text-2xl font-semibold">{progress.sessionMilestone}</p>
           </div>
           <div className="rounded-md border p-3">
             <p className="text-sm text-muted-foreground">{dictionary.remaining}</p>
             <p className="text-2xl font-semibold">{progress.remainingSessionsCount}</p>
           </div>
-          <div className="rounded-md border p-3">
-            <p className="text-sm text-muted-foreground">{dictionary.status}</p>
-            <p className="text-lg font-semibold">{getStatusLabel(progress.status, dictionary)}</p>
-          </div>
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm font-medium">{dictionary.currentState}</p>
+          <ol className="grid gap-2 sm:grid-cols-2" aria-label={dictionary.currentState}>
+            {certificationJourneyStates.map((state, index) => {
+              const complete = index < progress.currentStateIndex;
+              const current = index === progress.currentStateIndex;
+              const Icon = complete ? CheckCircle2Icon : current ? CircleIcon : LockKeyholeIcon;
+
+              return (
+                <li
+                  key={state}
+                  className={`flex items-center gap-2 rounded-md border p-3 text-sm ${
+                    current ? "border-primary bg-primary/5 font-medium" : ""
+                  }`}
+                  aria-current={current ? "step" : undefined}
+                >
+                  <Icon className="size-4 shrink-0" aria-hidden="true" />
+                  <span>{dictionary.states[state]}</span>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </CardContent>
     </Card>
