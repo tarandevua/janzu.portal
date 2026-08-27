@@ -16,6 +16,7 @@ type ProfileMapPreviewDictionary = {
   communityEmpty: string;
   loading: string;
   error: string;
+  whatsapp: string;
 };
 
 export function ProfileMapPreview({
@@ -29,7 +30,12 @@ export function ProfileMapPreview({
   communityPoints: PractitionerMapPoint[];
   dictionary: ProfileMapPreviewDictionary;
 }) {
-  const options = { locale, detailsLabel: "", includeDetailsLink: false } as const;
+  const options = {
+    locale,
+    detailsLabel: "",
+    includeDetailsLink: false,
+    whatsappLabel: dictionary.whatsapp,
+  } as const;
 
   return (
     <Card id="map-preview">

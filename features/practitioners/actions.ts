@@ -7,6 +7,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   getMyPractitionerProfile,
   saveMyProfileVisibility,
+  saveMyWhatsAppConsent,
   saveMyPractitionerProfile,
 } from "@/server/services/practitioner.service";
 import {
@@ -21,7 +22,9 @@ import {
   parsePracticeLocations,
   practitionerProfileSchema,
   profileVisibilitySchema,
+  whatsappConsentSchema,
 } from "@/server/validators/practitioner.schema";
+import { WHATSAPP_CONSENT_POLICY_VERSION } from "@/server/models/practitioner.model";
 
 type UpdateFullNameArgs =
   Database["public"]["Functions"]["update_current_user_full_name"]["Args"];
@@ -201,4 +204,36 @@ export async function saveProfileVisibilityInline(
   revalidatePath(`/${locale}/dashboard/community`);
   revalidatePath(`/${locale}/dashboard/first-steps`);
   return { ok: true, status: "saved" };
+}
+
+export type WhatsAppConsentActionResult =
+  | { ok: true; status: "saved" | "revoked" }
+  | { ok: false; status: "auth-required" | "invalid" | "error" };
+
+export async function saveWhatsAppConsentInline(
+  locale: Locale,
+  formData: FormData
+): Promise<WhatsAppConsentActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, status: "auth-required" };
+
+  const revoking = formData.get("intent") === "revoke";
+  const parsed = whatsappConsentSchema.safeParse({
+    number: revoking ? null : formData.get("number"),
+    visibility: revoking ? "private" : formData.get("visibility"),
+    affirmativeConsent: revoking ? false : formData.get("affirmativeConsent") === "yes",
+    policyVersion: WHATSAPP_CONSENT_POLICY_VERSION,
+  });
+  if (!parsed.success) return { ok: false, status: "invalid" };
+
+  try {
+    await saveMyWhatsAppConsent(supabase, user.id, parsed.data);
+  } catch {
+    return { ok: false, status: "error" };
+  }
+
+  revalidatePath(`/${locale}/dashboard/profile`);
+  revalidatePath(`/${locale}/dashboard/community`);
+  return { ok: true, status: revoking ? "revoked" : "saved" };
 }

@@ -1,5 +1,6 @@
 export type PublicPractitionerGroup = "apprentice" | "participant" | "facilitator" | "instructor";
 export type ProfileVisibility = "private" | "community" | "public";
+export const WHATSAPP_CONSENT_POLICY_VERSION = "2026-08-27.v1";
 
 export type ProfileVisibilitySettings = {
   directory: ProfileVisibility;
@@ -11,6 +12,13 @@ export type ProfileVisibilitySettings = {
   website: ProfileVisibility;
   socialLinks: ProfileVisibility;
   configuredAt: string | null;
+};
+
+export type WhatsAppConsent = {
+  number: string | null;
+  visibility: "private" | "community";
+  grantedAt: string | null;
+  policyVersion: string | null;
 };
 
 export type PractitionerPracticeLocation = {
@@ -43,11 +51,12 @@ export type PractitionerProfile = {
   profileImageUrl: string | null;
   isPublic: boolean;
   visibility: ProfileVisibilitySettings;
+  whatsapp: WhatsAppConsent;
   createdAt: string;
   updatedAt: string;
 };
 
-export type DirectoryPractitionerProfile = Pick<
+export type DirectoryPractitionerProfile = Omit<Pick<
   PractitionerProfile,
   | "id"
   | "publicGroup"
@@ -62,7 +71,8 @@ export type DirectoryPractitionerProfile = Pick<
   | "youtubeUrl"
   | "tiktokUrl"
   | "profileImageUrl"
->;
+  | "whatsapp"
+>, "whatsapp"> & { whatsapp?: WhatsAppConsent };
 
 export type PractitionerMapPoint = {
   markerId: string;
@@ -74,9 +84,17 @@ export type PractitionerMapPoint = {
   latitude: number;
   longitude: number;
   profileImageUrl: string | null;
+  whatsappNumber: string | null;
 };
 
 export type ProfileVisibilityInput = Omit<ProfileVisibilitySettings, "configuredAt">;
+
+export type WhatsAppConsentInput = {
+  number: string | null;
+  visibility: "private" | "community";
+  affirmativeConsent: boolean;
+  policyVersion: string;
+};
 
 export type PractitionerProfileInput = {
   bio?: string | null;

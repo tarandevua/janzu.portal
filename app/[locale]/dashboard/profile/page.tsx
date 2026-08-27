@@ -3,6 +3,7 @@ import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-fram
 import { PractitionerProfileForm } from "@/features/practitioners/components/practitioner-profile-form";
 import { ProfileVisibilityForm } from "@/features/practitioners/components/profile-visibility-form";
 import { ProfileMapPreview } from "@/features/practitioners/components/profile-map-preview";
+import { WhatsAppConsentForm } from "@/features/practitioners/components/whatsapp-consent-form";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -87,6 +88,11 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
               profile={profile}
               canUsePublic={roles.includes("facilitator") || roles.includes("instructor")}
               dictionary={dictionary.practitioners.visibility}
+            />
+            <WhatsAppConsentForm
+              locale={locale}
+              profile={profile}
+              dictionary={dictionary.practitioners.whatsapp}
             />
             <ProfileMapPreview
               locale={locale}

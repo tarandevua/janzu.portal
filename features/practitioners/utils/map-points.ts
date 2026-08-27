@@ -4,7 +4,12 @@ import type { PractitionerMapPoint } from "@/server/models/practitioner.model";
 
 export function toPractitionerMapMarkers(
   points: PractitionerMapPoint[],
-  options: { locale: Locale; detailsLabel: string; includeDetailsLink: boolean }
+  options: {
+    locale: Locale;
+    detailsLabel: string;
+    includeDetailsLink: boolean;
+    whatsappLabel?: string;
+  }
 ): MapMarker[] {
   return points.map((point) => ({
     id: point.markerId,
@@ -16,6 +21,9 @@ export function toPractitionerMapMarkers(
     latitude: point.latitude,
     longitude: point.longitude,
     meta: [point.city, point.country].filter(Boolean).join(", "),
+    description: point.whatsappNumber && options.whatsappLabel
+      ? `${options.whatsappLabel}: ${point.whatsappNumber}`
+      : undefined,
     href: options.includeDetailsLink
       ? `/${options.locale}/practitioners/${point.profileId}`
       : undefined,

@@ -292,6 +292,26 @@
       "invalid": "Check the visibility settings and try again.",
       "error": "Visibility could not be saved. Your previous settings are still active. Try again."
     },
+    "whatsapp": {
+      "title": "WhatsApp consent",
+      "description": "WhatsApp is a separate contact permission. It is never public and is not implied by your profile or phone settings.",
+      "number": "WhatsApp number",
+      "numberHelp": "Use international format, for example +37360123456.",
+      "visibility": "Who may see it",
+      "private": "Private",
+      "community": "Authenticated community",
+      "neverPublic": "WhatsApp can be private or visible to signed-in community members. It can never be public.",
+      "consent": "I affirmatively consent to this WhatsApp number being stored and used with the selected visibility.",
+      "consentHelp": "This consent is separate, versioned, and can be revoked at any time.",
+      "save": "Save WhatsApp consent",
+      "saving": "Saving consent...",
+      "revoke": "Revoke consent and remove number",
+      "saved": "WhatsApp consent saved.",
+      "revoked": "WhatsApp consent revoked and the number removed.",
+      "invalid": "Enter a valid international number and affirm consent.",
+      "error": "WhatsApp consent could not be changed. Your previous setting is still active.",
+      "consentRecorded": "Your current consent timestamp and policy version are recorded securely."
+    },
     "community": {
       "title": "Community directory",
       "description": "Authenticated members who opted into community visibility. Fields remain filtered by each member's choices, and map markers use approximate city or region locations."
@@ -306,7 +326,8 @@
       "communityDescription": "What active signed-in community members can see.",
       "communityEmpty": "Your profile is not currently visible on the community map.",
       "loading": "Loading map preview...",
-      "error": "The map preview could not be loaded. Try again."
+      "error": "The map preview could not be loaded. Try again.",
+      "whatsapp": "WhatsApp"
     },
     "public": {
       "title": "Find Janzu practitioners",
@@ -324,7 +345,8 @@
       "instructorPin": "Instructor",
       "emptyGroup": "No public profiles are available in this group yet.",
       "viewDetails": "View details",
-      "filterLabel": "Filter practitioners by verified category"
+      "filterLabel": "Filter practitioners by verified category",
+      "whatsapp": "WhatsApp"
     }
   },
   "clients": {

@@ -30,6 +30,7 @@ type PublicPractitionerDirectoryDictionary = {
   emptyGroup: string;
   viewDetails: string;
   filterLabel: string;
+  whatsapp: string;
 };
 
 type PublicPractitionerDirectoryProps = {
@@ -84,9 +85,14 @@ export function PublicPractitionerDirectory({
     () =>
       toPractitionerMapMarkers(
         mapPoints.filter((point) => !activeGroup || point.publicGroup === activeGroup),
-        { locale, detailsLabel: dictionary.viewDetails, includeDetailsLink: showDetails }
+        {
+          locale,
+          detailsLabel: dictionary.viewDetails,
+          includeDetailsLink: showDetails,
+          whatsappLabel: dictionary.whatsapp,
+        }
       ),
-    [activeGroup, dictionary.viewDetails, locale, mapPoints, showDetails]
+    [activeGroup, dictionary.viewDetails, dictionary.whatsapp, locale, mapPoints, showDetails]
   );
   return (
     <>
@@ -160,6 +166,14 @@ export function PublicPractitionerDirectory({
                     </Badge>
                   ))}
                 </div>
+                {profile.whatsapp?.number ? (
+                  <Button asChild variant="outline" size="sm" className="w-fit">
+                    <a href={`https://wa.me/${profile.whatsapp.number.replace(/\D/g, "")}`}
+                      target="_blank" rel="noopener noreferrer">
+                      {dictionary.whatsapp}: {profile.whatsapp.number}
+                    </a>
+                  </Button>
+                ) : null}
                 {showDetails ? <div className="mt-auto pt-2">
                   <Button asChild size="sm">
                     <Link href={profileHref} prefetch>

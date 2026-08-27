@@ -6,6 +6,7 @@ import type {
   PractitionerProfile,
   PractitionerProfileInput,
   ProfileVisibilityInput,
+  WhatsAppConsentInput,
   PractitionerPracticeLocation,
   PractitionerMapPoint,
   PublicPractitionerGroup,
@@ -18,6 +19,13 @@ type ProfileVisibilityRpcClient = {
   rpc(
     functionName: "update_my_profile_visibility",
     args: ProfileVisibilityArgs
+  ): Promise<{ data: PractitionerRow | null; error: { message: string } | null }>;
+};
+
+type WhatsAppConsentRpcClient = {
+  rpc(
+    functionName: "update_my_whatsapp_consent",
+    args: Database["public"]["Functions"]["update_my_whatsapp_consent"]["Args"]
   ): Promise<{ data: PractitionerRow | null; error: { message: string } | null }>;
 };
 
@@ -48,6 +56,10 @@ type PractitionerRow = {
   website_visibility?: "private" | "community" | "public";
   social_links_visibility?: "private" | "community" | "public";
   visibility_configured_at?: string | null;
+  whatsapp_number?: string | null;
+  whatsapp_visibility?: "private" | "community";
+  whatsapp_consent_granted_at?: string | null;
+  whatsapp_consent_policy_version?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -66,6 +78,7 @@ type DirectoryPractitionerRow = {
   youtube_url: string | null;
   tiktok_url: string | null;
   profile_image_url: string | null;
+  whatsapp_number?: string | null;
 };
 
 type PractitionerLocationRow = {
@@ -89,6 +102,7 @@ type PractitionerMapRow = {
   latitude: number;
   longitude: number;
   profile_image_url: string | null;
+  whatsapp_number?: string | null;
 };
 
 type UserDisplayRow = Pick<Database["public"]["Tables"]["users"]["Row"], "full_name">;
@@ -188,13 +202,22 @@ function toProfile(
       socialLinks: row.social_links_visibility ?? "private",
       configuredAt: row.visibility_configured_at ?? null,
     },
+    whatsapp: {
+      number: row.whatsapp_number ?? null,
+      visibility: row.whatsapp_visibility ?? "private",
+      grantedAt: row.whatsapp_consent_granted_at ?? null,
+      policyVersion: row.whatsapp_consent_policy_version ?? null,
+    },
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
 }
 
-function toDirectoryProfile(row: DirectoryPractitionerRow): DirectoryPractitionerProfile {
-  return {
+function toDirectoryProfile(
+  row: DirectoryPractitionerRow,
+  includeWhatsApp = false
+): DirectoryPractitionerProfile {
+  const profile: DirectoryPractitionerProfile = {
     id: row.id,
     publicGroup: row.public_group,
     displayName: row.display_name,
@@ -209,6 +232,17 @@ function toDirectoryProfile(row: DirectoryPractitionerRow): DirectoryPractitione
     tiktokUrl: row.tiktok_url,
     profileImageUrl: row.profile_image_url,
   };
+
+  if (includeWhatsApp) {
+    profile.whatsapp = {
+      number: row.whatsapp_number ?? null,
+      visibility: row.whatsapp_number ? "community" : "private",
+      grantedAt: null,
+      policyVersion: null,
+    };
+  }
+
+  return profile;
 }
 
 function toMapPoint(row: PractitionerMapRow): PractitionerMapPoint {
@@ -222,6 +256,7 @@ function toMapPoint(row: PractitionerMapRow): PractitionerMapPoint {
     latitude: row.latitude,
     longitude: row.longitude,
     profileImageUrl: row.profile_image_url,
+    whatsappNumber: row.whatsapp_number ?? null,
   };
 }
 
@@ -380,7 +415,7 @@ export async function listPublicPractitionerProfiles(supabase: SupabaseServerCli
     throw new Error(error.message);
   }
 
-  return (data ?? []).map(toDirectoryProfile);
+  return (data ?? []).map((row) => toDirectoryProfile(row));
 }
 
 export async function listCommunityPractitionerProfiles(
@@ -393,7 +428,7 @@ export async function listCommunityPractitionerProfiles(
   });
 
   if (error) throw new Error(error.message);
-  return (data ?? []).map(toDirectoryProfile);
+  return (data ?? []).map((row) => toDirectoryProfile(row, true));
 }
 
 export async function listPublicPractitionerMapPoints(supabase: SupabaseServerClient) {
@@ -524,5 +559,22 @@ export async function updatePractitionerProfileVisibility(
     throw new Error(error?.message ?? "Profile visibility could not be updated.");
   }
 
+  return toProfile(data);
+}
+
+export async function updatePractitionerWhatsAppConsent(
+  supabase: SupabaseServerClient,
+  userId: string,
+  input: WhatsAppConsentInput
+) {
+  const client = supabase as unknown as WhatsAppConsentRpcClient;
+  const { data, error } = await client.rpc("update_my_whatsapp_consent", {
+    actor_user_id: userId,
+    target_whatsapp_number: input.number,
+    target_visibility: input.visibility,
+    affirmative_consent: input.affirmativeConsent,
+    target_policy_version: input.policyVersion,
+  });
+  if (error || !data) throw new Error(error?.message ?? "WhatsApp consent could not be updated.");
   return toProfile(data);
 }

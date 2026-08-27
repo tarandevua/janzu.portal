@@ -15,6 +15,7 @@ describe("practitioner map points", () => {
           latitude: 41.4,
           longitude: 2.2,
           profileImageUrl: null,
+          whatsappNumber: null,
         },
       ],
       { locale: "es", detailsLabel: "Ver detalles", includeDetailsLink: true }
@@ -31,5 +32,20 @@ describe("practitioner map points", () => {
       hrefLabel: "Ver detalles",
     });
     expect(marker.note).toBeUndefined();
+  });
+
+  it("adds an explicitly projected community WhatsApp number to the popup", () => {
+    const [marker] = toPractitionerMapMarkers(
+      [{
+        markerId: "marker-303", profileId: "profile-303", publicGroup: "facilitator",
+        displayName: "Member 303", city: "Chisinau", country: "Moldova",
+        latitude: 47, longitude: 28.9, profileImageUrl: null,
+        whatsappNumber: "+37360123456",
+      }],
+      { locale: "en", detailsLabel: "", includeDetailsLink: false, whatsappLabel: "WhatsApp" }
+    );
+
+    expect(marker.description).toBe("WhatsApp: +37360123456");
+    expect(marker.href).toBeUndefined();
   });
 });

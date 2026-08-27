@@ -1,6 +1,7 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { PractitionerProfileInput } from "@/server/models/practitioner.model";
 import type { ProfileVisibilityInput } from "@/server/models/practitioner.model";
+import type { WhatsAppConsentInput } from "@/server/models/practitioner.model";
 import {
   getPractitionerProfileByUserId,
   getPublicPractitionerProfile,
@@ -11,6 +12,7 @@ import {
   previewMyPractitionerMapPoints,
   upsertPractitionerProfile,
   updatePractitionerProfileVisibility,
+  updatePractitionerWhatsAppConsent,
 } from "@/server/repositories/practitioner.repository";
 
 export async function getMyPractitionerProfile(
@@ -26,6 +28,14 @@ export function saveMyProfileVisibility(
   input: ProfileVisibilityInput
 ) {
   return updatePractitionerProfileVisibility(supabase, userId, input);
+}
+
+export function saveMyWhatsAppConsent(
+  supabase: SupabaseServerClient,
+  userId: string,
+  input: WhatsAppConsentInput
+) {
+  return updatePractitionerWhatsAppConsent(supabase, userId, input);
 }
 
 export async function saveMyPractitionerProfile(

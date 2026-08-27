@@ -119,6 +119,25 @@ export const profileVisibilitySchema = z.object({
   socialLinks: z.enum(["private", "community", "public"]),
 });
 
+export const whatsappConsentSchema = z
+  .object({
+    number: z.preprocess(
+      emptyToNull,
+      z.string().trim().regex(/^\+[1-9]\d{7,14}$/).nullable()
+    ),
+    visibility: z.enum(["private", "community"]),
+    affirmativeConsent: z.boolean(),
+    policyVersion: z.string().trim().min(1).max(80),
+  })
+  .superRefine((value, context) => {
+    if (value.affirmativeConsent && !value.number) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["number"], message: "Required" });
+    }
+    if (!value.affirmativeConsent && (value.number || value.visibility !== "private")) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["affirmativeConsent"], message: "Revocation must be private" });
+    }
+  });
+
 export type PractitionerProfilePayload = z.infer<typeof practitionerProfileSchema>;
 export type ProfileVisibilityPayload = z.infer<typeof profileVisibilitySchema>;
 

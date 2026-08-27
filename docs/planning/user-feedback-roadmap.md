@@ -266,7 +266,7 @@ Decide:
 
 #### TASK-303: Add WhatsApp with explicit consent
 
-**Status:** Planned
+**Status:** Done
 **Priority:** P2  
 **Dependencies:** DEC-03, TASK-301
 
@@ -276,6 +276,8 @@ Decide:
 - Visibility can be public, community-only, or private according to approved policy.
 - Revoking consent removes the number from all profile and map responses.
 - Consent timestamp and policy version are recorded.
+
+**Verification:** Forward-only migration `202608270001_task_303_whatsapp_consent.sql` adds private-default WhatsApp storage, an owner-bound and actor-checked consent RPC, protected consent audit history, and community-only profile/map projections. Public contracts have no WhatsApp field; revocation atomically clears the current number. English/Spanish UI, knowledge-base guidance, SQL integration tests, and unit coverage are included. Migrated-environment verification remains required.
 
 ### Stage 4 — Training and certification
 

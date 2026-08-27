@@ -292,6 +292,26 @@
       "invalid": "Revisa la configuracion de visibilidad e intentalo de nuevo.",
       "error": "No se pudo guardar la visibilidad. Tu configuracion anterior sigue activa. Intentalo de nuevo."
     },
+    "whatsapp": {
+      "title": "Consentimiento de WhatsApp",
+      "description": "WhatsApp es un permiso de contacto separado. Nunca es publico y no se deduce de la configuracion del perfil o telefono.",
+      "number": "Numero de WhatsApp",
+      "numberHelp": "Usa el formato internacional, por ejemplo +37360123456.",
+      "visibility": "Quien puede verlo",
+      "private": "Privado",
+      "community": "Comunidad autenticada",
+      "neverPublic": "WhatsApp puede ser privado o visible para miembros de la comunidad con sesion iniciada. Nunca puede ser publico.",
+      "consent": "Doy mi consentimiento afirmativo para guardar este numero de WhatsApp y usarlo con la visibilidad seleccionada.",
+      "consentHelp": "Este consentimiento es separado, versionado y puede revocarse en cualquier momento.",
+      "save": "Guardar consentimiento de WhatsApp",
+      "saving": "Guardando consentimiento...",
+      "revoke": "Revocar consentimiento y eliminar numero",
+      "saved": "Consentimiento de WhatsApp guardado.",
+      "revoked": "Consentimiento de WhatsApp revocado y numero eliminado.",
+      "invalid": "Introduce un numero internacional valido y confirma el consentimiento.",
+      "error": "No se pudo cambiar el consentimiento de WhatsApp. La configuracion anterior sigue activa.",
+      "consentRecorded": "La fecha de tu consentimiento actual y la version de la politica se guardan de forma segura."
+    },
     "community": {
       "title": "Directorio de la comunidad",
       "description": "Miembros autenticados que eligieron visibilidad comunitaria. Los campos se filtran segun las elecciones de cada miembro y los marcadores usan ubicaciones aproximadas de ciudad o region."
@@ -306,7 +326,8 @@
       "communityDescription": "Lo que pueden ver los miembros activos de la comunidad que iniciaron sesion.",
       "communityEmpty": "Tu perfil no esta visible actualmente en el mapa de la comunidad.",
       "loading": "Cargando vista previa del mapa...",
-      "error": "No se pudo cargar la vista previa del mapa. Intentalo de nuevo."
+      "error": "No se pudo cargar la vista previa del mapa. Intentalo de nuevo.",
+      "whatsapp": "WhatsApp"
     },
     "public": {
       "title": "Encontrar practicantes de Janzu",
@@ -324,7 +345,8 @@
       "instructorPin": "Instructor",
       "emptyGroup": "Aun no hay perfiles publicos disponibles en este grupo.",
       "viewDetails": "Ver detalles",
-      "filterLabel": "Filtrar practicantes por categoria verificada"
+      "filterLabel": "Filtrar practicantes por categoria verificada",
+      "whatsapp": "WhatsApp"
     }
   },
   "clients": {

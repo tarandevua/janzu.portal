@@ -495,6 +495,10 @@ export type Database = {
           location_visibility: "private" | "community" | "public";
           website_visibility: "private" | "community" | "public";
           social_links_visibility: "private" | "community" | "public";
+          whatsapp_number: string | null;
+          whatsapp_visibility: "private" | "community" | "public";
+          whatsapp_consent_granted_at: string | null;
+          whatsapp_consent_policy_version: string | null;
           visibility_configured_at: string | null;
           created_at: string;
           updated_at: string;
@@ -523,6 +527,10 @@ export type Database = {
           location_visibility?: "private" | "community" | "public";
           website_visibility?: "private" | "community" | "public";
           social_links_visibility?: "private" | "community" | "public";
+          whatsapp_number?: string | null;
+          whatsapp_visibility?: "private" | "community" | "public";
+          whatsapp_consent_granted_at?: string | null;
+          whatsapp_consent_policy_version?: string | null;
           visibility_configured_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -551,9 +559,46 @@ export type Database = {
           location_visibility?: "private" | "community" | "public";
           website_visibility?: "private" | "community" | "public";
           social_links_visibility?: "private" | "community" | "public";
+          whatsapp_number?: string | null;
+          whatsapp_visibility?: "private" | "community" | "public";
+          whatsapp_consent_granted_at?: string | null;
+          whatsapp_consent_policy_version?: string | null;
           visibility_configured_at?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      whatsapp_consent_audit: {
+        Row: {
+          id: string;
+          practitioner_id: string;
+          actor_user_id: string;
+          action: string;
+          policy_version: string;
+          previous_visibility: "private" | "community" | "public";
+          resulting_visibility: "private" | "community" | "public";
+          occurred_at: string;
+        };
+        Insert: {
+          id?: string;
+          practitioner_id: string;
+          actor_user_id: string;
+          action: string;
+          policy_version: string;
+          previous_visibility: "private" | "community" | "public";
+          resulting_visibility: "private" | "community" | "public";
+          occurred_at?: string;
+        };
+        Update: {
+          id?: string;
+          practitioner_id?: string;
+          actor_user_id?: string;
+          action?: string;
+          policy_version?: string;
+          previous_visibility?: "private" | "community" | "public";
+          resulting_visibility?: "private" | "community" | "public";
+          occurred_at?: string;
         };
         Relationships: [];
       };
@@ -1624,6 +1669,16 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["practitioners"]["Row"];
       };
+      update_my_whatsapp_consent: {
+        Args: {
+          actor_user_id: string;
+          target_whatsapp_number: string | null;
+          target_visibility: "private" | "community" | "public";
+          affirmative_consent: boolean;
+          target_policy_version: string;
+        };
+        Returns: Database["public"]["Tables"]["practitioners"]["Row"];
+      };
       list_location_community_reviews: {
         Args: {
           actor_user_id: string;
@@ -1656,6 +1711,7 @@ export type Database = {
           youtube_url: string | null;
           tiktok_url: string | null;
           profile_image_url: string | null;
+          whatsapp_number: string | null;
         }[];
       };
       list_public_practitioner_map_markers: {
@@ -1684,6 +1740,7 @@ export type Database = {
           latitude: number;
           longitude: number;
           profile_image_url: string | null;
+          whatsapp_number: string | null;
         }[];
       };
       preview_my_practitioner_map_markers: {
@@ -1701,6 +1758,7 @@ export type Database = {
           latitude: number;
           longitude: number;
           profile_image_url: string | null;
+          whatsapp_number: string | null;
         }[];
       };
       list_feedback_participants: {

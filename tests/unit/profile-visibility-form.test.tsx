@@ -55,6 +55,7 @@ const profile: PractitionerProfile = {
     socialLinks: "private",
     configuredAt: null,
   },
+  whatsapp: { number: null, visibility: "private", grantedAt: null, policyVersion: null },
   createdAt: "2026-08-26T00:00:00Z",
   updatedAt: "2026-08-26T00:00:00Z",
 };

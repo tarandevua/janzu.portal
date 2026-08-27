@@ -47,3 +47,9 @@ This endpoint returns only verified Facilitators and Instructors who opted into 
 All map contracts return only marker ID, profile ID, verified category, audience-filtered display name and image, city/country label, and approximate latitude/longitude. Approximate coordinates are deterministic 0.1-degree grid-cell centers. Exact coordinates, private notes, addresses, user IDs, Administrator status, and audit data are never returned.
 
 Administrators cannot publish a profile on a member's behalf. They may remove a profile from all directories as an audited safety action; only the member can opt back in through their profile visibility settings.
+
+## WhatsApp consent
+
+WhatsApp is configured separately on the authenticated profile page. `update_my_whatsapp_consent(actor_user_id, target_whatsapp_number, target_visibility, affirmative_consent, target_policy_version)` is owner-bound and accepts only `private` or `community` visibility. A grant requires an E.164 international number, affirmative consent, and the current policy version. Revocation requires a null number and `private` visibility, and removes the current number atomically.
+
+Public profile and public map contracts never include a WhatsApp field. The community profile and map projections return `whatsapp_number` only for a current, versioned consent with `community` visibility. Owner profile responses include the private current consent state; audit history is protected by owner/Administrator RLS and never stores the number itself.
