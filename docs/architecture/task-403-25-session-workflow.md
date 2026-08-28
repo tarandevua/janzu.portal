@@ -12,7 +12,7 @@ Reaching 25 sessions does not approve Level 2. A Trainee may create a readiness 
 
 ## Recalculation
 
-Session, training, and assignment triggers continue to rebuild the journey from source records. A participant-confirmed session is derived from submitted feedback rather than the optional `client_id`, so an unnamed but confirmed Session Participant still counts. If verified Level 1, the 25-session threshold, or the active assignment disappears, pending or approved readiness is marked `invalidated` and audited. Reattainment permits a new request but never emits the milestone a second time. A verified Level 2 record advances only when an approval exists under the current active assignment.
+Session, training, and assignment triggers continue to rebuild the journey from source records. Forward correction `202608280001_task_403_count_validated_sessions.sql` makes the existing `sessions.is_validated` flag the canonical validation projection; the optional `client_id` and feedback-row shape do not exclude an otherwise validated session. If verified Level 1, the 25-session threshold, or the active assignment disappears, pending or approved readiness is marked `invalidated` and audited. Reattainment permits a new request but never emits the milestone a second time. A verified Level 2 record advances only when an approval exists under the current active assignment.
 
 ## Delivery and privacy
 

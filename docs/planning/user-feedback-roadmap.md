@@ -342,7 +342,7 @@ Decide:
 - Level 2 is not approved automatically.
 - Session invalidation recalculates eligibility safely.
 
-**Verification:** Forward-only migrations `202608270002_add_task_403_notification_types.sql` and `202608270003_task_403_25_session_workflow.sql` add immutable milestone attainment, one localized in-app notification and required email per recipient, assignment-bound readiness requests and Instructor decisions, protected audit history, exact authorized links, and recalculation-driven invalidation. English/Spanish UI and knowledge-base guidance, unit coverage, and SQL integration coverage are included. Migrated-environment verification remains required.
+**Verification:** Forward-only migrations `202608270002_add_task_403_notification_types.sql`, `202608270003_task_403_25_session_workflow.sql`, and correction `202608280001_task_403_count_validated_sessions.sql` add immutable milestone attainment, one localized in-app notification and required email per recipient, assignment-bound readiness requests and Instructor decisions, protected audit history, exact authorized links, canonical validated-session counting, and recalculation-driven invalidation. English/Spanish UI and knowledge-base guidance, unit coverage, and SQL integration coverage are included. Migrated-environment verification remains required.
 
 #### TASK-404: Add the 50-session assessment workflow
 

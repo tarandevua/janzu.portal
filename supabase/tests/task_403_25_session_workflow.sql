@@ -89,7 +89,7 @@ select
   case when series = 25 then null else '34030000-0000-4000-8000-000000000001'::uuid end,
   date '2026-02-01' + series,
   60,
-  false
+  series = 25
 from generate_series(1, 25) series;
 
 insert into public.session_feedback (
@@ -101,7 +101,7 @@ select
   'task-403-feedback-' || series::text,
   5,
   now()
-from generate_series(1, 25) series;
+from generate_series(1, 24) series;
 
 do $$
 begin
@@ -112,7 +112,7 @@ begin
   end if;
   if (select counted_sessions_count from public.certification_journeys
       where trainee_user_id = '14030000-0000-4000-8000-000000000001') <> 25 then
-    raise exception 'Submitted-feedback validation did not count the session without a linked client row';
+    raise exception 'A validated session without a linked client row did not count';
   end if;
   if (select count(*) from public.notifications
       where event_key like 'certification.milestone_25_reached:%') <> 2 then

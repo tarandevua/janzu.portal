@@ -10,6 +10,10 @@ const enumMigration = readFileSync(
   join(process.cwd(), "supabase/migrations/202608270002_add_task_403_notification_types.sql"),
   "utf8"
 ).toLowerCase();
+const countCorrection = readFileSync(
+  join(process.cwd(), "supabase/migrations/202608280001_task_403_count_validated_sessions.sql"),
+  "utf8"
+).toLowerCase();
 
 describe("TASK-403 migration contract", () => {
   it("can resume after a partial SQL-editor run without dropping workflow data", () => {
@@ -40,10 +44,11 @@ describe("TASK-403 migration contract", () => {
     expect(migration).not.toContain("set state = 'level_2_completed'");
   });
 
-  it("counts participant-confirmed sessions even when no client row is linked", () => {
-    expect(migration).toContain("session_feedback.session_id = sessions.id");
-    expect(migration).toContain("session_feedback.submitted_at is not null");
-    expect(migration).not.toContain("client_id is not null");
+  it("counts the canonical validated-session flag even when no client row is linked", () => {
+    expect(countCorrection).toContain("is_validated = true");
+    expect(countCorrection).not.toContain("client_id is not null");
+    expect(countCorrection).not.toContain("session_feedback.submitted_at is not null");
+    expect(countCorrection).toContain("perform public.recalculate_certification_journey(practitioner_record.id, null)");
   });
 
   it("keeps reasons out of required email metadata", () => {
