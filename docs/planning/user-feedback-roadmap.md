@@ -331,7 +331,7 @@ Decide:
 
 #### TASK-403: Add the 25-session workflow
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** TASK-202, TASK-402, TASK-502
 
