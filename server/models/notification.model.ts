@@ -12,7 +12,10 @@ export type NotificationType =
   | "supervision_ended"
   | "training_history_submitted"
   | "training_history_corrected"
-  | "training_history_reviewed";
+  | "training_history_reviewed"
+  | "certification_milestone_25_reached"
+  | "level_2_readiness_requested"
+  | "level_2_readiness_decided";
 
 export type Notification = {
   id: string;

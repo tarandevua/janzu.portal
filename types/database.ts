@@ -995,6 +995,114 @@ export type Database = {
         };
         Relationships: [];
       };
+      certification_milestone_attainments: {
+        Row: {
+          id: string;
+          journey_id: string;
+          milestone: number;
+          trainee_user_id: string;
+          assignment_id: string | null;
+          counted_sessions_count: number;
+          attained_at: string;
+        };
+        Insert: {
+          id?: string;
+          journey_id: string;
+          milestone: number;
+          trainee_user_id: string;
+          assignment_id?: string | null;
+          counted_sessions_count: number;
+          attained_at?: string;
+        };
+        Update: {
+          id?: string;
+          journey_id?: string;
+          milestone?: number;
+          trainee_user_id?: string;
+          assignment_id?: string | null;
+          counted_sessions_count?: number;
+          attained_at?: string;
+        };
+        Relationships: [];
+      };
+      level_2_readiness_requests: {
+        Row: {
+          id: string;
+          journey_id: string;
+          trainee_user_id: string;
+          assignment_id: string;
+          status: Database["public"]["Enums"]["level_2_readiness_status"];
+          requested_at: string;
+          decided_by: string | null;
+          decided_at: string | null;
+          decision_reason: string | null;
+          invalidated_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          journey_id: string;
+          trainee_user_id: string;
+          assignment_id: string;
+          status?: Database["public"]["Enums"]["level_2_readiness_status"];
+          requested_at?: string;
+          decided_by?: string | null;
+          decided_at?: string | null;
+          decision_reason?: string | null;
+          invalidated_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          journey_id?: string;
+          trainee_user_id?: string;
+          assignment_id?: string;
+          status?: Database["public"]["Enums"]["level_2_readiness_status"];
+          requested_at?: string;
+          decided_by?: string | null;
+          decided_at?: string | null;
+          decision_reason?: string | null;
+          invalidated_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      level_2_readiness_audit: {
+        Row: {
+          id: string;
+          request_id: string;
+          actor_user_id: string | null;
+          action: "requested" | "approved" | "rejected" | "revision_required" | "invalidated";
+          previous_status: Database["public"]["Enums"]["level_2_readiness_status"] | null;
+          resulting_status: Database["public"]["Enums"]["level_2_readiness_status"];
+          reason: string | null;
+          occurred_at: string;
+        };
+        Insert: {
+          id?: string;
+          request_id: string;
+          actor_user_id?: string | null;
+          action: "requested" | "approved" | "rejected" | "revision_required" | "invalidated";
+          previous_status?: Database["public"]["Enums"]["level_2_readiness_status"] | null;
+          resulting_status: Database["public"]["Enums"]["level_2_readiness_status"];
+          reason?: string | null;
+          occurred_at?: string;
+        };
+        Update: {
+          id?: string;
+          request_id?: string;
+          actor_user_id?: string | null;
+          action?: "requested" | "approved" | "rejected" | "revision_required" | "invalidated";
+          previous_status?: Database["public"]["Enums"]["level_2_readiness_status"] | null;
+          resulting_status?: Database["public"]["Enums"]["level_2_readiness_status"];
+          reason?: string | null;
+          occurred_at?: string;
+        };
+        Relationships: [];
+      };
       certification_progress: {
         Row: {
           id: string;
@@ -1313,7 +1421,10 @@ export type Database = {
             | "supervision_ended"
             | "training_history_submitted"
             | "training_history_corrected"
-            | "training_history_reviewed";
+            | "training_history_reviewed"
+            | "certification_milestone_25_reached"
+            | "level_2_readiness_requested"
+            | "level_2_readiness_decided";
           title: string;
           body: string | null;
           href: string | null;
@@ -1343,7 +1454,10 @@ export type Database = {
             | "supervision_ended"
             | "training_history_submitted"
             | "training_history_corrected"
-            | "training_history_reviewed";
+            | "training_history_reviewed"
+            | "certification_milestone_25_reached"
+            | "level_2_readiness_requested"
+            | "level_2_readiness_decided";
           title: string;
           body?: string | null;
           href?: string | null;
@@ -1373,7 +1487,10 @@ export type Database = {
             | "supervision_ended"
             | "training_history_submitted"
             | "training_history_corrected"
-            | "training_history_reviewed";
+            | "training_history_reviewed"
+            | "certification_milestone_25_reached"
+            | "level_2_readiness_requested"
+            | "level_2_readiness_decided";
           title?: string;
           body?: string | null;
           href?: string | null;
@@ -1861,6 +1978,40 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["certification_journeys"]["Row"];
       };
+      get_certification_journey_context: {
+        Args: { actor_user_id: string; target_trainee_user_id: string };
+        Returns: {
+          id: string;
+          trainee_user_id: string;
+          practitioner_id: string;
+          trainee_name: string;
+          state: Database["public"]["Enums"]["certification_journey_state"];
+          counted_sessions_count: number;
+          level_1_training_record_id: string | null;
+          level_2_training_record_id: string | null;
+          state_changed_at: string;
+          created_at: string;
+          updated_at: string;
+          readiness_request_id: string | null;
+          readiness_status: Database["public"]["Enums"]["level_2_readiness_status"] | null;
+          readiness_decision_reason: string | null;
+          can_request_level_2_review: boolean;
+          can_review_level_2_request: boolean;
+        }[];
+      };
+      request_level_2_readiness: {
+        Args: { actor_user_id: string; target_journey_id: string };
+        Returns: Database["public"]["Tables"]["level_2_readiness_requests"]["Row"];
+      };
+      decide_level_2_readiness: {
+        Args: {
+          actor_user_id: string;
+          target_request_id: string;
+          target_status: Database["public"]["Enums"]["level_2_readiness_status"];
+          target_reason?: string | null;
+        };
+        Returns: Database["public"]["Tables"]["level_2_readiness_requests"]["Row"];
+      };
       list_certification_journeys: {
         Args: {
           actor_user_id: string;
@@ -1877,6 +2028,11 @@ export type Database = {
           state_changed_at: string;
           created_at: string;
           updated_at: string;
+          readiness_request_id: string | null;
+          readiness_status: Database["public"]["Enums"]["level_2_readiness_status"] | null;
+          readiness_decision_reason: string | null;
+          can_request_level_2_review: boolean;
+          can_review_level_2_request: boolean;
         }[];
       };
       override_certification_journey_state: {
@@ -1968,6 +2124,12 @@ export type Database = {
         | "assessment_passed"
         | "certification_approved"
         | "facilitator_activated";
+      level_2_readiness_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "revision_required"
+        | "invalidated";
       location_type: "pool" | "spa" | "natural_water";
       approval_status: "pending" | "approved" | "rejected";
       event_type: "retreat" | "training" | "community_gathering";
@@ -1987,7 +2149,10 @@ export type Database = {
         | "supervision_ended"
         | "training_history_submitted"
         | "training_history_corrected"
-        | "training_history_reviewed";
+        | "training_history_reviewed"
+        | "certification_milestone_25_reached"
+        | "level_2_readiness_requested"
+        | "level_2_readiness_decided";
       profile_visibility: "private" | "community" | "public";
       supervision_status: "pending" | "active" | "declined" | "ended" | "cancelled";
       training_level: "level_1" | "level_2" | "level_3";

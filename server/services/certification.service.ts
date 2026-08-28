@@ -4,11 +4,14 @@ import {
   type CertificationJourney,
   type CertificationJourneyState,
   type CertificationOverride,
+  type Level2ReadinessDecision,
 } from "@/server/models/certification.model";
 import {
   listCertificationJourneys,
   overrideCertificationJourney,
   syncCertificationJourney,
+  requestLevel2Readiness,
+  decideLevel2Readiness,
 } from "@/server/repositories/certification.repository";
 
 const protectedApprovalStates = new Set<CertificationJourneyState>([
@@ -72,4 +75,20 @@ export async function overrideCertificationState(
   return toCertificationJourneySummary(
     await overrideCertificationJourney(supabase, actorUserId, override)
   );
+}
+
+export function submitLevel2ReadinessRequest(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  journeyId: string
+) {
+  return requestLevel2Readiness(supabase, actorUserId, journeyId);
+}
+
+export function submitLevel2ReadinessDecision(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  decision: Level2ReadinessDecision
+) {
+  return decideLevel2Readiness(supabase, actorUserId, decision);
 }

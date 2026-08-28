@@ -8,6 +8,7 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPractitionerProfileByUserId } from "@/server/repositories/practitioner.repository";
+import { getLevel2ReadinessRequestById } from "@/server/repositories/certification.repository";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import {
   getCertificationJourney,
@@ -17,11 +18,11 @@ import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/servi
 
 type CertificationPageProps = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; traineeId?: string; journeyId?: string; decisionId?: string }>;
 };
 
 export default async function CertificationPage({ params, searchParams }: CertificationPageProps) {
-  const [{ locale }, { status }] = await Promise.all([params, searchParams]);
+  const [{ locale }, { status, traineeId, journeyId, decisionId }] = await Promise.all([params, searchParams]);
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
     supabase.auth.getUser(),
@@ -39,18 +40,37 @@ export default async function CertificationPage({ params, searchParams }: Certif
 
   const canOverride = hasPermission(roles, "certifications:approve");
   const canReview = canOverride || roles.includes("instructor");
-  const [journeyResult, reviewResult] = await Promise.allSettled([
+  const [journeyResult, reviewResult, decisionResult] = await Promise.allSettled([
     practitioner
       ? getCertificationJourney(supabase, data.user.id, data.user.id)
       : Promise.resolve(null),
     canReview
       ? listCertificationJourneysForReview(supabase, data.user.id)
       : Promise.resolve([]),
+    decisionId
+      ? getLevel2ReadinessRequestById(supabase, decisionId)
+      : Promise.resolve(null),
   ]);
 
   const journey = journeyResult.status === "fulfilled" ? journeyResult.value : null;
-  const reviewJourneys = reviewResult.status === "fulfilled" ? reviewResult.value : [];
-  const loadFailed = journeyResult.status === "rejected" || reviewResult.status === "rejected";
+  const selectedDecision = decisionResult.status === "fulfilled" ? decisionResult.value : null;
+  const displayedJourney = journey && selectedDecision?.journey_id === journey.id
+    ? {
+        ...journey,
+        readinessRequestId: selectedDecision.id,
+        readinessStatus: selectedDecision.status,
+        readinessDecisionReason: selectedDecision.decision_reason,
+      }
+    : journey;
+  const loadedReviewJourneys = reviewResult.status === "fulfilled" ? reviewResult.value : [];
+  const reviewJourneys = traineeId
+    ? loadedReviewJourneys.filter((item) => item.traineeUserId === traineeId)
+    : decisionId
+      ? loadedReviewJourneys.filter((item) => item.readinessRequestId === decisionId)
+      : loadedReviewJourneys;
+  const loadFailed = journeyResult.status === "rejected"
+    || reviewResult.status === "rejected"
+    || decisionResult.status === "rejected";
   const practitionerProfileRequired = !practitioner && !canReview;
 
   return (
@@ -80,9 +100,10 @@ export default async function CertificationPage({ params, searchParams }: Certif
               actionLabel={dictionary.clients.profileRequiredAction}
             />
           ) : null}
-          {journey ? (
+          {displayedJourney && (!journeyId || displayedJourney.id === journeyId) && (!decisionId || displayedJourney.readinessRequestId === decisionId) ? (
             <CertificationProgressCard
-              progress={journey}
+              progress={displayedJourney}
+              locale={locale}
               dictionary={dictionary.certification}
             />
           ) : null}

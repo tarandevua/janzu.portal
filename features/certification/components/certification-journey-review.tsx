@@ -1,9 +1,11 @@
+import React from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type {
   CertificationJourneyState,
   CertificationJourneySummary,
 } from "@/server/models/certification.model";
 import { overrideCertification } from "@/features/certification/actions";
+import { decideLevel2Review } from "@/features/certification/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +39,20 @@ type CertificationJourneyReviewProps = {
     overrideForbidden: string;
     overrideFailed: string;
     protectedTransition: string;
+    level2DecisionTitle: string;
+    level2DecisionDescription: string;
+    approveReadiness: string;
+    rejectReadiness: string;
+    requireRevision: string;
+    decisionReason: string;
+    decisionReasonPlaceholder: string;
+    readinessStatuses: Record<"pending" | "approved" | "rejected" | "revision_required" | "invalidated", string>;
+    readinessRequested: string;
+    readinessInvalid: string;
+    readinessFailed: string;
+    decisionSaved: string;
+    decisionInvalid: string;
+    decisionFailed: string;
     states: StateLabels;
   };
 };
@@ -49,6 +65,12 @@ function getStatusMessage(
   if (status === "override-invalid") return dictionary.overrideInvalid;
   if (status === "override-forbidden") return dictionary.overrideForbidden;
   if (status === "override-failed") return dictionary.overrideFailed;
+  if (status === "readiness-requested") return dictionary.readinessRequested;
+  if (status === "readiness-invalid") return dictionary.readinessInvalid;
+  if (status === "readiness-failed") return dictionary.readinessFailed;
+  if (status === "decision-saved") return dictionary.decisionSaved;
+  if (status === "decision-invalid") return dictionary.decisionInvalid;
+  if (status === "decision-failed") return dictionary.decisionFailed;
   return null;
 }
 
@@ -92,6 +114,34 @@ export function CertificationJourneyReview({
                   {dictionary.currentState}: {dictionary.states[journey.state]}
                 </Badge>
               </div>
+
+              {journey.canReviewLevel2Request && journey.readinessRequestId ? (
+                <form action={decideLevel2Review.bind(null, locale)} className="grid gap-3 rounded-md bg-muted/40 p-4">
+                  <input type="hidden" name="requestId" value={journey.readinessRequestId} />
+                  <div>
+                    <p className="font-medium">{dictionary.level2DecisionTitle}</p>
+                    <p className="text-sm text-muted-foreground">{dictionary.level2DecisionDescription}</p>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor={`decision-reason-${journey.id}`}>{dictionary.decisionReason}</Label>
+                    <Textarea
+                      id={`decision-reason-${journey.id}`}
+                      name="reason"
+                      maxLength={1000}
+                      placeholder={dictionary.decisionReasonPlaceholder}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="submit" name="decision" value="approved">{dictionary.approveReadiness}</Button>
+                    <Button type="submit" name="decision" value="revision_required" variant="secondary">{dictionary.requireRevision}</Button>
+                    <Button type="submit" name="decision" value="rejected" variant="outline">{dictionary.rejectReadiness}</Button>
+                  </div>
+                </form>
+              ) : journey.readinessStatus ? (
+                <p className="text-sm text-muted-foreground">
+                  {dictionary.level2DecisionTitle}: {dictionary.readinessStatuses[journey.readinessStatus]}
+                </p>
+              ) : null}
 
               {canOverride ? (
                 journey.nextState ? (

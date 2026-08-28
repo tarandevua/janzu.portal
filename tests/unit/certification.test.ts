@@ -4,6 +4,7 @@ import {
   toCertificationJourneySummary,
 } from "@/server/services/certification.service";
 import { certificationOverrideSchema } from "@/server/validators/certification.schema";
+import { level2ReadinessDecisionSchema } from "@/server/validators/certification.schema";
 
 const journey = {
   id: "34020000-0000-4000-8000-000000000001",
@@ -17,6 +18,11 @@ const journey = {
   stateChangedAt: "2026-08-25T00:00:00.000Z",
   createdAt: "2026-08-25T00:00:00.000Z",
   updatedAt: "2026-08-25T00:00:00.000Z",
+  readinessRequestId: null,
+  readinessStatus: null,
+  readinessDecisionReason: null,
+  canRequestLevel2Review: false,
+  canReviewLevel2Request: false,
 };
 
 describe("certification journey rules", () => {
@@ -56,5 +62,33 @@ describe("certification journey rules", () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it("requires reasons for negative Level 2 readiness decisions only", () => {
+    const base = {
+      requestId: "74030000-0000-4000-8000-000000000001",
+      reason: null,
+    };
+
+    expect(level2ReadinessDecisionSchema.safeParse({ ...base, status: "approved" }).success).toBe(true);
+    expect(level2ReadinessDecisionSchema.safeParse({ ...base, status: "rejected" }).success).toBe(false);
+    expect(level2ReadinessDecisionSchema.safeParse({
+      ...base,
+      status: "revision_required",
+      reason: "Complete the missing readiness evidence.",
+    }).success).toBe(true);
+  });
+
+  it("does not represent readiness approval as Level 2 completion", () => {
+    const summary = toCertificationJourneySummary({
+      ...journey,
+      state: "level_2_review_eligible",
+      countedSessionsCount: 25,
+      readinessRequestId: "74030000-0000-4000-8000-000000000001",
+      readinessStatus: "approved",
+    });
+
+    expect(summary.state).toBe("level_2_review_eligible");
+    expect(summary.readinessStatus).toBe("approved");
   });
 });

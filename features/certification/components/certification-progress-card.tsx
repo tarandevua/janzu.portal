@@ -1,3 +1,4 @@
+import React from "react";
 import { CheckCircle2Icon, CircleIcon, LockKeyholeIcon } from "lucide-react";
 import {
   certificationJourneyStates,
@@ -6,11 +7,15 @@ import {
 } from "@/server/models/certification.model";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import type { Locale } from "@/lib/i18n/config";
+import { requestLevel2Review } from "@/features/certification/actions";
 
 type StateLabels = Record<CertificationJourneyState, string>;
 
 type CertificationProgressCardProps = {
   progress: CertificationJourneySummary;
+  locale: Locale;
   dictionary: {
     journeyDescription: string;
     countedSessions: string;
@@ -18,11 +23,18 @@ type CertificationProgressCardProps = {
     remaining: string;
     currentState: string;
     states: StateLabels;
+    level2ReviewTitle: string;
+    level2ReviewAvailable: string;
+    level2ReviewUnavailable: string;
+    requestLevel2Review: string;
+    decisionReasonLabel: string;
+    readinessStatuses: Record<"pending" | "approved" | "rejected" | "revision_required" | "invalidated", string>;
   };
 };
 
 export function CertificationProgressCard({
   progress,
+  locale,
   dictionary,
 }: CertificationProgressCardProps) {
   return (
@@ -50,6 +62,31 @@ export function CertificationProgressCard({
             <p className="text-sm text-muted-foreground">{dictionary.remaining}</p>
             <p className="text-2xl font-semibold">{progress.remainingSessionsCount}</p>
           </div>
+        </div>
+
+        <div className="grid gap-3 rounded-md border p-4">
+          <div>
+            <p className="font-medium">{dictionary.level2ReviewTitle}</p>
+            <p className="text-sm text-muted-foreground">
+              {progress.readinessStatus
+                ? dictionary.readinessStatuses[progress.readinessStatus]
+                : progress.canRequestLevel2Review
+                  ? dictionary.level2ReviewAvailable
+                  : dictionary.level2ReviewUnavailable}
+            </p>
+            {progress.readinessDecisionReason ? (
+              <p className="mt-2 text-sm">
+                <span className="font-medium">{dictionary.decisionReasonLabel}:</span>{" "}
+                {progress.readinessDecisionReason}
+              </p>
+            ) : null}
+          </div>
+          {progress.canRequestLevel2Review ? (
+            <form action={requestLevel2Review.bind(null, locale)}>
+              <input type="hidden" name="journeyId" value={progress.id} />
+              <Button type="submit">{dictionary.requestLevel2Review}</Button>
+            </form>
+          ) : null}
         </div>
 
         <div>

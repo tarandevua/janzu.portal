@@ -331,7 +331,7 @@ Decide:
 
 #### TASK-403: Add the 25-session workflow
 
-**Status:** Planned  
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** TASK-202, TASK-402, TASK-502
 
@@ -341,6 +341,8 @@ Decide:
 - “Request Level 2 review” becomes available only when requirements are satisfied.
 - Level 2 is not approved automatically.
 - Session invalidation recalculates eligibility safely.
+
+**Verification:** Forward-only migrations `202608270002_add_task_403_notification_types.sql` and `202608270003_task_403_25_session_workflow.sql` add immutable milestone attainment, one localized in-app notification and required email per recipient, assignment-bound readiness requests and Instructor decisions, protected audit history, exact authorized links, and recalculation-driven invalidation. English/Spanish UI and knowledge-base guidance, unit coverage, and SQL integration coverage are included. Migrated-environment verification remains required.
 
 #### TASK-404: Add the 50-session assessment workflow
 

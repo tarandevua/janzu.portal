@@ -17,6 +17,16 @@ export const certificationJourneyStates = [
 
 export type CertificationJourneyState = (typeof certificationJourneyStates)[number];
 
+export const level2ReadinessStatuses = [
+  "pending",
+  "approved",
+  "rejected",
+  "revision_required",
+  "invalidated",
+] as const;
+
+export type Level2ReadinessStatus = (typeof level2ReadinessStatuses)[number];
+
 export type CertificationJourney = {
   id: string;
   traineeUserId: string;
@@ -29,6 +39,11 @@ export type CertificationJourney = {
   stateChangedAt: string;
   createdAt: string;
   updatedAt: string;
+  readinessRequestId: string | null;
+  readinessStatus: Level2ReadinessStatus | null;
+  readinessDecisionReason: string | null;
+  canRequestLevel2Review: boolean;
+  canReviewLevel2Request: boolean;
 };
 
 export type CertificationJourneySummary = CertificationJourney & {
@@ -49,4 +64,10 @@ export type CertificationOverride = {
   resultingState: CertificationJourneyState;
   reason: string;
   evidenceReference: string;
+};
+
+export type Level2ReadinessDecision = {
+  requestId: string;
+  status: Extract<Level2ReadinessStatus, "approved" | "rejected" | "revision_required">;
+  reason: string | null;
 };
