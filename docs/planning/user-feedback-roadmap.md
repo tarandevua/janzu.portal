@@ -346,7 +346,7 @@ Decide:
 
 #### TASK-404: Add the 50-session assessment workflow
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** TASK-402, TASK-502
 
