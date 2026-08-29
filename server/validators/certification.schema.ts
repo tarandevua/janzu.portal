@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   certificationJourneyStates,
   level2ReadinessStatuses,
+  assessmentStatuses,
 } from "@/server/models/certification.model";
 
 export const certificationOverrideSchema = z.object({
@@ -11,6 +12,47 @@ export const certificationOverrideSchema = z.object({
   reason: z.string().trim().min(10).max(1000),
   evidenceReference: z.string().trim().min(3).max(1000),
 });
+
+export const assessmentReadinessRequestSchema = z.object({ journeyId: z.string().uuid() });
+
+export const assessmentReadinessDecisionSchema = z.object({
+  requestId: z.string().uuid(),
+  approve: z.enum(["approved", "rejected"]),
+  reason: z.string().trim().max(1000).nullable(),
+}).superRefine((value, context) => {
+  if (value.approve === "rejected" && (!value.reason || value.reason.length < 10)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["reason"], message: "A reason of at least 10 characters is required." });
+  }
+});
+
+export const assessorDesignationSchema = z.object({
+  userId: z.string().uuid(),
+  active: z.enum(["true", "false"]),
+  reason: z.string().trim().min(10).max(1000),
+});
+
+export const assessmentAssignmentSchema = z.object({
+  assessmentId: z.string().uuid(),
+  assessorUserId: z.string().uuid(),
+});
+
+export const assessmentScheduleSchema = z.object({
+  assessmentId: z.string().uuid(),
+  scheduledAt: z.coerce.date(),
+});
+
+export const assessmentOutcomeSchema = z.object({
+  assessmentId: z.string().uuid(),
+  status: z.enum(assessmentStatuses).refine((status) => ["incomplete", "revision_required", "failed", "passed"].includes(status)),
+  notes: z.string().trim().max(4000).nullable(),
+  nextAction: z.string().trim().max(1000).nullable(),
+}).superRefine((value, context) => {
+  if (value.status !== "passed" && (!value.nextAction || value.nextAction.length < 10)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["nextAction"], message: "An explicit next action of at least 10 characters is required." });
+  }
+});
+
+export const assessmentRemediationSchema = z.object({ assessmentId: z.string().uuid() });
 
 export type CertificationOverridePayload = z.infer<typeof certificationOverrideSchema>;
 

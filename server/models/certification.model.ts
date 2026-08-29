@@ -71,3 +71,49 @@ export type Level2ReadinessDecision = {
   status: Extract<Level2ReadinessStatus, "approved" | "rejected" | "revision_required">;
   reason: string | null;
 };
+
+export const assessmentReadinessStatuses = ["pending", "approved", "rejected", "invalidated"] as const;
+export type AssessmentReadinessStatus = (typeof assessmentReadinessStatuses)[number];
+
+export const assessmentStatuses = [
+  "awaiting_assessor",
+  "scheduled",
+  "incomplete",
+  "revision_required",
+  "failed",
+  "passed",
+] as const;
+export type AssessmentStatus = (typeof assessmentStatuses)[number];
+
+export type AssessmentQueueItem = {
+  journeyId: string;
+  traineeUserId: string;
+  traineeName: string;
+  journeyState: CertificationJourneyState;
+  countedSessionsCount: number;
+  readinessRequestId: string | null;
+  readinessStatus: AssessmentReadinessStatus | null;
+  readinessDecisionReason: string | null;
+  assessmentId: string | null;
+  revisionNumber: number | null;
+  assessorUserId: string | null;
+  assessorName: string | null;
+  scheduledAt: string | null;
+  assessmentStatus: AssessmentStatus | null;
+  assessedAt: string | null;
+  notes: string | null;
+  nextAction: string | null;
+  remediationVerifiedAt: string | null;
+  canRequestReadiness: boolean;
+  canDecideReadiness: boolean;
+  canAssignAssessor: boolean;
+  canSchedule: boolean;
+  canRecordOutcome: boolean;
+  canVerifyRemediation: boolean;
+};
+
+export type AssessorCandidate = {
+  userId: string;
+  displayName: string;
+  active: boolean;
+};

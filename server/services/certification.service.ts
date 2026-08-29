@@ -12,7 +12,17 @@ import {
   syncCertificationJourney,
   requestLevel2Readiness,
   decideLevel2Readiness,
+  listAssessmentQueue,
+  listAssessorCandidates,
+  requestAssessmentReadiness,
+  decideAssessmentReadiness,
+  setAssessorDesignation,
+  assignAssessmentAssessor,
+  saveAssessmentSchedule,
+  saveAssessmentOutcome,
+  verifyAssessmentRemediation,
 } from "@/server/repositories/certification.repository";
+import type { AssessmentStatus } from "@/server/models/certification.model";
 
 const protectedApprovalStates = new Set<CertificationJourneyState>([
   "assessment_passed",
@@ -92,3 +102,22 @@ export function submitLevel2ReadinessDecision(
 ) {
   return decideLevel2Readiness(supabase, actorUserId, decision);
 }
+
+export const getAssessmentQueue = listAssessmentQueue;
+export const getAssessorCandidates = listAssessorCandidates;
+export const submitAssessmentReadinessRequest = requestAssessmentReadiness;
+export const submitAssessmentReadinessDecision = decideAssessmentReadiness;
+export const updateAssessorDesignation = setAssessorDesignation;
+export const submitAssessmentAssessor = assignAssessmentAssessor;
+export const submitAssessmentSchedule = saveAssessmentSchedule;
+export function submitAssessmentOutcome(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  assessmentId: string,
+  status: AssessmentStatus,
+  notes: string | null,
+  nextAction: string | null
+) {
+  return saveAssessmentOutcome(supabase, actorUserId, assessmentId, status, notes, nextAction);
+}
+export const submitAssessmentRemediationVerification = verifyAssessmentRemediation;

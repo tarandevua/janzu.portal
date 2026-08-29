@@ -346,7 +346,7 @@ Decide:
 
 #### TASK-404: Add the 50-session assessment workflow
 
-**Status:** Planned  
+**Status:** Verify
 **Priority:** P1  
 **Dependencies:** TASK-402, TASK-502
 
@@ -356,6 +356,8 @@ Decide:
 - Trainee, Instructor, and authorized Administrator are notified once.
 - The assessment queue records assessor, date, outcome, notes, and revisions.
 - Failed or incomplete assessments have an explicit next action.
+
+**Verification:** Forward-only migrations `202608280002_add_task_404_notification_types.sql` and `202608280003_task_404_50_session_assessment_workflow.sql` add immutable 50-session attainment, localized required delivery, active-Instructor readiness review, separately authorized Assessor assignment, a private audited assessment/reassessment queue, explicit negative next actions, and DEC-02 60-minute recalculation. English/Spanish UI and knowledge-base guidance, unit coverage, and SQL integration coverage are included. Migrated-environment verification remains required.
 
 #### TASK-405: Issue digital certificates and activate Facilitator
 
@@ -387,7 +389,7 @@ Decide:
 
 #### TASK-502: Build transactional email infrastructure
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** TASK-501
 

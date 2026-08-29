@@ -48,8 +48,21 @@ Cookie: sb-access-token=<admin-session>
 
 Only an Administrator can call the server action or RPC. The authenticated actor is bound to `auth.uid()`. Corrections must move exactly one adjacent state, require a reason and evidence reference, and are idempotent when retried after commit. They cannot fabricate `assessment_passed`, `certification_approved`, or `facilitator_activated`.
 
+## Assessment workflow
+
+The localized Certification page uses actor-bound server actions backed by these RPCs:
+
+- `request_assessment_readiness(actor_user_id, target_journey_id)` requires verified Level 1 and Level 2, 50 cumulative validated sessions of at least 60 minutes, an active Instructor, and no current request.
+- `decide_assessment_readiness(actor_user_id, target_request_id, approve_request, target_reason)` is restricted to the active assigned Instructor. Rejection requires a private reason.
+- `set_assessor_designation(actor_user_id, target_user_id, target_active, target_reason)` is Administrator-only and separately authorizes an Instructor to assess.
+- `assign_assessment_assessor(actor_user_id, target_assessment_id, target_assessor_user_id)` is Administrator-only and rejects the Trainee's active Instructor.
+- `schedule_assessment`, `record_assessment_outcome`, and `verify_assessment_remediation` enforce assigned-Assessor and active-Instructor boundaries in the database.
+- `list_assessment_queue(actor_user_id)` returns server-derived action flags and only records visible to the Trainee, active Instructor, assigned Assessor, or Administrator.
+
+Each failed, incomplete, or revision-required outcome requires an explicit next action. Notes and remediation details remain in the RLS-protected portal record and are excluded from notification/email metadata. Remediation verification creates a new numbered attempt linked to the previous assessment; it never overwrites the original outcome.
+
 ## Counting and automatic transitions
 
-A session counts when it belongs to the Trainee's practitioner profile, has a Session Participant, is validated, lasts at least 60 minutes, and occurs after verified Level 1 completion. Changes to sessions, verified training, or active supervision recalculate eligibility. Forward transitions are recorded one state at a time; invalidated source eligibility records an audited regression.
+A session counts when it belongs to the Trainee's practitioner profile, is represented by the canonical validated projection, lasts at least 60 minutes, and occurs after verified Level 1 completion. Changes to sessions, verified training, or active supervision recalculate eligibility. Forward transitions are recorded one state at a time; invalidated source eligibility records an audited regression.
 
-Automatic progression stops at `sessions_50_reached`. TASK-403 implements Level 2 readiness decisions and milestone delivery, TASK-404 implements assessment, and TASK-405 implements approval, certificate issuance, and atomic Facilitator activation.
+Automatic source progression stops at `sessions_50_reached`; active-Instructor assessment-readiness approval advances to `assessment_available`. TASK-404 owns assessment through `assessment_passed`. TASK-405 implements final approval, certificate issuance, and atomic Facilitator activation.

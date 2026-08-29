@@ -4,6 +4,7 @@ import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-fram
 import { PractitionerProfileRequiredAlert } from "@/components/dashboard/practitioner-profile-required-alert";
 import { CertificationJourneyReview } from "@/features/certification/components/certification-journey-review";
 import { CertificationProgressCard } from "@/features/certification/components/certification-progress-card";
+import { AssessmentWorkflow } from "@/features/certification/components/assessment-workflow";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -13,16 +14,18 @@ import { listUserRoles } from "@/server/repositories/rbac.repository";
 import {
   getCertificationJourney,
   listCertificationJourneysForReview,
+  getAssessmentQueue,
+  getAssessorCandidates,
 } from "@/server/services/certification.service";
 import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/services/rbac.service";
 
 type CertificationPageProps = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ status?: string; traineeId?: string; journeyId?: string; decisionId?: string }>;
+  searchParams: Promise<{ status?: string; traineeId?: string; journeyId?: string; decisionId?: string; assessmentId?: string }>;
 };
 
 export default async function CertificationPage({ params, searchParams }: CertificationPageProps) {
-  const [{ locale }, { status, traineeId, journeyId, decisionId }] = await Promise.all([params, searchParams]);
+  const [{ locale }, { status, traineeId, journeyId, decisionId, assessmentId }] = await Promise.all([params, searchParams]);
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
     supabase.auth.getUser(),
@@ -40,7 +43,7 @@ export default async function CertificationPage({ params, searchParams }: Certif
 
   const canOverride = hasPermission(roles, "certifications:approve");
   const canReview = canOverride || roles.includes("instructor");
-  const [journeyResult, reviewResult, decisionResult] = await Promise.allSettled([
+  const [journeyResult, reviewResult, decisionResult, assessmentResult, assessorResult] = await Promise.allSettled([
     practitioner
       ? getCertificationJourney(supabase, data.user.id, data.user.id)
       : Promise.resolve(null),
@@ -50,6 +53,8 @@ export default async function CertificationPage({ params, searchParams }: Certif
     decisionId
       ? getLevel2ReadinessRequestById(supabase, decisionId)
       : Promise.resolve(null),
+    getAssessmentQueue(supabase, data.user.id),
+    canOverride ? getAssessorCandidates(supabase, data.user.id) : Promise.resolve([]),
   ]);
 
   const journey = journeyResult.status === "fulfilled" ? journeyResult.value : null;
@@ -63,6 +68,13 @@ export default async function CertificationPage({ params, searchParams }: Certif
       }
     : journey;
   const loadedReviewJourneys = reviewResult.status === "fulfilled" ? reviewResult.value : [];
+  const loadedAssessments = assessmentResult.status === "fulfilled" ? assessmentResult.value : [];
+  const assessmentItems = assessmentId
+    ? loadedAssessments.filter((item) => item.assessmentId === assessmentId || item.readinessRequestId === assessmentId)
+    : traineeId
+      ? loadedAssessments.filter((item) => item.traineeUserId === traineeId)
+      : loadedAssessments;
+  const assessorCandidates = assessorResult.status === "fulfilled" ? assessorResult.value : [];
   const reviewJourneys = traineeId
     ? loadedReviewJourneys.filter((item) => item.traineeUserId === traineeId)
     : decisionId
@@ -70,7 +82,9 @@ export default async function CertificationPage({ params, searchParams }: Certif
       : loadedReviewJourneys;
   const loadFailed = journeyResult.status === "rejected"
     || reviewResult.status === "rejected"
-    || decisionResult.status === "rejected";
+    || decisionResult.status === "rejected"
+    || assessmentResult.status === "rejected"
+    || assessorResult.status === "rejected";
   const practitionerProfileRequired = !practitioner && !canReview;
 
   return (
@@ -116,6 +130,14 @@ export default async function CertificationPage({ params, searchParams }: Certif
               dictionary={dictionary.certification}
             />
           ) : null}
+          <AssessmentWorkflow
+            locale={locale}
+            items={assessmentItems}
+            candidates={assessorCandidates}
+            canManageAssessors={canOverride}
+            status={status}
+            dictionary={dictionary.certification}
+          />
         </div>
       </div>
     </JanzuDashboardFrame>

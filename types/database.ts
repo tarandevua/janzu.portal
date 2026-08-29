@@ -911,6 +911,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      assessor_designations: {
+        Row: { id: string; user_id: string; active: boolean; designated_by: string; designation_reason: string; designated_at: string; revoked_by: string | null; revocation_reason: string | null; revoked_at: string | null; updated_at: string };
+        Insert: { id?: string; user_id: string; active?: boolean; designated_by: string; designation_reason: string; designated_at?: string; revoked_by?: string | null; revocation_reason?: string | null; revoked_at?: string | null; updated_at?: string };
+        Update: { id?: string; user_id?: string; active?: boolean; designated_by?: string; designation_reason?: string; designated_at?: string; revoked_by?: string | null; revocation_reason?: string | null; revoked_at?: string | null; updated_at?: string };
+        Relationships: [];
+      };
+      assessor_designation_audit: {
+        Row: { id: string; designation_id: string; actor_user_id: string; action: "designated" | "revoked" | "redesignated"; reason: string; occurred_at: string };
+        Insert: { id?: string; designation_id: string; actor_user_id: string; action: "designated" | "revoked" | "redesignated"; reason: string; occurred_at?: string };
+        Update: { id?: string; designation_id?: string; actor_user_id?: string; action?: "designated" | "revoked" | "redesignated"; reason?: string; occurred_at?: string };
+        Relationships: [];
+      };
+      assessment_readiness_requests: {
+        Row: { id: string; journey_id: string; trainee_user_id: string; assignment_id: string; status: Database["public"]["Enums"]["assessment_readiness_status"]; requested_at: string; decided_by: string | null; decided_at: string | null; decision_reason: string | null; invalidated_at: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; journey_id: string; trainee_user_id: string; assignment_id: string; status?: Database["public"]["Enums"]["assessment_readiness_status"]; requested_at?: string; decided_by?: string | null; decided_at?: string | null; decision_reason?: string | null; invalidated_at?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; journey_id?: string; trainee_user_id?: string; assignment_id?: string; status?: Database["public"]["Enums"]["assessment_readiness_status"]; requested_at?: string; decided_by?: string | null; decided_at?: string | null; decision_reason?: string | null; invalidated_at?: string | null; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      assessment_readiness_audit: {
+        Row: { id: string; request_id: string; actor_user_id: string | null; action: "requested" | "approved" | "rejected" | "invalidated"; previous_status: Database["public"]["Enums"]["assessment_readiness_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_readiness_status"]; reason: string | null; occurred_at: string };
+        Insert: { id?: string; request_id: string; actor_user_id?: string | null; action: "requested" | "approved" | "rejected" | "invalidated"; previous_status?: Database["public"]["Enums"]["assessment_readiness_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_readiness_status"]; reason?: string | null; occurred_at?: string };
+        Update: { id?: string; request_id?: string; actor_user_id?: string | null; action?: "requested" | "approved" | "rejected" | "invalidated"; previous_status?: Database["public"]["Enums"]["assessment_readiness_status"] | null; resulting_status?: Database["public"]["Enums"]["assessment_readiness_status"]; reason?: string | null; occurred_at?: string };
+        Relationships: [];
+      };
+      assessments: {
+        Row: { id: string; journey_id: string; readiness_request_id: string; trainee_user_id: string; revision_number: number; previous_assessment_id: string | null; assessor_designation_id: string | null; assessor_user_id: string | null; scheduled_at: string | null; status: Database["public"]["Enums"]["assessment_status"]; assessed_at: string | null; notes: string | null; next_action: string | null; remediation_verified_by: string | null; remediation_verified_at: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; journey_id: string; readiness_request_id: string; trainee_user_id: string; revision_number?: number; previous_assessment_id?: string | null; assessor_designation_id?: string | null; assessor_user_id?: string | null; scheduled_at?: string | null; status?: Database["public"]["Enums"]["assessment_status"]; assessed_at?: string | null; notes?: string | null; next_action?: string | null; remediation_verified_by?: string | null; remediation_verified_at?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; journey_id?: string; readiness_request_id?: string; trainee_user_id?: string; revision_number?: number; previous_assessment_id?: string | null; assessor_designation_id?: string | null; assessor_user_id?: string | null; scheduled_at?: string | null; status?: Database["public"]["Enums"]["assessment_status"]; assessed_at?: string | null; notes?: string | null; next_action?: string | null; remediation_verified_by?: string | null; remediation_verified_at?: string | null; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      assessment_audit: {
+        Row: { id: string; assessment_id: string; actor_user_id: string; action: "created" | "assessor_assigned" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status: Database["public"]["Enums"]["assessment_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_status"]; occurred_at: string };
+        Insert: { id?: string; assessment_id: string; actor_user_id: string; action: "created" | "assessor_assigned" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status?: Database["public"]["Enums"]["assessment_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_status"]; occurred_at?: string };
+        Update: { id?: string; assessment_id?: string; actor_user_id?: string; action?: "created" | "assessor_assigned" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status?: Database["public"]["Enums"]["assessment_status"] | null; resulting_status?: Database["public"]["Enums"]["assessment_status"]; occurred_at?: string };
+        Relationships: [];
+      };
       certification_journeys: {
         Row: {
           id: string;
@@ -2003,6 +2039,54 @@ export type Database = {
         Args: { actor_user_id: string; target_journey_id: string };
         Returns: Database["public"]["Tables"]["level_2_readiness_requests"]["Row"];
       };
+      set_assessor_designation: {
+        Args: { actor_user_id: string; target_user_id: string; target_active: boolean; target_reason: string };
+        Returns: Database["public"]["Tables"]["assessor_designations"]["Row"];
+      };
+      request_assessment_readiness: {
+        Args: { actor_user_id: string; target_journey_id: string };
+        Returns: Database["public"]["Tables"]["assessment_readiness_requests"]["Row"];
+      };
+      decide_assessment_readiness: {
+        Args: { actor_user_id: string; target_request_id: string; approve_request: boolean; target_reason?: string | null };
+        Returns: Database["public"]["Tables"]["assessment_readiness_requests"]["Row"];
+      };
+      assign_assessment_assessor: {
+        Args: { actor_user_id: string; target_assessment_id: string; target_assessor_user_id: string };
+        Returns: Database["public"]["Tables"]["assessments"]["Row"];
+      };
+      schedule_assessment: {
+        Args: { actor_user_id: string; target_assessment_id: string; target_scheduled_at: string };
+        Returns: Database["public"]["Tables"]["assessments"]["Row"];
+      };
+      record_assessment_outcome: {
+        Args: { actor_user_id: string; target_assessment_id: string; target_status: Database["public"]["Enums"]["assessment_status"]; target_notes?: string | null; target_next_action?: string | null };
+        Returns: Database["public"]["Tables"]["assessments"]["Row"];
+      };
+      verify_assessment_remediation: {
+        Args: { actor_user_id: string; target_assessment_id: string };
+        Returns: Database["public"]["Tables"]["assessments"]["Row"];
+      };
+      list_assessor_candidates: {
+        Args: { actor_user_id: string };
+        Returns: { user_id: string; display_name: string; active: boolean }[];
+      };
+      list_assessment_queue: {
+        Args: { actor_user_id: string };
+        Returns: {
+          journey_id: string; trainee_user_id: string; trainee_name: string;
+          journey_state: Database["public"]["Enums"]["certification_journey_state"];
+          counted_sessions_count: number; readiness_request_id: string | null;
+          readiness_status: Database["public"]["Enums"]["assessment_readiness_status"] | null;
+          readiness_decision_reason: string | null; assessment_id: string | null; revision_number: number | null;
+          assessor_user_id: string | null; assessor_name: string | null; scheduled_at: string | null;
+          assessment_status: Database["public"]["Enums"]["assessment_status"] | null;
+          assessed_at: string | null; notes: string | null; next_action: string | null;
+          remediation_verified_at: string | null; can_request_readiness: boolean;
+          can_decide_readiness: boolean; can_assign_assessor: boolean; can_schedule: boolean;
+          can_record_outcome: boolean; can_verify_remediation: boolean;
+        }[];
+      };
       decide_level_2_readiness: {
         Args: {
           actor_user_id: string;
@@ -2130,6 +2214,8 @@ export type Database = {
         | "rejected"
         | "revision_required"
         | "invalidated";
+      assessment_readiness_status: "pending" | "approved" | "rejected" | "invalidated";
+      assessment_status: "awaiting_assessor" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed";
       location_type: "pool" | "spa" | "natural_water";
       approval_status: "pending" | "approved" | "rejected";
       event_type: "retreat" | "training" | "community_gathering";
@@ -2152,7 +2238,14 @@ export type Database = {
         | "training_history_reviewed"
         | "certification_milestone_25_reached"
         | "level_2_readiness_requested"
-        | "level_2_readiness_decided";
+        | "level_2_readiness_decided"
+        | "certification_milestone_50_reached"
+        | "assessment_readiness_requested"
+        | "assessment_readiness_decided"
+        | "assessment_assigned"
+        | "assessment_scheduled"
+        | "assessment_outcome_recorded"
+        | "assessment_remediation_verified";
       profile_visibility: "private" | "community" | "public";
       supervision_status: "pending" | "active" | "declined" | "ended" | "cancelled";
       training_level: "level_1" | "level_2" | "level_3";

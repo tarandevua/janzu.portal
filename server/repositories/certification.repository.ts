@@ -5,6 +5,9 @@ import type {
   CertificationJourneyState,
   CertificationOverride,
   Level2ReadinessDecision,
+  AssessmentQueueItem,
+  AssessorCandidate,
+  AssessmentStatus,
 } from "@/server/models/certification.model";
 
 type JourneyRow = Database["public"]["Tables"]["certification_journeys"]["Row"];
@@ -39,6 +42,42 @@ type CertificationRpcClient = {
     args: Database["public"]["Functions"]["decide_level_2_readiness"]["Args"]
   ): Promise<{ data: Database["public"]["Tables"]["level_2_readiness_requests"]["Row"] | null; error: { message: string } | null }>;
 };
+
+type AssessmentQueueRow = {
+  journey_id: string; trainee_user_id: string; trainee_name: string;
+  journey_state: CertificationJourneyState; counted_sessions_count: number;
+  readiness_request_id: string | null; readiness_status: AssessmentQueueItem["readinessStatus"];
+  readiness_decision_reason: string | null; assessment_id: string | null; revision_number: number | null;
+  assessor_user_id: string | null; assessor_name: string | null; scheduled_at: string | null;
+  assessment_status: AssessmentQueueItem["assessmentStatus"]; assessed_at: string | null;
+  notes: string | null; next_action: string | null; remediation_verified_at: string | null;
+  can_request_readiness: boolean; can_decide_readiness: boolean; can_assign_assessor: boolean;
+  can_schedule: boolean; can_record_outcome: boolean; can_verify_remediation: boolean;
+};
+
+type AssessmentRpcClient = {
+  rpc(functionName: string, args: Record<string, unknown>): Promise<{ data: unknown; error: { message: string } | null }>;
+};
+
+function assessmentRpc(supabase: SupabaseServerClient) {
+  return supabase as unknown as AssessmentRpcClient;
+}
+
+function toAssessmentQueueItem(row: AssessmentQueueRow): AssessmentQueueItem {
+  return {
+    journeyId: row.journey_id, traineeUserId: row.trainee_user_id, traineeName: row.trainee_name,
+    journeyState: row.journey_state, countedSessionsCount: row.counted_sessions_count,
+    readinessRequestId: row.readiness_request_id, readinessStatus: row.readiness_status,
+    readinessDecisionReason: row.readiness_decision_reason, assessmentId: row.assessment_id,
+    revisionNumber: row.revision_number, assessorUserId: row.assessor_user_id,
+    assessorName: row.assessor_name, scheduledAt: row.scheduled_at, assessmentStatus: row.assessment_status,
+    assessedAt: row.assessed_at, notes: row.notes, nextAction: row.next_action,
+    remediationVerifiedAt: row.remediation_verified_at, canRequestReadiness: row.can_request_readiness,
+    canDecideReadiness: row.can_decide_readiness, canAssignAssessor: row.can_assign_assessor,
+    canSchedule: row.can_schedule, canRecordOutcome: row.can_record_outcome,
+    canVerifyRemediation: row.can_verify_remediation,
+  };
+}
 
 function toJourney(
   row: JourneyRow | JourneyListRow | JourneyContextRow,
@@ -164,3 +203,39 @@ export async function getLevel2ReadinessRequestById(
   if (error) throw new Error(error.message);
   return data as Database["public"]["Tables"]["level_2_readiness_requests"]["Row"] | null;
 }
+
+async function mutateAssessment(supabase: SupabaseServerClient, functionName: string, args: Record<string, unknown>) {
+  const { data, error } = await assessmentRpc(supabase).rpc(functionName, args);
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("The assessment workflow could not be updated.");
+  return data;
+}
+
+export async function listAssessmentQueue(supabase: SupabaseServerClient, actorUserId: string) {
+  const { data, error } = await assessmentRpc(supabase).rpc("list_assessment_queue", { actor_user_id: actorUserId });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as AssessmentQueueRow[]).map(toAssessmentQueueItem);
+}
+
+export async function listAssessorCandidates(supabase: SupabaseServerClient, actorUserId: string) {
+  const { data, error } = await assessmentRpc(supabase).rpc("list_assessor_candidates", { actor_user_id: actorUserId });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as { user_id: string; display_name: string; active: boolean }[]).map<AssessorCandidate>((row) => ({
+    userId: row.user_id, displayName: row.display_name, active: row.active,
+  }));
+}
+
+export const requestAssessmentReadiness = (supabase: SupabaseServerClient, actorUserId: string, journeyId: string) =>
+  mutateAssessment(supabase, "request_assessment_readiness", { actor_user_id: actorUserId, target_journey_id: journeyId });
+export const decideAssessmentReadiness = (supabase: SupabaseServerClient, actorUserId: string, requestId: string, approved: boolean, reason: string | null) =>
+  mutateAssessment(supabase, "decide_assessment_readiness", { actor_user_id: actorUserId, target_request_id: requestId, approve_request: approved, target_reason: reason });
+export const setAssessorDesignation = (supabase: SupabaseServerClient, actorUserId: string, userId: string, active: boolean, reason: string) =>
+  mutateAssessment(supabase, "set_assessor_designation", { actor_user_id: actorUserId, target_user_id: userId, target_active: active, target_reason: reason });
+export const assignAssessmentAssessor = (supabase: SupabaseServerClient, actorUserId: string, assessmentId: string, assessorUserId: string) =>
+  mutateAssessment(supabase, "assign_assessment_assessor", { actor_user_id: actorUserId, target_assessment_id: assessmentId, target_assessor_user_id: assessorUserId });
+export const saveAssessmentSchedule = (supabase: SupabaseServerClient, actorUserId: string, assessmentId: string, scheduledAt: string) =>
+  mutateAssessment(supabase, "schedule_assessment", { actor_user_id: actorUserId, target_assessment_id: assessmentId, target_scheduled_at: scheduledAt });
+export const saveAssessmentOutcome = (supabase: SupabaseServerClient, actorUserId: string, assessmentId: string, status: AssessmentStatus, notes: string | null, nextAction: string | null) =>
+  mutateAssessment(supabase, "record_assessment_outcome", { actor_user_id: actorUserId, target_assessment_id: assessmentId, target_status: status, target_notes: notes, target_next_action: nextAction });
+export const verifyAssessmentRemediation = (supabase: SupabaseServerClient, actorUserId: string, assessmentId: string) =>
+  mutateAssessment(supabase, "verify_assessment_remediation", { actor_user_id: actorUserId, target_assessment_id: assessmentId });
