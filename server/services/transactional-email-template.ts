@@ -189,6 +189,16 @@ export function buildTransactionalEmailTemplate({
   const privacy = locale === "es"
     ? "Los detalles privados permanecen en el portal autenticado."
     : "Private details remain in the authenticated portal.";
+  const certificateNumber = typeof metadata.certificateNumber === "string"
+    && /^JZ-[0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(metadata.certificateNumber)
+    ? metadata.certificateNumber
+    : null;
+  const certificateVerification = getFamily(eventType) === "certificate" && certificateNumber
+    ? {
+        label: locale === "es" ? "Verificación pública" : "Public verification",
+        url: new URL(`/${locale}/certificates/verify/${certificateNumber}`, destinationUrl).toString(),
+      }
+    : null;
 
   return {
     subject,
@@ -196,8 +206,17 @@ export function buildTransactionalEmailTemplate({
       `<p>${escapeHtml(greeting)}</p>`,
       `<p>${escapeHtml(body)} <strong>${escapeHtml(state)}</strong></p>`,
       `<p><a href="${escapeHtml(destinationUrl)}">${escapeHtml(action)}</a></p>`,
+      certificateVerification
+        ? `<p>${escapeHtml(certificateVerification.label)}: <a href="${escapeHtml(certificateVerification.url)}">${escapeHtml(certificateNumber ?? "")}</a></p>`
+        : "",
       `<p>${escapeHtml(privacy)}</p>`,
-    ].join("\n"),
-    textContent: [greeting, `${body} ${state}`, `${action}: ${destinationUrl}`, privacy].join("\n\n"),
+    ].filter(Boolean).join("\n"),
+    textContent: [
+      greeting,
+      `${body} ${state}`,
+      `${action}: ${destinationUrl}`,
+      certificateVerification ? `${certificateVerification.label}: ${certificateNumber} (${certificateVerification.url})` : null,
+      privacy,
+    ].filter((value): value is string => Boolean(value)).join("\n\n"),
   };
 }

@@ -158,7 +158,7 @@ Decide:
 
 #### TASK-103: Send a welcome email
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** TASK-101, TASK-501
 
@@ -188,7 +188,7 @@ Decide:
 
 #### TASK-201: Implement real Instructor authorization
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P1  
 **Dependencies:** DEC-01
 
@@ -361,7 +361,7 @@ Decide:
 
 #### TASK-405: Issue digital certificates and activate Facilitator
 
-**Status:** Planned  
+**Status:** Verify
 **Priority:** P2  
 **Dependencies:** TASK-404
 
@@ -372,6 +372,8 @@ Decide:
 - Issuance, role activation, and map classification update atomically.
 - Replacement and revocation preserve history.
 - The member can download the certificate and receives it by email.
+
+**Verification:** Accepted decision `DEC-07-digital-certificate-lifecycle.md`, forward-only migrations `202608290001_add_task_405_notification_types.sql` and `202608290002_task_405_certificate_lifecycle.sql`, private immutable bilingual PDF generation, exact-number public verification, server-enforced lifecycle authorization, certification-derived Facilitator activation/removal, localized portal/email flows, audit history, unit coverage, and SQL integration coverage are implemented. Lint, typecheck, 203 unit tests, production build, rendered PDF visual QA, isolated migrated-database lifecycle/RLS checks, and English/Spanish desktop/mobile browser verification pass. Migrated-environment verification and approved production signature configuration remain required before the task can move from Verify to Done.
 
 ### Stage 5 — Notifications and email
 

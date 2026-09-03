@@ -52,4 +52,23 @@ describe("TASK-502 transactional email templates", () => {
       assertAuthorizedEmailDestination("feedback.received", "en", "https://evil.test/record")
     ).toThrow("localized portal paths");
   });
+
+  it("includes the public certificate number and verification link without private lifecycle text", () => {
+    const certificateId = "50000000-0000-4000-8000-000000000002";
+    const template = buildTransactionalEmailTemplate({
+      eventType: "certificate.issued",
+      locale: "es",
+      displayName: "María",
+      destinationUrl: `https://portal.example/es/dashboard/certification?certificateId=${certificateId}`,
+      metadata: {
+        certificateId,
+        memberUserId: id,
+        certificateNumber: "JZ-2026-AAAA-BBBB-CCCC",
+        status: "issued",
+      },
+    });
+    expect(template.textContent).toContain("JZ-2026-AAAA-BBBB-CCCC");
+    expect(template.textContent).toContain("/es/certificates/verify/JZ-2026-AAAA-BBBB-CCCC");
+    expect(template.textContent).not.toContain("reason");
+  });
 });

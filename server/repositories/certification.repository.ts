@@ -8,6 +8,9 @@ import type {
   AssessmentQueueItem,
   AssessorCandidate,
   AssessmentStatus,
+  CertificateWorkflowItem,
+  CertificateGenerationContext,
+  PreparedCertificateArtifact,
 } from "@/server/models/certification.model";
 
 type JourneyRow = Database["public"]["Tables"]["certification_journeys"]["Row"];
@@ -239,3 +242,190 @@ export const saveAssessmentOutcome = (supabase: SupabaseServerClient, actorUserI
   mutateAssessment(supabase, "record_assessment_outcome", { actor_user_id: actorUserId, target_assessment_id: assessmentId, target_status: status, target_notes: notes, target_next_action: nextAction });
 export const verifyAssessmentRemediation = (supabase: SupabaseServerClient, actorUserId: string, assessmentId: string) =>
   mutateAssessment(supabase, "verify_assessment_remediation", { actor_user_id: actorUserId, target_assessment_id: assessmentId });
+
+type CertificateRpcClient = {
+  rpc(functionName: string, args: Record<string, unknown>): Promise<{ data: unknown; error: { message: string } | null }>;
+};
+
+function certificateRpc(supabase: SupabaseServerClient) {
+  return supabase as unknown as CertificateRpcClient;
+}
+
+export async function listCertificateWorkflow(
+  supabase: SupabaseServerClient,
+  actorUserId: string
+): Promise<CertificateWorkflowItem[]> {
+  const { data, error } = await certificateRpc(supabase).rpc("list_certificate_workflow", {
+    actor_user_id: actorUserId,
+  });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as Database["public"]["Functions"]["list_certificate_workflow"]["Returns"]).map((row) => ({
+    journeyId: row.journey_id,
+    memberUserId: row.member_user_id,
+    memberName: row.member_name,
+    currentOfficialName: row.current_official_name,
+    journeyState: row.journey_state,
+    certificationStatus: row.certification_status,
+    assessmentId: row.assessment_id,
+    certificateId: row.certificate_id,
+    certificateNumber: row.certificate_number,
+    certificateStatus: row.certificate_status,
+    certificateNameSnapshot: row.certificate_name_snapshot,
+    originalCertificationDate: row.original_certification_date,
+    issuedAt: row.issued_at,
+    lifecycleEffectiveAt: row.lifecycle_effective_at,
+    revokedAt: row.revoked_at,
+    revocationReason: row.revocation_reason,
+    replacementRequestId: row.replacement_request_id,
+    replacementRequestStatus: row.replacement_request_status,
+    replacementRequestReason: row.replacement_request_reason,
+    appealId: row.appeal_id,
+    appealStatus: row.appeal_status,
+    appealReason: row.appeal_reason,
+    appealEvidenceReference: row.appeal_evidence_reference,
+    appealDecisionReason: row.appeal_decision_reason,
+    templateReady: row.template_ready,
+    canIssue: row.can_issue,
+    canReplace: row.can_replace,
+    canRevoke: row.can_revoke,
+    canRequestReplacement: row.can_request_replacement,
+    canSubmitAppeal: row.can_submit_appeal,
+    canDecideAppeal: row.can_decide_appeal,
+    canDownload: row.can_download,
+    nameMismatch: row.name_mismatch,
+  }));
+}
+
+export async function getCertificateGenerationContext(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  operation: CertificateGenerationContext["operation"],
+  ids: { journeyId?: string; certificateId?: string; appealId?: string }
+) {
+  const { data, error } = await certificateRpc(supabase).rpc("get_certificate_generation_context", {
+    actor_user_id: actorUserId,
+    target_operation: operation,
+    target_journey_id: ids.journeyId ?? null,
+    target_certificate_id: ids.certificateId ?? null,
+    target_appeal_id: ids.appealId ?? null,
+  });
+  if (error) throw new Error(error.message);
+  const row = (data as Database["public"]["Functions"]["get_certificate_generation_context"]["Returns"] | null)?.[0];
+  if (!row) throw new Error("Certificate generation context is unavailable.");
+  return {
+    operation: row.operation as CertificateGenerationContext["operation"],
+    journeyId: row.journey_id,
+    assessmentId: row.assessment_id,
+    memberUserId: row.member_user_id,
+    officialName: row.official_name ?? "",
+    originalCertificationDate: row.original_certification_date,
+    predecessorCertificateId: row.predecessor_certificate_id,
+    templateId: row.template_id,
+    templateVersion: row.template_version,
+    issuerName: row.issuer_name,
+    signatoryOneName: row.signatory_one_name,
+    signatoryOneObjectPath: row.signatory_one_object_path ?? "",
+    signatoryOneSha256: row.signatory_one_sha256 ?? "",
+    signatoryTwoName: row.signatory_two_name,
+    signatoryTwoObjectPath: row.signatory_two_object_path ?? "",
+    signatoryTwoSha256: row.signatory_two_sha256 ?? "",
+    templateReady: row.template_ready,
+  } satisfies CertificateGenerationContext;
+}
+
+async function mutateCertificate(
+  supabase: SupabaseServerClient,
+  functionName: string,
+  args: Record<string, unknown>
+) {
+  const { data, error } = await certificateRpc(supabase).rpc(functionName, args);
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("The certificate workflow could not be updated.");
+  return data;
+}
+
+function artifactArgs(artifact: PreparedCertificateArtifact) {
+  return {
+    target_certificate_id: artifact.certificateId,
+    target_certificate_number: artifact.certificateNumber,
+    target_template_id: artifact.templateId,
+    target_artifact_object_path: artifact.objectPath,
+    target_artifact_sha256: artifact.sha256,
+    target_artifact_size_bytes: artifact.sizeBytes,
+    target_signatory_one_sha256: artifact.signatoryOneSha256,
+    target_signatory_two_sha256: artifact.signatoryTwoSha256,
+  };
+}
+
+export const commitCertificateIssuance = (
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  journeyId: string,
+  artifact: PreparedCertificateArtifact
+) => mutateCertificate(supabase, "issue_certificate", {
+  actor_user_id: actorUserId,
+  target_journey_id: journeyId,
+  ...artifactArgs(artifact),
+});
+
+export const commitCertificateReplacement = (
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  predecessorCertificateId: string,
+  reason: string,
+  requestId: string | null,
+  artifact: PreparedCertificateArtifact
+) => mutateCertificate(supabase, "replace_certificate", {
+  actor_user_id: actorUserId,
+  target_predecessor_certificate_id: predecessorCertificateId,
+  replacement_reason: reason,
+  target_replacement_request_id: requestId,
+  ...artifactArgs(artifact),
+});
+
+export const commitCertificateReinstatement = (
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  appealId: string,
+  reason: string,
+  artifact: PreparedCertificateArtifact
+) => mutateCertificate(supabase, "reinstate_certificate_from_appeal", {
+  actor_user_id: actorUserId,
+  target_appeal_id: appealId,
+  target_decision_reason: reason,
+  ...artifactArgs(artifact),
+});
+
+export const revokeCertificateRecord = (supabase: SupabaseServerClient, actorUserId: string, certificateId: string, reason: string, evidenceReference: string) =>
+  mutateCertificate(supabase, "revoke_certificate", { actor_user_id: actorUserId, target_certificate_id: certificateId, target_reason: reason, target_evidence_reference: evidenceReference });
+export const requestCertificateReplacementRecord = (supabase: SupabaseServerClient, actorUserId: string, certificateId: string, reason: string) =>
+  mutateCertificate(supabase, "request_certificate_replacement", { actor_user_id: actorUserId, target_certificate_id: certificateId, target_reason: reason });
+export const rejectCertificateReplacementRecord = (supabase: SupabaseServerClient, actorUserId: string, requestId: string, reason: string) =>
+  mutateCertificate(supabase, "reject_certificate_replacement_request", { actor_user_id: actorUserId, target_request_id: requestId, target_reason: reason });
+export const submitCertificateAppealRecord = (supabase: SupabaseServerClient, actorUserId: string, certificateId: string, reason: string, evidenceReference: string | null) =>
+  mutateCertificate(supabase, "submit_certificate_appeal", { actor_user_id: actorUserId, target_certificate_id: certificateId, target_reason: reason, target_evidence_reference: evidenceReference });
+export const upholdCertificateAppealRecord = (supabase: SupabaseServerClient, actorUserId: string, appealId: string, reason: string) =>
+  mutateCertificate(supabase, "uphold_certificate_appeal", { actor_user_id: actorUserId, target_appeal_id: appealId, target_reason: reason });
+
+export async function authorizeCertificateDownload(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  certificateId: string
+) {
+  const { data, error } = await certificateRpc(supabase).rpc("authorize_certificate_download", {
+    actor_user_id: actorUserId,
+    target_certificate_id: certificateId,
+  });
+  if (error) throw new Error(error.message);
+  const row = (data as Database["public"]["Functions"]["authorize_certificate_download"]["Returns"] | null)?.[0];
+  if (!row) throw new Error("Certificate download is unavailable.");
+  return row;
+}
+
+export async function verifyCertificateNumber(supabase: SupabaseServerClient, certificateNumber: string) {
+  const { data, error } = await certificateRpc(supabase).rpc("verify_certificate", {
+    target_certificate_number: certificateNumber,
+  });
+  if (error) throw new Error(error.message);
+  return (data as Database["public"]["Functions"]["verify_certificate"]["Returns"] | null)?.[0] ?? null;
+}

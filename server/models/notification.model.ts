@@ -1,21 +1,6 @@
-export type NotificationType =
-  | "session_request_received"
-  | "feedback_received"
-  | "location_approved"
-  | "event_invitation"
-  | "event_rsvp_received"
-  | "certification_progress"
-  | "certification_approved"
-  | "supervision_requested"
-  | "supervision_accepted"
-  | "supervision_declined"
-  | "supervision_ended"
-  | "training_history_submitted"
-  | "training_history_corrected"
-  | "training_history_reviewed"
-  | "certification_milestone_25_reached"
-  | "level_2_readiness_requested"
-  | "level_2_readiness_decided";
+import type { Database } from "@/types/database";
+
+export type NotificationType = Database["public"]["Enums"]["notification_type"];
 
 export type Notification = {
   id: string;

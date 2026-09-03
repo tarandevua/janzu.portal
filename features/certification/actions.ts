@@ -29,8 +29,26 @@ import {
   assessmentScheduleSchema,
   assessmentOutcomeSchema,
   assessmentRemediationSchema,
+  certificateIssueSchema,
+  certificateReplacementSchema,
+  certificateRevocationSchema,
+  certificateReplacementRequestSchema,
+  certificateReplacementRejectionSchema,
+  certificateAppealSchema,
+  certificateAppealDecisionSchema,
 } from "@/server/validators/certification.schema";
 import type { AssessmentStatus } from "@/server/models/certification.model";
+import {
+  CertificateTemplateNotConfiguredError,
+  issueDigitalCertificate,
+  replaceDigitalCertificate,
+  reinstateDigitalCertificate,
+  requestDigitalCertificateReplacement,
+  rejectDigitalCertificateReplacement,
+  revokeDigitalCertificate,
+  submitDigitalCertificateAppeal,
+  upholdDigitalCertificateAppeal,
+} from "@/server/services/certificate.service";
 
 async function getAuthenticatedAssessmentContext(locale: Locale) {
   const supabase = await createSupabaseServerClient();
@@ -202,4 +220,97 @@ export async function verifyAssessmentRemediationAction(locale: Locale, formData
   catch { assessmentRedirect(locale, "assessment-remediation-failed", parsed.data.assessmentId); }
   revalidatePath(`/${locale}/dashboard/certification`);
   assessmentRedirect(locale, "assessment-remediation-saved");
+}
+
+function certificateRedirect(locale: Locale, status: string, certificateId?: string): never {
+  const suffix = certificateId ? `&certificateId=${certificateId}` : "";
+  redirect(`/${locale}/dashboard/certification?status=${status}${suffix}`);
+}
+
+function certificateFailureStatus(error: unknown) {
+  return error instanceof CertificateTemplateNotConfiguredError
+    ? "certificate-template-unconfigured"
+    : "certificate-action-failed";
+}
+
+export async function issueCertificateAction(locale: Locale, formData: FormData) {
+  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const parsed = certificateIssueSchema.safeParse({ journeyId: formData.get("journeyId") });
+  if (!parsed.success) certificateRedirect(locale, "certificate-action-invalid");
+  try { await issueDigitalCertificate(supabase, user.id, parsed.data.journeyId); }
+  catch (error) { certificateRedirect(locale, certificateFailureStatus(error)); }
+  revalidatePath(`/${locale}/dashboard/certification`);
+  certificateRedirect(locale, "certificate-issued");
+}
+
+export async function replaceCertificateAction(locale: Locale, formData: FormData) {
+  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const rawRequestId = formData.get("requestId");
+  const parsed = certificateReplacementSchema.safeParse({
+    certificateId: formData.get("certificateId"),
+    requestId: typeof rawRequestId === "string" && rawRequestId ? rawRequestId : null,
+    reason: formData.get("reason"),
+  });
+  if (!parsed.success) certificateRedirect(locale, "certificate-action-invalid");
+  try { await replaceDigitalCertificate(supabase, user.id, parsed.data.certificateId, parsed.data.reason, parsed.data.requestId); }
+  catch (error) { certificateRedirect(locale, certificateFailureStatus(error), parsed.data.certificateId); }
+  revalidatePath(`/${locale}/dashboard/certification`);
+  certificateRedirect(locale, "certificate-replaced");
+}
+
+export async function revokeCertificateAction(locale: Locale, formData: FormData) {
+  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const parsed = certificateRevocationSchema.safeParse({
+    certificateId: formData.get("certificateId"), reason: formData.get("reason"),
+    evidenceReference: formData.get("evidenceReference"),
+  });
+  if (!parsed.success) certificateRedirect(locale, "certificate-action-invalid");
+  try { await revokeDigitalCertificate(supabase, user.id, parsed.data.certificateId, parsed.data.reason, parsed.data.evidenceReference); }
+  catch { certificateRedirect(locale, "certificate-action-failed", parsed.data.certificateId); }
+  revalidatePath(`/${locale}/dashboard/certification`);
+  certificateRedirect(locale, "certificate-revoked");
+}
+
+export async function requestCertificateReplacementAction(locale: Locale, formData: FormData) {
+  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const parsed = certificateReplacementRequestSchema.safeParse({ certificateId: formData.get("certificateId"), reason: formData.get("reason") });
+  if (!parsed.success) certificateRedirect(locale, "certificate-action-invalid");
+  try { await requestDigitalCertificateReplacement(supabase, user.id, parsed.data.certificateId, parsed.data.reason); }
+  catch { certificateRedirect(locale, "certificate-action-failed", parsed.data.certificateId); }
+  revalidatePath(`/${locale}/dashboard/certification`);
+  certificateRedirect(locale, "certificate-replacement-requested");
+}
+
+export async function rejectCertificateReplacementAction(locale: Locale, formData: FormData) {
+  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const parsed = certificateReplacementRejectionSchema.safeParse({ requestId: formData.get("requestId"), reason: formData.get("reason") });
+  if (!parsed.success) certificateRedirect(locale, "certificate-action-invalid");
+  try { await rejectDigitalCertificateReplacement(supabase, user.id, parsed.data.requestId, parsed.data.reason); }
+  catch { certificateRedirect(locale, "certificate-action-failed"); }
+  revalidatePath(`/${locale}/dashboard/certification`);
+  certificateRedirect(locale, "certificate-replacement-rejected");
+}
+
+export async function submitCertificateAppealAction(locale: Locale, formData: FormData) {
+  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const evidence = formData.get("evidenceReference");
+  const parsed = certificateAppealSchema.safeParse({ certificateId: formData.get("certificateId"), reason: formData.get("reason"),
+    evidenceReference: typeof evidence === "string" && evidence.trim() ? evidence : null });
+  if (!parsed.success) certificateRedirect(locale, "certificate-action-invalid");
+  try { await submitDigitalCertificateAppeal(supabase, user.id, parsed.data.certificateId, parsed.data.reason, parsed.data.evidenceReference); }
+  catch { certificateRedirect(locale, "certificate-action-failed", parsed.data.certificateId); }
+  revalidatePath(`/${locale}/dashboard/certification`);
+  certificateRedirect(locale, "certificate-appeal-submitted");
+}
+
+export async function decideCertificateAppealAction(locale: Locale, formData: FormData) {
+  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const parsed = certificateAppealDecisionSchema.safeParse({ appealId: formData.get("appealId"), decision: formData.get("decision"), reason: formData.get("reason") });
+  if (!parsed.success) certificateRedirect(locale, "certificate-action-invalid");
+  try {
+    if (parsed.data.decision === "reinstated") await reinstateDigitalCertificate(supabase, user.id, parsed.data.appealId, parsed.data.reason);
+    else await upholdDigitalCertificateAppeal(supabase, user.id, parsed.data.appealId, parsed.data.reason);
+  } catch (error) { certificateRedirect(locale, certificateFailureStatus(error)); }
+  revalidatePath(`/${locale}/dashboard/certification`);
+  certificateRedirect(locale, parsed.data.decision === "reinstated" ? "certificate-reinstated" : "certificate-appeal-upheld");
 }

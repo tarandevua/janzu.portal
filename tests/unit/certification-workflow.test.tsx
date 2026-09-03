@@ -1,6 +1,8 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("server-only", () => ({}));
 import { CertificationProgressCard } from "@/features/certification/components/certification-progress-card";
 import { CertificationJourneyReview } from "@/features/certification/components/certification-journey-review";
 import en from "@/messages/en.json";

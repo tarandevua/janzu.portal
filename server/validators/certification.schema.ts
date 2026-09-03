@@ -54,6 +54,36 @@ export const assessmentOutcomeSchema = z.object({
 
 export const assessmentRemediationSchema = z.object({ assessmentId: z.string().uuid() });
 
+export const certificateIssueSchema = z.object({ journeyId: z.string().uuid() });
+export const certificateReplacementSchema = z.object({
+  certificateId: z.string().uuid(),
+  requestId: z.string().uuid().nullable(),
+  reason: z.string().trim().min(10).max(1000),
+});
+export const certificateRevocationSchema = z.object({
+  certificateId: z.string().uuid(),
+  reason: z.string().trim().min(10).max(1000),
+  evidenceReference: z.string().trim().min(3).max(1000),
+});
+export const certificateReplacementRequestSchema = z.object({
+  certificateId: z.string().uuid(),
+  reason: z.string().trim().min(10).max(1000),
+});
+export const certificateReplacementRejectionSchema = z.object({
+  requestId: z.string().uuid(),
+  reason: z.string().trim().min(10).max(1000),
+});
+export const certificateAppealSchema = z.object({
+  certificateId: z.string().uuid(),
+  reason: z.string().trim().min(10).max(2000),
+  evidenceReference: z.string().trim().max(1000).nullable(),
+});
+export const certificateAppealDecisionSchema = z.object({
+  appealId: z.string().uuid(),
+  decision: z.enum(["upheld", "reinstated"]),
+  reason: z.string().trim().min(10).max(2000),
+});
+
 export type CertificationOverridePayload = z.infer<typeof certificationOverrideSchema>;
 
 export const level2ReadinessRequestSchema = z.object({

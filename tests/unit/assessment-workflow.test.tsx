@@ -1,6 +1,8 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("server-only", () => ({}));
 import { AssessmentWorkflow } from "@/features/certification/components/assessment-workflow";
 import { assessmentOutcomeSchema, assessmentReadinessDecisionSchema } from "@/server/validators/certification.schema";
 

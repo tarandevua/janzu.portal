@@ -65,4 +65,33 @@ Each failed, incomplete, or revision-required outcome requires an explicit next 
 
 A session counts when it belongs to the Trainee's practitioner profile, is represented by the canonical validated projection, lasts at least 60 minutes, and occurs after verified Level 1 completion. Changes to sessions, verified training, or active supervision recalculate eligibility. Forward transitions are recorded one state at a time; invalidated source eligibility records an audited regression.
 
-Automatic source progression stops at `sessions_50_reached`; active-Instructor assessment-readiness approval advances to `assessment_available`. TASK-404 owns assessment through `assessment_passed`. TASK-405 implements final approval, certificate issuance, and atomic Facilitator activation.
+Automatic source progression stops at `sessions_50_reached`; active-Instructor assessment-readiness approval advances to `assessment_available`. TASK-404 owns assessment through `assessment_passed`.
+
+## Digital certificate lifecycle
+
+The Certification page uses actor-bound server actions backed by these RPCs:
+
+- `list_certificate_workflow(actor_user_id)` returns only the authenticated member's lifecycle or the Administrator queue, including server-derived action flags and the production-template readiness gate.
+- `get_certificate_generation_context(...)` is Administrator-only and validates issuance, replacement, or reinstatement before returning the approved private template references needed by trusted server-side generation.
+- `issue_certificate(...)` requires an authorized passed assessment, official name, approved artifact metadata, and an active production template. It atomically approves certification, records the certificate, advances the journey, activates certification-derived Facilitator access, updates the legacy projection, audits the transition, and enqueues required delivery.
+- `replace_certificate(...)` is Administrator-only, requires a reason, issues a new number, and retains the predecessor as `replaced` without interrupting access.
+- `revoke_certificate(...)` is Administrator-only and requires a reason plus evidence reference. It atomically revokes the active certificate, removes only a certificate-derived Facilitator role, and retains private history and visibility preferences.
+- `request_certificate_replacement(...)`, `submit_certificate_appeal(...)`, and the Administrator decision RPCs preserve one pending request per lifecycle record. Reinstatement always creates a new certificate.
+- `authorize_certificate_download(...)` permits active-certificate download by the member and historical download by an Administrator, recording each access before the private object is streamed.
+
+PDF creation and private-object upload occur on the trusted server before the database transaction. The transaction validates the certificate ID, human-readable random number, object path, artifact checksum and size, template version, and both approved signature checksums. A failed commit triggers best-effort orphan cleanup. Production operations fail without changing state when the template is not fully configured.
+
+## Public verification
+
+```http
+GET /{locale}/certificates/verify/{certificateNumber}
+```
+
+`verify_certificate(target_certificate_number)` is callable anonymously only for an exact normalized certificate number. It returns status, Practitioner stage, and lifecycle dates. It never returns PDFs, storage paths, signatures, reasons, evidence, assessment data, or workflow participants. A display name appears only when the member independently has a verified public professional role and public directory/display-name visibility.
+
+```http
+GET /api/certificates/{certificateId}/download
+Cookie: sb-access-token=<session>
+```
+
+The download route rechecks authorization in the database, retrieves the private PDF, verifies its byte length and SHA-256 checksum, and returns it with private no-store headers.

@@ -266,6 +266,7 @@ export type Database = {
           user_id: string;
           role_id: string;
           assigned_by: string | null;
+          source_certificate_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -273,6 +274,7 @@ export type Database = {
           user_id: string;
           role_id: string;
           assigned_by?: string | null;
+          source_certificate_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -280,6 +282,7 @@ export type Database = {
           user_id?: string;
           role_id?: string;
           assigned_by?: string | null;
+          source_certificate_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -941,6 +944,102 @@ export type Database = {
         Update: { id?: string; journey_id?: string; readiness_request_id?: string; trainee_user_id?: string; revision_number?: number; previous_assessment_id?: string | null; assessor_designation_id?: string | null; assessor_user_id?: string | null; scheduled_at?: string | null; status?: Database["public"]["Enums"]["assessment_status"]; assessed_at?: string | null; notes?: string | null; next_action?: string | null; remediation_verified_by?: string | null; remediation_verified_at?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
       };
+      certificate_templates: {
+        Row: {
+          id: string; version: string; issuer_name: string;
+          signatory_one_name: string; signatory_one_object_path: string | null; signatory_one_sha256: string | null;
+          signatory_two_name: string; signatory_two_object_path: string | null; signatory_two_sha256: string | null;
+          active: boolean; production_ready: boolean; created_at: string; updated_at: string;
+        };
+        Insert: {
+          id?: string; version: string; issuer_name: string;
+          signatory_one_name: string; signatory_one_object_path?: string | null; signatory_one_sha256?: string | null;
+          signatory_two_name: string; signatory_two_object_path?: string | null; signatory_two_sha256?: string | null;
+          active?: boolean; production_ready?: boolean; created_at?: string; updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["certificate_templates"]["Insert"]>;
+        Relationships: [];
+      };
+      certificates: {
+        Row: {
+          id: string; journey_id: string; assessment_id: string | null; member_user_id: string;
+          certificate_number: string; status: Database["public"]["Enums"]["certificate_status"];
+          practitioner_stage: "practitioner"; official_name_snapshot: string; issuer_name_snapshot: string;
+          signatory_one_name_snapshot: string; signatory_one_sha256: string;
+          signatory_two_name_snapshot: string; signatory_two_sha256: string;
+          template_id: string; template_version: string; original_certification_date: string;
+          issued_at: string; lifecycle_effective_at: string; predecessor_certificate_id: string | null;
+          replaced_by_certificate_id: string | null; revoked_at: string | null; revoked_by: string | null;
+          revocation_reason: string | null; revocation_evidence_reference: string | null;
+          artifact_object_path: string; artifact_sha256: string; artifact_size_bytes: number;
+          generated_at: string; issued_by: string; created_at: string;
+        };
+        Insert: {
+          id: string; journey_id: string; assessment_id?: string | null; member_user_id: string;
+          certificate_number: string; status?: Database["public"]["Enums"]["certificate_status"];
+          practitioner_stage?: "practitioner"; official_name_snapshot: string; issuer_name_snapshot: string;
+          signatory_one_name_snapshot: string; signatory_one_sha256: string;
+          signatory_two_name_snapshot: string; signatory_two_sha256: string;
+          template_id: string; template_version: string; original_certification_date: string;
+          issued_at: string; lifecycle_effective_at: string; predecessor_certificate_id?: string | null;
+          replaced_by_certificate_id?: string | null; revoked_at?: string | null; revoked_by?: string | null;
+          revocation_reason?: string | null; revocation_evidence_reference?: string | null;
+          artifact_object_path: string; artifact_sha256: string; artifact_size_bytes: number;
+          generated_at: string; issued_by: string; created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["certificates"]["Insert"]>;
+        Relationships: [];
+      };
+      certificate_lifecycle_audit: {
+        Row: {
+          id: string; certificate_id: string; actor_user_id: string | null;
+          action: "issued" | "replaced" | "revoked" | "reinstated" | "member_downloaded" | "administrator_downloaded";
+          previous_status: Database["public"]["Enums"]["certificate_status"] | null;
+          resulting_status: Database["public"]["Enums"]["certificate_status"];
+          reason: string | null; evidence_reference: string | null; metadata: Json; occurred_at: string;
+        };
+        Insert: {
+          id?: string; certificate_id: string; actor_user_id?: string | null;
+          action: "issued" | "replaced" | "revoked" | "reinstated" | "member_downloaded" | "administrator_downloaded";
+          previous_status?: Database["public"]["Enums"]["certificate_status"] | null;
+          resulting_status: Database["public"]["Enums"]["certificate_status"];
+          reason?: string | null; evidence_reference?: string | null; metadata?: Json; occurred_at?: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
+      certificate_replacement_requests: {
+        Row: {
+          id: string; certificate_id: string; member_user_id: string; reason: string;
+          status: Database["public"]["Enums"]["certificate_replacement_request_status"];
+          requested_at: string; decided_by: string | null; decided_at: string | null;
+          decision_reason: string | null; replacement_certificate_id: string | null;
+        };
+        Insert: {
+          id?: string; certificate_id: string; member_user_id: string; reason: string;
+          status?: Database["public"]["Enums"]["certificate_replacement_request_status"];
+          requested_at?: string; decided_by?: string | null; decided_at?: string | null;
+          decision_reason?: string | null; replacement_certificate_id?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["certificate_replacement_requests"]["Insert"]>;
+        Relationships: [];
+      };
+      certificate_appeals: {
+        Row: {
+          id: string; certificate_id: string; member_user_id: string; appeal_reason: string;
+          evidence_reference: string | null; status: Database["public"]["Enums"]["certificate_appeal_status"];
+          submitted_at: string; decided_by: string | null; decided_at: string | null;
+          decision_reason: string | null; reinstatement_certificate_id: string | null;
+        };
+        Insert: {
+          id?: string; certificate_id: string; member_user_id: string; appeal_reason: string;
+          evidence_reference?: string | null; status?: Database["public"]["Enums"]["certificate_appeal_status"];
+          submitted_at?: string; decided_by?: string | null; decided_at?: string | null;
+          decision_reason?: string | null; reinstatement_certificate_id?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["certificate_appeals"]["Insert"]>;
+        Relationships: [];
+      };
       assessment_audit: {
         Row: { id: string; assessment_id: string; actor_user_id: string; action: "created" | "assessor_assigned" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status: Database["public"]["Enums"]["assessment_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_status"]; occurred_at: string };
         Insert: { id?: string; assessment_id: string; actor_user_id: string; action: "created" | "assessor_assigned" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status?: Database["public"]["Enums"]["assessment_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_status"]; occurred_at?: string };
@@ -953,6 +1052,8 @@ export type Database = {
           trainee_user_id: string;
           practitioner_id: string;
           state: Database["public"]["Enums"]["certification_journey_state"];
+          certification_status: Database["public"]["Enums"]["certification_lifecycle_status"];
+          current_certificate_id: string | null;
           counted_sessions_count: number;
           level_1_training_record_id: string | null;
           level_2_training_record_id: string | null;
@@ -965,6 +1066,8 @@ export type Database = {
           trainee_user_id: string;
           practitioner_id: string;
           state?: Database["public"]["Enums"]["certification_journey_state"];
+          certification_status?: Database["public"]["Enums"]["certification_lifecycle_status"];
+          current_certificate_id?: string | null;
           counted_sessions_count?: number;
           level_1_training_record_id?: string | null;
           level_2_training_record_id?: string | null;
@@ -977,6 +1080,8 @@ export type Database = {
           trainee_user_id?: string;
           practitioner_id?: string;
           state?: Database["public"]["Enums"]["certification_journey_state"];
+          certification_status?: Database["public"]["Enums"]["certification_lifecycle_status"];
+          current_certificate_id?: string | null;
           counted_sessions_count?: number;
           level_1_training_record_id?: string | null;
           level_2_training_record_id?: string | null;
@@ -1443,24 +1548,7 @@ export type Database = {
         Row: {
           id: string;
           user_id: string;
-          type:
-            | "session_request_received"
-            | "feedback_received"
-            | "location_approved"
-            | "event_invitation"
-            | "event_rsvp_received"
-            | "certification_progress"
-            | "certification_approved"
-            | "supervision_requested"
-            | "supervision_accepted"
-            | "supervision_declined"
-            | "supervision_ended"
-            | "training_history_submitted"
-            | "training_history_corrected"
-            | "training_history_reviewed"
-            | "certification_milestone_25_reached"
-            | "level_2_readiness_requested"
-            | "level_2_readiness_decided";
+          type: Database["public"]["Enums"]["notification_type"];
           title: string;
           body: string | null;
           href: string | null;
@@ -1476,24 +1564,7 @@ export type Database = {
         Insert: {
           id?: string;
           user_id: string;
-          type:
-            | "session_request_received"
-            | "feedback_received"
-            | "location_approved"
-            | "event_invitation"
-            | "event_rsvp_received"
-            | "certification_progress"
-            | "certification_approved"
-            | "supervision_requested"
-            | "supervision_accepted"
-            | "supervision_declined"
-            | "supervision_ended"
-            | "training_history_submitted"
-            | "training_history_corrected"
-            | "training_history_reviewed"
-            | "certification_milestone_25_reached"
-            | "level_2_readiness_requested"
-            | "level_2_readiness_decided";
+          type: Database["public"]["Enums"]["notification_type"];
           title: string;
           body?: string | null;
           href?: string | null;
@@ -1509,24 +1580,7 @@ export type Database = {
         Update: {
           id?: string;
           user_id?: string;
-          type?:
-            | "session_request_received"
-            | "feedback_received"
-            | "location_approved"
-            | "event_invitation"
-            | "event_rsvp_received"
-            | "certification_progress"
-            | "certification_approved"
-            | "supervision_requested"
-            | "supervision_accepted"
-            | "supervision_declined"
-            | "supervision_ended"
-            | "training_history_submitted"
-            | "training_history_corrected"
-            | "training_history_reviewed"
-            | "certification_milestone_25_reached"
-            | "level_2_readiness_requested"
-            | "level_2_readiness_decided";
+          type?: Database["public"]["Enums"]["notification_type"];
           title?: string;
           body?: string | null;
           href?: string | null;
@@ -2087,6 +2141,100 @@ export type Database = {
           can_record_outcome: boolean; can_verify_remediation: boolean;
         }[];
       };
+      get_certificate_generation_context: {
+        Args: {
+          actor_user_id: string; target_operation: string;
+          target_journey_id?: string | null; target_certificate_id?: string | null; target_appeal_id?: string | null;
+        };
+        Returns: {
+          operation: string; journey_id: string; assessment_id: string; member_user_id: string;
+          official_name: string | null; original_certification_date: string;
+          predecessor_certificate_id: string | null; template_id: string; template_version: string;
+          issuer_name: string; signatory_one_name: string; signatory_one_object_path: string | null;
+          signatory_one_sha256: string | null; signatory_two_name: string;
+          signatory_two_object_path: string | null; signatory_two_sha256: string | null; template_ready: boolean;
+        }[];
+      };
+      issue_certificate: {
+        Args: {
+          actor_user_id: string; target_certificate_id: string; target_journey_id: string;
+          target_certificate_number: string; target_template_id: string; target_artifact_object_path: string;
+          target_artifact_sha256: string; target_artifact_size_bytes: number;
+          target_signatory_one_sha256: string; target_signatory_two_sha256: string;
+        };
+        Returns: Database["public"]["Tables"]["certificates"]["Row"];
+      };
+      replace_certificate: {
+        Args: {
+          actor_user_id: string; target_certificate_id: string; target_predecessor_certificate_id: string;
+          replacement_reason: string; target_replacement_request_id?: string | null;
+          target_certificate_number: string; target_template_id: string; target_artifact_object_path: string;
+          target_artifact_sha256: string; target_artifact_size_bytes: number;
+          target_signatory_one_sha256: string; target_signatory_two_sha256: string;
+        };
+        Returns: Database["public"]["Tables"]["certificates"]["Row"];
+      };
+      revoke_certificate: {
+        Args: { actor_user_id: string; target_certificate_id: string; target_reason: string; target_evidence_reference: string };
+        Returns: Database["public"]["Tables"]["certificates"]["Row"];
+      };
+      request_certificate_replacement: {
+        Args: { actor_user_id: string; target_certificate_id: string; target_reason: string };
+        Returns: Database["public"]["Tables"]["certificate_replacement_requests"]["Row"];
+      };
+      reject_certificate_replacement_request: {
+        Args: { actor_user_id: string; target_request_id: string; target_reason: string };
+        Returns: Database["public"]["Tables"]["certificate_replacement_requests"]["Row"];
+      };
+      submit_certificate_appeal: {
+        Args: { actor_user_id: string; target_certificate_id: string; target_reason: string; target_evidence_reference?: string | null };
+        Returns: Database["public"]["Tables"]["certificate_appeals"]["Row"];
+      };
+      uphold_certificate_appeal: {
+        Args: { actor_user_id: string; target_appeal_id: string; target_reason: string };
+        Returns: Database["public"]["Tables"]["certificate_appeals"]["Row"];
+      };
+      reinstate_certificate_from_appeal: {
+        Args: {
+          actor_user_id: string; target_appeal_id: string; target_decision_reason: string;
+          target_certificate_id: string; target_certificate_number: string; target_template_id: string;
+          target_artifact_object_path: string; target_artifact_sha256: string; target_artifact_size_bytes: number;
+          target_signatory_one_sha256: string; target_signatory_two_sha256: string;
+        };
+        Returns: Database["public"]["Tables"]["certificates"]["Row"];
+      };
+      list_certificate_workflow: {
+        Args: { actor_user_id: string };
+        Returns: {
+          journey_id: string; member_user_id: string; member_name: string; current_official_name: string | null;
+          journey_state: Database["public"]["Enums"]["certification_journey_state"];
+          certification_status: Database["public"]["Enums"]["certification_lifecycle_status"];
+          assessment_id: string | null; certificate_id: string | null; certificate_number: string | null;
+          certificate_status: Database["public"]["Enums"]["certificate_status"] | null;
+          certificate_name_snapshot: string | null; original_certification_date: string | null;
+          issued_at: string | null; lifecycle_effective_at: string | null; revoked_at: string | null;
+          revocation_reason: string | null; replacement_request_id: string | null;
+          replacement_request_status: Database["public"]["Enums"]["certificate_replacement_request_status"] | null;
+          replacement_request_reason: string | null; appeal_id: string | null;
+          appeal_status: Database["public"]["Enums"]["certificate_appeal_status"] | null;
+          appeal_reason: string | null; appeal_evidence_reference: string | null; appeal_decision_reason: string | null;
+          template_ready: boolean; can_issue: boolean; can_replace: boolean; can_revoke: boolean;
+          can_request_replacement: boolean; can_submit_appeal: boolean; can_decide_appeal: boolean;
+          can_download: boolean; name_mismatch: boolean;
+        }[];
+      };
+      authorize_certificate_download: {
+        Args: { actor_user_id: string; target_certificate_id: string };
+        Returns: { artifact_object_path: string; artifact_sha256: string; artifact_size_bytes: number; certificate_number: string }[];
+      };
+      verify_certificate: {
+        Args: { target_certificate_number: string };
+        Returns: {
+          certificate_number: string; status: Database["public"]["Enums"]["certificate_status"];
+          practitioner_stage: string; original_certification_date: string; issued_at: string;
+          lifecycle_effective_at: string; revoked_at: string | null; public_display_name: string | null;
+        }[];
+      };
       decide_level_2_readiness: {
         Args: {
           actor_user_id: string;
@@ -2216,6 +2364,10 @@ export type Database = {
         | "invalidated";
       assessment_readiness_status: "pending" | "approved" | "rejected" | "invalidated";
       assessment_status: "awaiting_assessor" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed";
+      certificate_status: "active" | "replaced" | "revoked";
+      certificate_replacement_request_status: "pending" | "approved" | "rejected";
+      certificate_appeal_status: "pending" | "upheld" | "reinstated";
+      certification_lifecycle_status: "pending" | "active" | "revoked";
       location_type: "pool" | "spa" | "natural_water";
       approval_status: "pending" | "approved" | "rejected";
       event_type: "retreat" | "training" | "community_gathering";
@@ -2245,7 +2397,17 @@ export type Database = {
         | "assessment_assigned"
         | "assessment_scheduled"
         | "assessment_outcome_recorded"
-        | "assessment_remediation_verified";
+        | "assessment_remediation_verified"
+        | "certificate_issued"
+        | "certificate_replaced"
+        | "certificate_revoked"
+        | "certificate_replacement_requested"
+        | "certificate_replacement_decided"
+        | "certificate_appeal_submitted"
+        | "certificate_appeal_decided"
+        | "certification_reinstated"
+        | "role_assigned"
+        | "role_removed";
       profile_visibility: "private" | "community" | "public";
       supervision_status: "pending" | "active" | "declined" | "ended" | "cancelled";
       training_level: "level_1" | "level_2" | "level_3";

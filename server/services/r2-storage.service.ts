@@ -72,6 +72,14 @@ export type R2ImageFetchResult =
   | { ok: true; response: Response; contentType: string; contentLength: string | null; etag: string | null }
   | { ok: false; status: number; message: string };
 
+export type PrivateCertificateObjectResult =
+  | { ok: true; key: string; sha256: string; sizeBytes: number }
+  | { ok: false; code: "certificate-config" | "certificate-auth" | "certificate-bucket" | "certificate-upload" };
+
+export type PrivateCertificateFetchResult =
+  | { ok: true; response: Response; contentType: string; contentLength: string | null; etag: string | null }
+  | { ok: false; status: number; message: string };
+
 function hmac(key: crypto.BinaryLike, value: string) {
   return crypto.createHmac("sha256", key).update(value).digest();
 }
@@ -203,6 +211,17 @@ export function isAllowedR2ImageKey(key: string) {
     keyParts.length >= 3 &&
     !keyParts.some((part) => part.trim() === "") &&
     /\.jpe?g$/i.test(key)
+  );
+}
+
+export function isAllowedPrivateCertificateKey(key: string) {
+  return (
+    !key.includes("..") &&
+    !key.split("/").some((part) => part.trim() === "") &&
+    (
+      /^certificate-signatures\/[A-Za-z0-9._/-]+\.png$/.test(key) ||
+      /^certificates\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.pdf$/.test(key)
+    )
   );
 }
 
@@ -666,5 +685,102 @@ export async function fetchPrivateR2ImageObject(key: string): Promise<R2ImageFet
     console.error("Cloudflare R2 private image fetch failed.", error);
 
     return { ok: false, status: 502, message: "Media object could not be fetched." };
+  }
+}
+
+export async function uploadPrivateCertificateObject(
+  key: string,
+  body: Uint8Array,
+  contentType: "application/pdf"
+): Promise<PrivateCertificateObjectResult> {
+  if (!isAllowedPrivateCertificateKey(key) || !key.endsWith(".pdf")) {
+    return { ok: false, code: "certificate-upload" };
+  }
+  const config = getR2Config();
+  if (!config) return { ok: false, code: "certificate-config" };
+  const payload = Buffer.from(body);
+  const payloadHash = sha256Hex(payload);
+  const url = createR2ObjectUrl(config, key);
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        ...createSignedR2RequestHeaders({ config, method: "PUT", url, payloadHash }),
+        "Cache-Control": "private, no-store",
+        "Content-Type": contentType,
+      },
+      body: payload,
+    });
+    if (!response.ok) {
+      const code = response.status === 401 || response.status === 403
+        ? "certificate-auth"
+        : response.status === 404
+          ? "certificate-bucket"
+          : "certificate-upload";
+      console.error("Cloudflare R2 certificate upload failed.", {
+        status: response.status,
+        bucket: config.bucket,
+        key,
+      });
+      return { ok: false, code };
+    }
+    return { ok: true, key, sha256: payloadHash, sizeBytes: payload.byteLength };
+  } catch (error) {
+    console.error("Cloudflare R2 certificate upload threw an exception.", error);
+    return { ok: false, code: "certificate-upload" };
+  }
+}
+
+export async function fetchPrivateCertificateObject(
+  key: string
+): Promise<PrivateCertificateFetchResult> {
+  if (!isAllowedPrivateCertificateKey(key)) {
+    return { ok: false, status: 400, message: "Invalid private certificate object key." };
+  }
+  const config = getR2Config();
+  if (!config) return { ok: false, status: 503, message: "Certificate storage is not configured." };
+  const payloadHash = sha256Hex("");
+  const url = createR2ObjectUrl(config, key);
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: createSignedR2RequestHeaders({ config, method: "GET", url, payloadHash }),
+    });
+    if (!response.ok) {
+      const fetchError = getR2FetchError(response.status);
+      return { ok: false, status: fetchError.status, message: fetchError.message };
+    }
+    const contentType = response.headers.get("content-type") ?? "application/octet-stream";
+    const expectedType = key.endsWith(".pdf") ? "application/pdf" : "image/png";
+    if (contentType.split(";")[0] !== expectedType) {
+      return { ok: false, status: 415, message: "Private certificate object type is not supported." };
+    }
+    return {
+      ok: true,
+      response,
+      contentType: expectedType,
+      contentLength: response.headers.get("content-length"),
+      etag: response.headers.get("etag"),
+    };
+  } catch (error) {
+    console.error("Cloudflare R2 private certificate fetch failed.", error);
+    return { ok: false, status: 502, message: "Private certificate object could not be fetched." };
+  }
+}
+
+export async function deletePrivateCertificateObject(key: string) {
+  if (!isAllowedPrivateCertificateKey(key) || !key.endsWith(".pdf")) {
+    throw new Error("Invalid private certificate object key.");
+  }
+  const config = getR2Config();
+  if (!config) throw new Error("Certificate storage is not configured.");
+  const payloadHash = sha256Hex("");
+  const url = createR2ObjectUrl(config, key);
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: createSignedR2RequestHeaders({ config, method: "DELETE", url, payloadHash }),
+  });
+  if (!response.ok && response.status !== 404) {
+    throw new Error("Private certificate object could not be deleted.");
   }
 }

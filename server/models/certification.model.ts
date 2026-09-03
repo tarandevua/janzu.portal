@@ -117,3 +117,76 @@ export type AssessorCandidate = {
   displayName: string;
   active: boolean;
 };
+
+export const certificateStatuses = ["active", "replaced", "revoked"] as const;
+export type CertificateStatus = (typeof certificateStatuses)[number];
+export type CertificationLifecycleStatus = "pending" | "active" | "revoked";
+export type CertificateAppealStatus = "pending" | "upheld" | "reinstated";
+export type CertificateReplacementRequestStatus = "pending" | "approved" | "rejected";
+
+export type CertificateWorkflowItem = {
+  journeyId: string;
+  memberUserId: string;
+  memberName: string;
+  currentOfficialName: string | null;
+  journeyState: CertificationJourneyState;
+  certificationStatus: CertificationLifecycleStatus;
+  assessmentId: string | null;
+  certificateId: string | null;
+  certificateNumber: string | null;
+  certificateStatus: CertificateStatus | null;
+  certificateNameSnapshot: string | null;
+  originalCertificationDate: string | null;
+  issuedAt: string | null;
+  lifecycleEffectiveAt: string | null;
+  revokedAt: string | null;
+  revocationReason: string | null;
+  replacementRequestId: string | null;
+  replacementRequestStatus: CertificateReplacementRequestStatus | null;
+  replacementRequestReason: string | null;
+  appealId: string | null;
+  appealStatus: CertificateAppealStatus | null;
+  appealReason: string | null;
+  appealEvidenceReference: string | null;
+  appealDecisionReason: string | null;
+  templateReady: boolean;
+  canIssue: boolean;
+  canReplace: boolean;
+  canRevoke: boolean;
+  canRequestReplacement: boolean;
+  canSubmitAppeal: boolean;
+  canDecideAppeal: boolean;
+  canDownload: boolean;
+  nameMismatch: boolean;
+};
+
+export type CertificateGenerationContext = {
+  operation: "issue" | "replace" | "reinstate";
+  journeyId: string;
+  assessmentId: string;
+  memberUserId: string;
+  officialName: string;
+  originalCertificationDate: string;
+  predecessorCertificateId: string | null;
+  templateId: string;
+  templateVersion: string;
+  issuerName: string;
+  signatoryOneName: string;
+  signatoryOneObjectPath: string;
+  signatoryOneSha256: string;
+  signatoryTwoName: string;
+  signatoryTwoObjectPath: string;
+  signatoryTwoSha256: string;
+  templateReady: boolean;
+};
+
+export type PreparedCertificateArtifact = {
+  certificateId: string;
+  certificateNumber: string;
+  objectPath: string;
+  sha256: string;
+  sizeBytes: number;
+  templateId: string;
+  signatoryOneSha256: string;
+  signatoryTwoSha256: string;
+};
