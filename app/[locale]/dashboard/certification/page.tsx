@@ -24,6 +24,7 @@ import {
   getAssessmentQueue,
   getAssessorCandidates,
 } from "@/server/services/certification.service";
+import { getCertificationDashboardTraineeIds } from "@/server/services/certification-dashboard.service";
 import { listCertificateWorkflow } from "@/server/services/certificate.service";
 import { getPrimaryRole, hasPermission } from "@/server/services/rbac.service";
 
@@ -76,15 +77,23 @@ export default async function CertificationPage({ params, searchParams }: Certif
         readinessDecisionReason: selectedDecision.decision_reason,
       }
     : journey;
-  const loadedReviewJourneys = reviewResult.status === "fulfilled" ? reviewResult.value : [];
-  const loadedAssessments = assessmentResult.status === "fulfilled" ? assessmentResult.value : [];
+  const [traineeRolesResult] = await Promise.allSettled([
+    getCertificationDashboardTraineeIds([
+      ...(reviewResult.status === "fulfilled" ? reviewResult.value.map((item) => item.traineeUserId) : []),
+      ...(assessmentResult.status === "fulfilled" ? assessmentResult.value.map((item) => item.traineeUserId) : []),
+      ...(certificateResult.status === "fulfilled" ? certificateResult.value.map((item) => item.memberUserId) : []),
+    ]),
+  ]);
+  const traineeIds = traineeRolesResult.status === "fulfilled" ? traineeRolesResult.value : new Set<string>();
+  const loadedReviewJourneys = reviewResult.status === "fulfilled" ? reviewResult.value.filter((item) => traineeIds.has(item.traineeUserId)) : [];
+  const loadedAssessments = assessmentResult.status === "fulfilled" ? assessmentResult.value.filter((item) => traineeIds.has(item.traineeUserId)) : [];
   const assessmentItems = assessmentId
     ? loadedAssessments.filter((item) => item.assessmentId === assessmentId || item.readinessRequestId === assessmentId)
     : traineeId
       ? loadedAssessments.filter((item) => item.traineeUserId === traineeId)
       : loadedAssessments;
   const assessorCandidates = assessorResult.status === "fulfilled" ? assessorResult.value : [];
-  const loadedCertificates = certificateResult.status === "fulfilled" ? certificateResult.value : [];
+  const loadedCertificates = certificateResult.status === "fulfilled" ? certificateResult.value.filter((item) => traineeIds.has(item.memberUserId)) : [];
   const certificateItems = certificateId
     ? loadedCertificates.filter((item) => item.certificateId === certificateId)
     : traineeId
@@ -100,7 +109,8 @@ export default async function CertificationPage({ params, searchParams }: Certif
     || decisionResult.status === "rejected"
     || assessmentResult.status === "rejected"
     || assessorResult.status === "rejected"
-    || certificateResult.status === "rejected";
+    || certificateResult.status === "rejected"
+    || traineeRolesResult.status === "rejected";
   const practitionerProfileRequired = !practitioner && !canReview;
   const showProgress = Boolean(displayedJourney && (!journeyId || displayedJourney.id === journeyId) && (!decisionId || displayedJourney.readinessRequestId === decisionId));
   const certificationStatusTab: CertificationDashboardTab | undefined = status?.startsWith("certificate-")
