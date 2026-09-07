@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useState, useTransition, type FormEvent, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
-import { EyeIcon, MailIcon, PlusIcon, XIcon } from "lucide-react";
+import { EyeIcon, MailIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,11 +45,10 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  assignUserRole,
-  removeUserRole,
   resendUserInvite,
   updateUserPublicProfile,
 } from "@/features/user-management/actions";
+import { UserRoleEditor } from "@/features/user-management/components/user-role-editor";
 import type { Locale } from "@/lib/i18n/config";
 import { roles, type ManagedUser, type ManagedUserFilters, type Role } from "@/server/models/rbac.model";
 import { canManageUserRole } from "@/server/services/rbac.service";
@@ -64,6 +63,9 @@ type UserManagementDictionary = {
   created: string;
   assignRole: string;
   removeRole: string;
+  assigningRole: string;
+  removingRole: string;
+  roleUpdateFailed: string;
   viewDetails: string;
   cancel: string;
   close: string;
@@ -263,8 +265,6 @@ function UserDetailsDrawer({
   assignableRoles: Role[];
   dictionary: UserManagementDictionary;
 }) {
-  const assignAction = assignUserRole.bind(null, locale);
-  const removeAction = removeUserRole.bind(null, locale);
   const publicProfileAction = updateUserPublicProfile.bind(null, locale);
   const displayName = managedUser.fullName ?? managedUser.email;
   const profileStatus = managedUser.practitionerId
@@ -313,48 +313,14 @@ function UserDetailsDrawer({
                   value={formatCreatedAt(locale, managedUser.createdAt)}
                 />
               </dl>
-              <div className="flex flex-wrap gap-2">
-                {managedUser.roles.map((role) => (
-                  <form key={role} action={removeAction}>
-                    <input type="hidden" name="userId" value={managedUser.userId} />
-                    <input type="hidden" name="role" value={role} />
-                    <Badge
-                      variant={canManageUserRole(actorRoles, role) ? "secondary" : "outline"}
-                      className="gap-1"
-                    >
-                    {dictionary.roleLabels[role]}
-                      {canManageUserRole(actorRoles, role) ? (
-                        <button
-                          type="submit"
-                          className="ml-1 inline-flex rounded-sm opacity-80 hover:opacity-100"
-                          aria-label={`${dictionary.removeRole} ${dictionary.roleLabels[role]}`}
-                        >
-                          <XIcon className="h-3 w-3" />
-                        </button>
-                      ) : null}
-                    </Badge>
-                  </form>
-                ))}
-              </div>
-              <form action={assignAction} className="flex flex-col gap-2 sm:flex-row">
-                <input type="hidden" name="userId" value={managedUser.userId} />
-                <Select name="role">
-                  <SelectTrigger aria-label={dictionary.assignRole}>
-                    <SelectValue placeholder={dictionary.assignRole} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {assignableRoles.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {dictionary.roleLabels[role]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button type="submit" variant="outline">
-                  <PlusIcon className="h-4 w-4" />
-                  {dictionary.assignRole}
-                </Button>
-              </form>
+              <UserRoleEditor
+                locale={locale}
+                userId={managedUser.userId}
+                userRoles={managedUser.roles}
+                actorRoles={actorRoles}
+                assignableRoles={assignableRoles}
+                dictionary={dictionary}
+              />
               {managedUser.canResendInvite ? (
                 <ResendInviteButton
                   locale={locale}
@@ -567,6 +533,9 @@ export function UserRoleManagementTable({
         ) : null}
         {status === "forbidden" ? (
           <p className="mb-4 text-sm font-medium text-destructive">{dictionary.forbidden}</p>
+        ) : null}
+        {status === "role-update-failed" ? (
+          <p className="mb-4 text-sm font-medium text-destructive">{dictionary.roleUpdateFailed}</p>
         ) : null}
         {isLoading ? (
           <UserManagementSkeleton />

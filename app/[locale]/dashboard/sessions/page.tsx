@@ -1,6 +1,5 @@
 import type { Route } from "next";
 import { redirect } from "next/navigation";
-import { DashboardActionDrawer } from "@/components/dashboard/dashboard-action-drawer";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { PractitionerProfileRequiredAlert } from "@/components/dashboard/practitioner-profile-required-alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,7 @@ import { SessionRequestList } from "@/features/session-requests/components/sessi
 import { AdminSessionList } from "@/features/sessions/components/admin-session-list";
 import { SessionAvailabilityManager } from "@/features/sessions/components/session-availability-manager";
 import { SessionDashboardTabs, type SessionDashboardTab } from "@/features/sessions/components/session-dashboard-tabs";
-import { SessionForm } from "@/features/sessions/components/session-form";
+import { SessionCreateDrawer } from "@/features/sessions/components/session-create-drawer";
 import { SessionList } from "@/features/sessions/components/session-list";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
@@ -285,22 +284,14 @@ export default async function SessionsPage({ params, searchParams }: SessionsPag
             <>
               {practitioner ? (
                 <div className="flex justify-end">
-                  <DashboardActionDrawer
-                    title={dictionary.sessions.formTitle}
-                    description={dictionary.sessions.formDescription}
-                    triggerLabel={dictionary.sessions.formTitle}
+                  <SessionCreateDrawer
+                    locale={locale}
+                    clients={clients}
+                    dictionary={dictionary.sessions}
                     cancelLabel={dictionary.common.cancel}
                     closeLabel={dictionary.common.close}
                     defaultOpen={shouldOpenCreateDrawer}
-                  >
-                    <SessionForm
-                      locale={locale}
-                      clients={clients}
-                      status={status}
-                      variant="plain"
-                      dictionary={dictionary.sessions}
-                    />
-                  </DashboardActionDrawer>
+                  />
                 </div>
               ) : null}
               <SessionDashboardTabs

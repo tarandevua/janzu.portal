@@ -22,14 +22,22 @@ import {
   userRoleMutationSchema,
 } from "@/server/validators/user-management.schema";
 
-export async function assignUserRole(locale: Locale, formData: FormData) {
+export type UserRoleMutationResult =
+  | { ok: true; status: "assigned" | "removed" }
+  | { ok: false; status: "auth-required" | "invalid" | "role-update-failed" };
+
+async function mutateUserRoleInline(
+  locale: Locale,
+  formData: FormData,
+  operation: "assign" | "remove"
+): Promise<UserRoleMutationResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/${locale}/login?status=auth-required`);
+    return { ok: false, status: "auth-required" };
   }
 
   const parsed = userRoleMutationSchema.safeParse({
@@ -38,38 +46,45 @@ export async function assignUserRole(locale: Locale, formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/users?status=invalid`);
+    return { ok: false, status: "invalid" };
   }
 
-  await assignManagedUserRole(supabase, user.id, parsed.data.userId, parsed.data.role);
+  try {
+    if (operation === "assign") {
+      await assignManagedUserRole(supabase, user.id, parsed.data.userId, parsed.data.role);
+    } else {
+      await removeManagedUserRole(supabase, user.id, parsed.data.userId, parsed.data.role);
+    }
+  } catch {
+    return { ok: false, status: "role-update-failed" };
+  }
 
   revalidatePath(`/${locale}/dashboard/users`);
-  redirect(`/${locale}/dashboard/users?status=assigned`);
+  return { ok: true, status: operation === "assign" ? "assigned" : "removed" };
+}
+
+export async function assignUserRoleInline(locale: Locale, formData: FormData) {
+  return mutateUserRoleInline(locale, formData, "assign");
+}
+
+export async function removeUserRoleInline(locale: Locale, formData: FormData) {
+  return mutateUserRoleInline(locale, formData, "remove");
+}
+
+export async function assignUserRole(locale: Locale, formData: FormData) {
+  const result = await assignUserRoleInline(locale, formData);
+  if (!result.ok && result.status === "auth-required") {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+  redirect(`/${locale}/dashboard/users?status=${result.status}`);
 }
 
 export async function removeUserRole(locale: Locale, formData: FormData) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const result = await removeUserRoleInline(locale, formData);
+  if (!result.ok && result.status === "auth-required") {
     redirect(`/${locale}/login?status=auth-required`);
   }
-
-  const parsed = userRoleMutationSchema.safeParse({
-    userId: formData.get("userId"),
-    role: formData.get("role"),
-  });
-
-  if (!parsed.success) {
-    redirect(`/${locale}/dashboard/users?status=invalid`);
-  }
-
-  await removeManagedUserRole(supabase, user.id, parsed.data.userId, parsed.data.role);
-
-  revalidatePath(`/${locale}/dashboard/users`);
-  redirect(`/${locale}/dashboard/users?status=removed`);
+  redirect(`/${locale}/dashboard/users?status=${result.status}`);
 }
 
 export async function updateUserPublicProfile(locale: Locale, formData: FormData) {

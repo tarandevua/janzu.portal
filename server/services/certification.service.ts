@@ -18,6 +18,7 @@ import {
   decideAssessmentReadiness,
   setAssessorDesignation,
   assignAssessmentAssessor,
+  cancelAssessmentAssessor,
   saveAssessmentSchedule,
   saveAssessmentOutcome,
   verifyAssessmentRemediation,
@@ -109,6 +110,7 @@ export const submitAssessmentReadinessRequest = requestAssessmentReadiness;
 export const submitAssessmentReadinessDecision = decideAssessmentReadiness;
 export const updateAssessorDesignation = setAssessorDesignation;
 export const submitAssessmentAssessor = assignAssessmentAssessor;
+export const submitAssessmentAssessorCancellation = cancelAssessmentAssessor;
 export const submitAssessmentSchedule = saveAssessmentSchedule;
 export function submitAssessmentOutcome(
   supabase: SupabaseServerClient,

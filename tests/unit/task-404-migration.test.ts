@@ -46,6 +46,13 @@ describe("TASK-404 migration contract", () => {
     expect(workflow).toContain("revoke insert, update, delete");
   });
 
+  it("sends the 50-session milestone to the active Instructor", () => {
+    expect(workflow).toContain("select active_assignment.instructor_user_id, true");
+    expect(workflow).toContain(
+      "recipient.user_id, 'certification.milestone_50_reached'"
+    );
+  });
+
   it("keeps the TASK-403 milestone dependency compatible with the event-key index", () => {
     expect(workflow).toContain("create or replace function public.emit_25_session_milestone");
     expect(workflow).toContain("milestone_event_key");

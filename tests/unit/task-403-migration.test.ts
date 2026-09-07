@@ -31,6 +31,13 @@ describe("TASK-403 migration contract", () => {
     expect(migration).toContain("on conflict (event_key)");
   });
 
+  it("sends the 25-session milestone to the active Instructor", () => {
+    expect(migration).toContain("active_assignment.instructor_user_id, true");
+    expect(migration).toMatch(
+      /attainment\.attained_at,\s+recipient\.user_id,\s+recipient_locale/
+    );
+  });
+
   it("binds requests to the trainee and decisions to the active Instructor", () => {
     expect(migration).toContain("journey.trainee_user_id <> actor_user_id");
     expect(migration).toContain("only the active assigned instructor may decide this request");

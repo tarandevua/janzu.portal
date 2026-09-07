@@ -1041,9 +1041,9 @@ export type Database = {
         Relationships: [];
       };
       assessment_audit: {
-        Row: { id: string; assessment_id: string; actor_user_id: string; action: "created" | "assessor_assigned" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status: Database["public"]["Enums"]["assessment_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_status"]; occurred_at: string };
-        Insert: { id?: string; assessment_id: string; actor_user_id: string; action: "created" | "assessor_assigned" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status?: Database["public"]["Enums"]["assessment_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_status"]; occurred_at?: string };
-        Update: { id?: string; assessment_id?: string; actor_user_id?: string; action?: "created" | "assessor_assigned" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status?: Database["public"]["Enums"]["assessment_status"] | null; resulting_status?: Database["public"]["Enums"]["assessment_status"]; occurred_at?: string };
+        Row: { id: string; assessment_id: string; actor_user_id: string; action: "created" | "assessor_assigned" | "assessor_assignment_cancelled" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status: Database["public"]["Enums"]["assessment_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_status"]; occurred_at: string };
+        Insert: { id?: string; assessment_id: string; actor_user_id: string; action: "created" | "assessor_assigned" | "assessor_assignment_cancelled" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status?: Database["public"]["Enums"]["assessment_status"] | null; resulting_status: Database["public"]["Enums"]["assessment_status"]; occurred_at?: string };
+        Update: { id?: string; assessment_id?: string; actor_user_id?: string; action?: "created" | "assessor_assigned" | "assessor_assignment_cancelled" | "scheduled" | "incomplete" | "revision_required" | "failed" | "passed" | "remediation_verified"; previous_status?: Database["public"]["Enums"]["assessment_status"] | null; resulting_status?: Database["public"]["Enums"]["assessment_status"]; occurred_at?: string };
         Relationships: [];
       };
       certification_journeys: {
@@ -2107,6 +2107,10 @@ export type Database = {
       };
       assign_assessment_assessor: {
         Args: { actor_user_id: string; target_assessment_id: string; target_assessor_user_id: string };
+        Returns: Database["public"]["Tables"]["assessments"]["Row"];
+      };
+      cancel_assessment_assessor: {
+        Args: { actor_user_id: string; target_assessment_id: string };
         Returns: Database["public"]["Tables"]["assessments"]["Row"];
       };
       schedule_assessment: {

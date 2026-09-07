@@ -33,6 +33,10 @@ export type AvailabilityActionResult =
       status: "auth-required" | "profile-required" | "availability-invalid";
     };
 
+export type CreateSessionActionResult =
+  | { ok: true; status: "created" }
+  | { ok: false; status: "invalid" };
+
 function buildAvailabilityOccurrences(input: {
   practitionerId: string;
   startsAt: string;
@@ -76,7 +80,10 @@ function buildAvailabilityOccurrences(input: {
   });
 }
 
-export async function createSession(locale: Locale, formData: FormData) {
+export async function createSession(
+  locale: Locale,
+  formData: FormData
+): Promise<CreateSessionActionResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -98,7 +105,7 @@ export async function createSession(locale: Locale, formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/dashboard/sessions?status=invalid`);
+    return { ok: false, status: "invalid" };
   }
 
   const metadata = getSubmissionMetadata(await headers(), {
@@ -116,7 +123,7 @@ export async function createSession(locale: Locale, formData: FormData) {
   });
 
   revalidatePath(`/${locale}/dashboard/sessions`);
-  redirect(`/${locale}/dashboard/sessions?status=created`);
+  return { ok: true, status: "created" };
 }
 
 export async function createAvailabilitySlot(locale: Locale, formData: FormData) {

@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import React, { useTransition, type FormEvent } from "react";
 import { CheckCircle2Icon, CircleIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +45,7 @@ type Dictionary = {
   allianceRevoked: string;
   guideUpdated: string;
   invalid: string;
+  updateError: string;
 };
 
 function StatusIcon({ complete }: { complete: boolean }) {
@@ -73,15 +79,13 @@ export function FirstStepsChecklist({
   locale,
   progress,
   dictionary,
-  status,
 }: {
   locale: Locale;
   progress: OnboardingProgress;
   dictionary: Dictionary;
-  status?: string;
 }) {
-  const allianceAction = setLearningAlliance.bind(null, locale);
-  const guideAction = setGuideComplete.bind(null, locale);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const statusMessages: Record<string, string> = {
     "alliance-accepted": dictionary.allianceAccepted,
     "alliance-revoked": dictionary.allianceRevoked,
@@ -94,6 +98,44 @@ export function FirstStepsChecklist({
     feedback: dictionary.feedbackDescription,
   };
 
+  function handleAllianceSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    startTransition(async () => {
+      try {
+        const result = await setLearningAlliance(locale, formData);
+        if (!result.ok) {
+          toast.error(dictionary.invalid);
+          return;
+        }
+        toast.success(statusMessages[result.status]);
+        router.refresh();
+      } catch {
+        toast.error(dictionary.updateError);
+      }
+    });
+  }
+
+  function handleGuideSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    startTransition(async () => {
+      try {
+        const result = await setGuideComplete(locale, formData);
+        if (!result.ok) {
+          toast.error(dictionary.invalid);
+          return;
+        }
+        toast.success(statusMessages[result.status]);
+        router.refresh();
+      } catch {
+        toast.error(dictionary.updateError);
+      }
+    });
+  }
+
   return (
     <div className="grid gap-4">
       <Card>
@@ -101,14 +143,13 @@ export function FirstStepsChecklist({
         <CardContent><div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={progress.totalCount} aria-valuenow={progress.completedCount}><div className="h-full bg-primary" style={{ width: `${(progress.completedCount / progress.totalCount) * 100}%` }} /></div></CardContent>
       </Card>
 
-      {status && statusMessages[status] ? <p className="rounded-md border bg-muted p-3 text-sm" role="status">{statusMessages[status]}</p> : null}
-
       <Card id="learning-alliance">
         <CardHeader><CardTitle>{dictionary.learningAlliance}</CardTitle><CardDescription>{dictionary.learningAllianceDescription}</CardDescription></CardHeader>
         <CardContent className="grid gap-4">
           <div className="rounded-md border bg-muted/40 p-4 text-sm"><p>{dictionary.agreementStatement}</p><p className="mt-2 text-muted-foreground">{dictionary.agreementNonLegal}</p><p className="mt-2 text-xs">{dictionary.version}: {LEARNING_ALLIANCE_VERSION}</p></div>
-          <form action={allianceAction}>
-            <Button name="action" value={progress.allianceAccepted ? "revoke" : "accept"} variant={progress.allianceAccepted ? "outline" : "default"}>{progress.allianceAccepted ? dictionary.revoke : dictionary.accept}</Button>
+          <form onSubmit={handleAllianceSubmit}>
+            <input type="hidden" name="action" value={progress.allianceAccepted ? "revoke" : "accept"} />
+            <Button type="submit" disabled={isPending} variant={progress.allianceAccepted ? "outline" : "default"}>{progress.allianceAccepted ? dictionary.revoke : dictionary.accept}</Button>
           </form>
         </CardContent>
       </Card>
@@ -129,7 +170,7 @@ export function FirstStepsChecklist({
             return (
               <div key={guideKey} className="flex flex-col gap-3 rounded-md border p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex gap-3"><StatusIcon complete={done} /><div><Link className="font-medium underline-offset-4 hover:underline" href={`/${locale}/dashboard/knowledge-base/getting-started/first-steps#${guideKey}`}>{dictionary[guideKey]}</Link><p className="text-sm text-muted-foreground">{guideDescriptions[guideKey]}</p></div></div>
-                <form action={guideAction}><input type="hidden" name="guideKey" value={guideKey} /><Button name="complete" value={done ? "false" : "true"} variant="outline" size="sm">{done ? dictionary.markIncomplete : dictionary.markComplete}</Button></form>
+                <form onSubmit={handleGuideSubmit}><input type="hidden" name="guideKey" value={guideKey} /><input type="hidden" name="complete" value={done ? "false" : "true"} /><Button type="submit" disabled={isPending} variant="outline" size="sm">{done ? dictionary.markIncomplete : dictionary.markComplete}</Button></form>
               </div>
             );
           })}

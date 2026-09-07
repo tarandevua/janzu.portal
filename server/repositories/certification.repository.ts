@@ -236,6 +236,8 @@ export const setAssessorDesignation = (supabase: SupabaseServerClient, actorUser
   mutateAssessment(supabase, "set_assessor_designation", { actor_user_id: actorUserId, target_user_id: userId, target_active: active, target_reason: reason });
 export const assignAssessmentAssessor = (supabase: SupabaseServerClient, actorUserId: string, assessmentId: string, assessorUserId: string) =>
   mutateAssessment(supabase, "assign_assessment_assessor", { actor_user_id: actorUserId, target_assessment_id: assessmentId, target_assessor_user_id: assessorUserId });
+export const cancelAssessmentAssessor = (supabase: SupabaseServerClient, actorUserId: string, assessmentId: string) =>
+  mutateAssessment(supabase, "cancel_assessment_assessor", { actor_user_id: actorUserId, target_assessment_id: assessmentId });
 export const saveAssessmentSchedule = (supabase: SupabaseServerClient, actorUserId: string, assessmentId: string, scheduledAt: string) =>
   mutateAssessment(supabase, "schedule_assessment", { actor_user_id: actorUserId, target_assessment_id: assessmentId, target_scheduled_at: scheduledAt });
 export const saveAssessmentOutcome = (supabase: SupabaseServerClient, actorUserId: string, assessmentId: string, status: AssessmentStatus, notes: string | null, nextAction: string | null) =>

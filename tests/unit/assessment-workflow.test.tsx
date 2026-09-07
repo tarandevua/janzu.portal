@@ -20,6 +20,7 @@ describe("assessment workflow", () => {
       assessmentReadinessApproved: "Approved", assessmentReadinessRejected: "Rejected", assessmentReadinessInvalidated: "Invalidated",
       approveAssessmentReadiness: "Approve", rejectAssessmentReadiness: "Reject", assessmentDecisionReason: "Reason",
       assessmentDecisionReasonPlaceholder: "Reason", assessor: "Assessor", unassignedAssessor: "Unassigned", assignAssessor: "Assign",
+      changeAssessor: "Change", cancelAssessorAssignment: "Cancel assignment",
       scheduleAssessment: "Schedule", assessmentDate: "Date", recordOutcome: "Record", outcome: "Outcome",
       assessmentNotes: "Notes", assessmentNotesPlaceholder: "Notes", nextAction: "Next action", nextActionPlaceholder: "Next",
       verifyRemediation: "Verify", revision: "Attempt", assessedOn: "Recorded", assessorAuthorizationTitle: "Authorization",

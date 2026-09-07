@@ -10,12 +10,10 @@ import { getRoleAccessList, hasRole } from "@/server/services/rbac.service";
 
 export default async function FirstStepsPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ status?: string }>;
 }) {
-  const [{ locale }, { status }] = await Promise.all([params, searchParams]);
+  const { locale } = await params;
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([supabase.auth.getUser(), getDictionary(locale)]);
   if (!data.user) redirect(`/${locale}/login?status=auth-required`);
@@ -37,7 +35,7 @@ export default async function FirstStepsPage({
       }}
     >
       <div className="p-4 md:p-6">
-        <FirstStepsChecklist locale={locale} progress={progress} dictionary={dictionary.firstSteps} status={status} />
+        <FirstStepsChecklist locale={locale} progress={progress} dictionary={dictionary.firstSteps} />
       </div>
     </JanzuDashboardFrame>
   );

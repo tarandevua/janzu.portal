@@ -36,6 +36,10 @@ export const assessmentAssignmentSchema = z.object({
   assessorUserId: z.string().uuid(),
 });
 
+export const assessmentAssignmentCancellationSchema = z.object({
+  assessmentId: z.string().uuid(),
+});
+
 export const assessmentScheduleSchema = z.object({
   assessmentId: z.string().uuid(),
   scheduledAt: z.coerce.date(),

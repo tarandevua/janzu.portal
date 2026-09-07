@@ -179,6 +179,7 @@ export function ApprenticeDashboardContent({
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+        {!data.onboarding.complete ? (
         <Card>
           <CardHeader className="flex-row items-start justify-between gap-4">
             <div>
@@ -186,7 +187,7 @@ export function ApprenticeDashboardContent({
               <CardDescription>{dictionary.firstStepsDescription}</CardDescription>
             </div>
             <Button asChild size="sm">
-              <Link href={(data.onboarding.complete ? `/${locale}/dashboard/first-steps` : data.onboarding.nextHref) as Route}>
+              <Link href={(data.onboarding.nextHref) as Route}>
                 {data.onboarding.complete ? dictionary.reviewFirstSteps : dictionary.continueFirstSteps}
               </Link>
             </Button>
@@ -197,6 +198,7 @@ export function ApprenticeDashboardContent({
             </div>
           </CardContent>
         </Card>
+        ) : null}
         {showProfileReadiness ? (
           <Card>
             <CardHeader className="flex-row items-start justify-between gap-4">
@@ -235,6 +237,8 @@ export function ApprenticeDashboardContent({
           </Card>
         ) : null}
 
+        {data.onboarding.complete ? (
+        <>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard
             title={dictionary.certificationProgress}
@@ -350,6 +354,8 @@ export function ApprenticeDashboardContent({
             </CardContent>
           </Card>
         </div>
+        </>
+        ) : null}
 
         <Card>
           <CardHeader className="flex-row items-start justify-between gap-4">

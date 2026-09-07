@@ -13,6 +13,7 @@ import {
   submitAssessmentReadinessDecision,
   updateAssessorDesignation,
   submitAssessmentAssessor,
+  submitAssessmentAssessorCancellation,
   submitAssessmentSchedule,
   submitAssessmentOutcome,
   submitAssessmentRemediationVerification,
@@ -26,6 +27,7 @@ import {
   assessmentReadinessDecisionSchema,
   assessorDesignationSchema,
   assessmentAssignmentSchema,
+  assessmentAssignmentCancellationSchema,
   assessmentScheduleSchema,
   assessmentOutcomeSchema,
   assessmentRemediationSchema,
@@ -61,6 +63,26 @@ function assessmentRedirect(locale: Locale, status: string, assessmentId?: strin
   const suffix = assessmentId ? `&assessmentId=${assessmentId}` : "";
   redirect(`/${locale}/dashboard/certification?status=${status}${suffix}`);
 }
+
+export type AssessmentInlineActionResult =
+  | {
+      ok: true;
+      status:
+        | "assessor-designation-saved"
+        | "assessment-assignment-saved"
+        | "assessment-assignment-cancelled";
+    }
+  | {
+      ok: false;
+      status:
+        | "auth-required"
+        | "assessor-designation-invalid"
+        | "assessor-designation-failed"
+        | "assessment-assignment-invalid"
+        | "assessment-assignment-failed"
+        | "assessment-cancellation-invalid"
+        | "assessment-cancellation-failed";
+    };
 
 export async function requestLevel2Review(locale: Locale, formData: FormData) {
   const supabase = await createSupabaseServerClient();
@@ -169,23 +191,83 @@ export async function decideAssessmentReview(locale: Locale, formData: FormData)
 }
 
 export async function manageAssessorDesignation(locale: Locale, formData: FormData) {
-  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const result = await manageAssessorDesignationInline(locale, formData);
+  if (!result.ok && result.status === "auth-required") {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+  assessmentRedirect(locale, result.status);
+}
+
+export async function manageAssessorDesignationInline(
+  locale: Locale,
+  formData: FormData
+): Promise<AssessmentInlineActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, status: "auth-required" };
+
   const parsed = assessorDesignationSchema.safeParse({ userId: formData.get("userId"), active: formData.get("active"), reason: formData.get("reason") });
-  if (!parsed.success) assessmentRedirect(locale, "assessor-designation-invalid");
+  if (!parsed.success) return { ok: false, status: "assessor-designation-invalid" };
   try { await updateAssessorDesignation(supabase, user.id, parsed.data.userId, parsed.data.active === "true", parsed.data.reason); }
-  catch { assessmentRedirect(locale, "assessor-designation-failed"); }
+  catch { return { ok: false, status: "assessor-designation-failed" }; }
   revalidatePath(`/${locale}/dashboard/certification`);
-  assessmentRedirect(locale, "assessor-designation-saved");
+  return { ok: true, status: "assessor-designation-saved" };
 }
 
 export async function assignAssessment(locale: Locale, formData: FormData) {
-  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const result = await assignAssessmentInline(locale, formData);
+  if (!result.ok && result.status === "auth-required") {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+  const assessmentId = formData.get("assessmentId");
+  assessmentRedirect(
+    locale,
+    result.status,
+    typeof assessmentId === "string" ? assessmentId : undefined
+  );
+}
+
+export async function assignAssessmentInline(
+  locale: Locale,
+  formData: FormData
+): Promise<AssessmentInlineActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, status: "auth-required" };
+
   const parsed = assessmentAssignmentSchema.safeParse({ assessmentId: formData.get("assessmentId"), assessorUserId: formData.get("assessorUserId") });
-  if (!parsed.success) assessmentRedirect(locale, "assessment-assignment-invalid");
+  if (!parsed.success) return { ok: false, status: "assessment-assignment-invalid" };
   try { await submitAssessmentAssessor(supabase, user.id, parsed.data.assessmentId, parsed.data.assessorUserId); }
-  catch { assessmentRedirect(locale, "assessment-assignment-failed", parsed.data.assessmentId); }
+  catch { return { ok: false, status: "assessment-assignment-failed" }; }
   revalidatePath(`/${locale}/dashboard/certification`);
-  assessmentRedirect(locale, "assessment-assignment-saved", parsed.data.assessmentId);
+  return { ok: true, status: "assessment-assignment-saved" };
+}
+
+export async function cancelAssessmentAssignmentInline(
+  locale: Locale,
+  formData: FormData
+): Promise<AssessmentInlineActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, status: "auth-required" };
+
+  const parsed = assessmentAssignmentCancellationSchema.safeParse({
+    assessmentId: formData.get("assessmentId"),
+  });
+  if (!parsed.success) return { ok: false, status: "assessment-cancellation-invalid" };
+
+  try {
+    await submitAssessmentAssessorCancellation(
+      supabase,
+      user.id,
+      parsed.data.assessmentId
+    );
+  } catch {
+    return { ok: false, status: "assessment-cancellation-failed" };
+  }
+
+  revalidatePath(`/${locale}/dashboard/certification`);
+  return { ok: true, status: "assessment-assignment-cancelled" };
 }
 
 export async function scheduleAssessmentAction(locale: Locale, formData: FormData) {

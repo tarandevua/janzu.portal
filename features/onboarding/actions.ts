@@ -10,6 +10,10 @@ import {
   updateLearningAlliance,
 } from "@/server/services/onboarding.service";
 
+export type OnboardingActionResult =
+  | { ok: true; status: "alliance-accepted" | "alliance-revoked" | "guide-updated" }
+  | { ok: false; status: "invalid" };
+
 async function requireUser(locale: Locale) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -17,21 +21,30 @@ async function requireUser(locale: Locale) {
   return { supabase, user };
 }
 
-function finish(locale: Locale, status: string): never {
+function revalidateOnboarding(locale: Locale) {
   revalidatePath(`/${locale}/dashboard/first-steps`);
   revalidatePath(`/${locale}/dashboard/apprentice`);
-  redirect(`/${locale}/dashboard/first-steps?status=${status}`);
 }
 
-export async function setLearningAlliance(locale: Locale, formData: FormData) {
+export async function setLearningAlliance(
+  locale: Locale,
+  formData: FormData
+): Promise<OnboardingActionResult> {
   const action = z.enum(["accept", "revoke"]).safeParse(formData.get("action"));
-  if (!action.success) finish(locale, "invalid");
+  if (!action.success) return { ok: false, status: "invalid" };
   const { supabase, user } = await requireUser(locale);
   await updateLearningAlliance(supabase, user.id, locale, action.data === "accept");
-  finish(locale, action.data === "accept" ? "alliance-accepted" : "alliance-revoked");
+  revalidateOnboarding(locale);
+  return {
+    ok: true,
+    status: action.data === "accept" ? "alliance-accepted" : "alliance-revoked",
+  };
 }
 
-export async function setGuideComplete(locale: Locale, formData: FormData) {
+export async function setGuideComplete(
+  locale: Locale,
+  formData: FormData
+): Promise<OnboardingActionResult> {
   const parsed = z.object({
     guideKey: z.enum(["calendar", "sessions", "feedback"]),
     complete: z.enum(["true", "false"]).transform((value) => value === "true"),
@@ -39,8 +52,9 @@ export async function setGuideComplete(locale: Locale, formData: FormData) {
     guideKey: formData.get("guideKey"),
     complete: formData.get("complete"),
   });
-  if (!parsed.success) finish(locale, "invalid");
+  if (!parsed.success) return { ok: false, status: "invalid" };
   const { supabase, user } = await requireUser(locale);
   await updateGuideCompletion(supabase, user.id, parsed.data.guideKey, parsed.data.complete);
-  finish(locale, "guide-updated");
+  revalidateOnboarding(locale);
+  return { ok: true, status: "guide-updated" };
 }

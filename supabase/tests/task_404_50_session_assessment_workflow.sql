@@ -74,11 +74,32 @@ begin
   if (select count(*) from public.certification_milestone_attainments where milestone = 50) <> 1 then
     raise exception 'The 50-session attainment was not recorded exactly once';
   end if;
-  if (select count(*) from public.notifications where event_key like 'certification.milestone_50_reached:%') <> 3 then
+  if (select count(*) from public.notifications
+      where event_key like 'certification.milestone_50_reached:' ||
+        (select id::text from public.certification_journeys
+         where trainee_user_id = '14040000-0000-4000-8000-000000000001') || ':%') < 3 then
     raise exception 'Trainee, active Instructor, and Administrator did not receive one milestone notification';
   end if;
-  if (select count(*) from public.transactional_email_deliveries where idempotency_key like 'certification.milestone_50_reached:%') <> 3 then
+  if (select count(*) from public.transactional_email_deliveries
+      where idempotency_key like 'certification.milestone_50_reached:' ||
+        (select id::text from public.certification_journeys
+         where trainee_user_id = '14040000-0000-4000-8000-000000000001') || ':%') < 3 then
     raise exception 'Milestone required-email fanout was not idempotent';
+  end if;
+  if not exists (
+    select 1 from public.transactional_email_deliveries
+    where recipient_user_id = '14040000-0000-4000-8000-000000000002'
+      and event_id = (
+        select id from public.transactional_email_events
+        where event_key = 'certification.milestone_50_reached:' ||
+          (select id::text from public.certification_journeys
+           where trainee_user_id = '14040000-0000-4000-8000-000000000001')
+      )
+      and locale = 'en'
+      and destination_path = '/en/dashboard/certification?traineeId=14040000-0000-4000-8000-000000000001'
+      and required = true
+  ) then
+    raise exception 'The active Instructor did not receive the exact required 50-session milestone email';
   end if;
 end;
 $$;

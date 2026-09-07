@@ -115,11 +115,15 @@ begin
     raise exception 'A validated session without a linked client row did not count';
   end if;
   if (select count(*) from public.notifications
-      where event_key like 'certification.milestone_25_reached:%') <> 2 then
+      where event_key like 'certification.milestone_25_reached:' ||
+        (select id::text from public.certification_journeys
+         where trainee_user_id = '14030000-0000-4000-8000-000000000001') || ':%') <> 2 then
     raise exception 'The Trainee and active Instructor did not receive one milestone notification each';
   end if;
   if (select count(*) from public.transactional_email_deliveries
-      where idempotency_key like 'certification.milestone_25_reached:%') <> 2 then
+      where idempotency_key like 'certification.milestone_25_reached:' ||
+        (select id::text from public.certification_journeys
+         where trainee_user_id = '14030000-0000-4000-8000-000000000001') || ':%') <> 2 then
     raise exception 'The Trainee and active Instructor did not receive one milestone email each';
   end if;
   if not exists (
@@ -128,6 +132,21 @@ begin
       and locale = 'es' and destination_path like '/es/dashboard/certification?journeyId=%'
   ) then
     raise exception 'The Trainee milestone email was not localized or exact';
+  end if;
+  if not exists (
+    select 1 from public.transactional_email_deliveries
+    where recipient_user_id = '14030000-0000-4000-8000-000000000002'
+      and event_id = (
+        select id from public.transactional_email_events
+        where event_key = 'certification.milestone_25_reached:' ||
+          (select id::text from public.certification_journeys
+           where trainee_user_id = '14030000-0000-4000-8000-000000000001')
+      )
+      and locale = 'en'
+      and destination_path = '/en/dashboard/certification?traineeId=14030000-0000-4000-8000-000000000001'
+      and required = true
+  ) then
+    raise exception 'The active Instructor did not receive the exact required 25-session milestone email';
   end if;
 end;
 $$;
@@ -224,9 +243,14 @@ begin
   update public.sessions set is_validated = true
   where id = '64030000-0000-4000-8000-000000000025';
 
-  if (select count(*) from public.certification_milestone_attainments where milestone = 25) <> 1
+  if (select count(*) from public.certification_milestone_attainments
+      where milestone = 25
+        and journey_id = (select id from public.certification_journeys
+          where trainee_user_id = '14030000-0000-4000-8000-000000000001')) <> 1
     or (select count(*) from public.transactional_email_deliveries
-        where idempotency_key like 'certification.milestone_25_reached:%') <> 2 then
+        where idempotency_key like 'certification.milestone_25_reached:' ||
+          (select id::text from public.certification_journeys
+           where trainee_user_id = '14030000-0000-4000-8000-000000000001') || ':%') <> 2 then
     raise exception 'Reattainment duplicated the milestone event';
   end if;
 end;

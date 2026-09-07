@@ -1,11 +1,17 @@
 import { redirect } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
 import { PractitionerProfileRequiredAlert } from "@/components/dashboard/practitioner-profile-required-alert";
 import { CertificationJourneyReview } from "@/features/certification/components/certification-journey-review";
 import { CertificationProgressCard } from "@/features/certification/components/certification-progress-card";
-import { AssessmentWorkflow } from "@/features/certification/components/assessment-workflow";
+import {
+  AssessmentQueueSection,
+  AssessorAuthorizationSection,
+} from "@/features/certification/components/assessment-workflow";
 import { CertificateWorkflow } from "@/features/certification/components/certificate-workflow";
+import {
+  CertificationDashboardTabs,
+  type CertificationDashboardTab,
+} from "@/features/certification/components/certification-dashboard-tabs";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -19,7 +25,7 @@ import {
   getAssessorCandidates,
 } from "@/server/services/certification.service";
 import { listCertificateWorkflow } from "@/server/services/certificate.service";
-import { getPrimaryRole, getRoleAccessList, hasPermission } from "@/server/services/rbac.service";
+import { getPrimaryRole, hasPermission } from "@/server/services/rbac.service";
 
 type CertificationPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -96,66 +102,104 @@ export default async function CertificationPage({ params, searchParams }: Certif
     || assessorResult.status === "rejected"
     || certificateResult.status === "rejected";
   const practitionerProfileRequired = !practitioner && !canReview;
+  const showProgress = Boolean(displayedJourney && (!journeyId || displayedJourney.id === journeyId) && (!decisionId || displayedJourney.readinessRequestId === decisionId));
+  const certificationStatusTab: CertificationDashboardTab | undefined = status?.startsWith("certificate-")
+    ? "certificates"
+    : status?.startsWith("assessor-designation-")
+      ? "authorization"
+      : status?.startsWith("assessment-")
+        ? "assessments"
+        : status?.startsWith("readiness-") || status?.startsWith("decision-") || status?.startsWith("override-")
+          ? canReview ? "reviews" : "progress"
+          : undefined;
+  const defaultTab: CertificationDashboardTab = certificateId
+    ? "certificates"
+    : assessmentId
+      ? "assessments"
+      : decisionId || traineeId
+        ? canReview ? "reviews" : showProgress ? "progress" : "assessments"
+        : certificationStatusTab ?? (showProgress ? "progress" : canReview ? "reviews" : "assessments");
+  const sections = [
+    ...(showProgress && displayedJourney ? [{
+      id: "progress" as const,
+      label: dictionary.certification.progressTab,
+      content: (
+        <CertificationProgressCard
+          progress={displayedJourney}
+          locale={locale}
+          dictionary={dictionary.certification}
+        />
+      ),
+    }] : []),
+    ...(canReview ? [{
+      id: "reviews" as const,
+      label: dictionary.certification.reviewTitle,
+      content: (
+        <CertificationJourneyReview
+          locale={locale}
+          journeys={reviewJourneys}
+          canOverride={canOverride}
+          status={status}
+          dictionary={dictionary.certification}
+        />
+      ),
+    }] : []),
+    ...(canOverride ? [{
+      id: "authorization" as const,
+      label: dictionary.certification.assessorAuthorizationTitle,
+      content: (
+        <AssessorAuthorizationSection
+          locale={locale}
+          candidates={assessorCandidates}
+          dictionary={dictionary.certification}
+        />
+      ),
+    }] : []),
+    {
+      id: "assessments" as const,
+      label: dictionary.certification.assessmentTitle,
+      content: (
+        <AssessmentQueueSection
+          locale={locale}
+          items={assessmentItems}
+          candidates={assessorCandidates}
+          status={status}
+          dictionary={dictionary.certification}
+        />
+      ),
+    },
+    {
+      id: "certificates" as const,
+      label: dictionary.certification.certificateTitle,
+      content: (
+        <CertificateWorkflow
+          locale={locale}
+          items={certificateItems}
+          status={status}
+          dictionary={dictionary.certification}
+        />
+      ),
+    },
+  ];
 
   return (
-    <JanzuDashboardFrame
-      locale={locale}
-      access={getRoleAccessList(roles)}
-      title={dictionary.certification.title}
-      user={{
-        id: data.user.id,
-        name: data.user.user_metadata.full_name ?? data.user.email ?? "Janzu Practitioner",
-        email: data.user.email ?? "",
-        avatar: data.user.user_metadata.avatar_url,
-      }}
-    >
-      <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          {loadFailed ? (
-            <Alert>
-              <AlertDescription>{dictionary.certification.loadError}</AlertDescription>
-            </Alert>
-          ) : null}
-          {practitionerProfileRequired ? (
-            <PractitionerProfileRequiredAlert
-              href={`/${locale}/dashboard/profile`}
-              title={dictionary.clients.profileRequiredTitle}
-              description={dictionary.clients.profileRequiredDescription}
-              actionLabel={dictionary.clients.profileRequiredAction}
-            />
-          ) : null}
-          {displayedJourney && (!journeyId || displayedJourney.id === journeyId) && (!decisionId || displayedJourney.readinessRequestId === decisionId) ? (
-            <CertificationProgressCard
-              progress={displayedJourney}
-              locale={locale}
-              dictionary={dictionary.certification}
-            />
-          ) : null}
-          {canReview ? (
-            <CertificationJourneyReview
-              locale={locale}
-              journeys={reviewJourneys}
-              canOverride={canOverride}
-              status={status}
-              dictionary={dictionary.certification}
-            />
-          ) : null}
-          <AssessmentWorkflow
-            locale={locale}
-            items={assessmentItems}
-            candidates={assessorCandidates}
-            canManageAssessors={canOverride}
-            status={status}
-            dictionary={dictionary.certification}
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+        {loadFailed ? (
+          <Alert>
+            <AlertDescription>{dictionary.certification.loadError}</AlertDescription>
+          </Alert>
+        ) : null}
+        {practitionerProfileRequired ? (
+          <PractitionerProfileRequiredAlert
+            href={`/${locale}/dashboard/profile`}
+            title={dictionary.clients.profileRequiredTitle}
+            description={dictionary.clients.profileRequiredDescription}
+            actionLabel={dictionary.clients.profileRequiredAction}
           />
-          <CertificateWorkflow
-            locale={locale}
-            items={certificateItems}
-            status={status}
-            dictionary={dictionary.certification}
-          />
-        </div>
+        ) : null}
+        <CertificationDashboardTabs defaultTab={defaultTab} sections={sections} />
       </div>
-    </JanzuDashboardFrame>
+    </div>
   );
 }
