@@ -75,6 +75,7 @@
       "knowledgeBase": "Knowledge Base",
       "firstSteps": "First Steps",
       "supervision": "Instructor relationship",
+      "historicalMembers": "Historical membership",
       "training": "Training history",
       "communityDirectory": "Community directory",
       "logout": "Log out",
@@ -984,6 +985,7 @@
     "updateError": "The First Steps update could not be saved. Please try again."
   },
   "training": {
+    "historicalReview": "Historical training: review and corrections require separate historical-evidence access.",
     "title": "Training history",
     "description": "Record official Level 1, Level 2, or Level 3 training. Claims do not affect certification until an authorized Instructor or Administrator verifies them.",
     "guide": "Read the training history guide",
@@ -1209,5 +1211,84 @@
     "emailPreferencesInvalid": "Email preferences could not be saved. Review the options and try again.",
     "emailPreferencesFailed": "Email preferences are temporarily unavailable. Try again.",
     "savingEmailPreferences": "Saving email preferences..."
+  },
+  "historicalMembers": {
+    "title": "Historical membership",
+    "description": "Import and verify training, supported session totals, and historical professional recognition.",
+    "privacy": "Evidence and declarations are private. Use restricted evidence references; never include participant identities, session notes, or contact data.",
+    "guide": "Import format and verification guide",
+    "importTitle": "Import historical claims",
+    "importHelp": "One claim per member in each batch, up to 100 rows. Match an existing account by its ID and email. Preview first; no accounts or roles are created. Only a fully valid batch can be committed.",
+    "importJson": "Claim batch (JSON)",
+    "working": "Working…",
+    "preview": "Validate only",
+    "commit": "Import validated batch",
+    "report": "Validation report",
+    "openClaim": "Open claim and history",
+    "assign": "Designate senior reviewer",
+    "designationHelp": "Designate a senior Instructor or Assessor after checking their authority. Record the designation basis in the reason. The member, reviewer, and final Administrator must be different people. Reassignment suspends existing credit.",
+    "reviewerId": "Designated reviewer account ID",
+    "memberId": "Member account ID",
+    "unassigned": "Awaiting designation",
+    "reason": "Reason, discrepancies, or requested next action",
+    "decision": "Decision",
+    "approvedTotal": "Supported approved session total (zero for other claims)",
+    "noConflict": "I have no conflict of interest. I checked identity, the signed declaration, source independence, and the evidence supporting this decision. Session totals contain only qualifying practice and exclude duplicates.",
+    "review": "Record independent decision",
+    "recuse": "Recuse and request another reviewer",
+    "revise": "Correct or appeal with additional evidence",
+    "revisionHelp": "Submit the complete corrected details and explain what changed. Prior evidence and decisions remain in history. Existing credit is suspended immediately; a new independent review is required.",
+    "detailsJson": "Complete revised details (JSON)",
+    "claims": "Claims available to you",
+    "empty": "No accessible claims. Administrators can import a batch; members can ask an Administrator to match their historical records.",
+    "updated": "Last updated",
+    "rolesDeferred": "Verified professional recognition does not activate a role or issue a certificate. Professional role activation is handled separately.",
+    "evidence": "View evidence references and claim details",
+    "history": "Decision and evidence history",
+    "allClaims": "Back to all claims",
+    "pagination": "Claim pages",
+    "previous": "Previous",
+    "next": "Next",
+    "retry": "Try again",
+    "loadError": "Historical records could not be loaded. Try again.",
+    "loading": "Loading historical records…",
+    "results": {
+      "idle": "",
+      "preview": "Validation finished. Review every row before importing.",
+      "saved": "Saved. The records below reflect the current state.",
+      "invalid": "Check the format, current revision, evidence requirements, reviewer independence, supported totals, and overlapping claims. Reload if another reviewer changed this record.",
+      "denied": "This action is not authorized for your current account, designation, or claim state.",
+      "error": "The change could not be saved. Try again; do not change the source key to retry."
+    },
+    "codes": {
+      "ready": "Valid",
+      "replay": "Already imported; safe replay",
+      "duplicate_identity": "Duplicate or ambiguous identity; resolve before import",
+      "identity_mismatch": "Account ID and email do not match one existing active account",
+      "source_conflict": "Source key already has different data or is repeated",
+      "invalid": "Invalid claim format or dates"
+    },
+    "states": {
+      "pending_information": "Pending information or evidence review",
+      "awaiting_admin": "Awaiting independent Administrator",
+      "approved": "Approved",
+      "partially_approved": "Partially approved",
+      "rejected": "Rejected",
+      "disputed": "Disputed"
+    },
+    "kinds": {
+      "training": "Training",
+      "sessions": "Historical session total",
+      "facilitator": "Facilitator recognition",
+      "instructor": "Instructor recognition"
+    },
+    "actions": {
+      "imported": "Imported",
+      "assign": "Reviewer designated",
+      "recuse": "Reviewer recused",
+      "revise": "Correction or appeal submitted",
+      "senior_review": "Evidence review",
+      "admin_review": "Administrator decision"
+    }
   }
 }

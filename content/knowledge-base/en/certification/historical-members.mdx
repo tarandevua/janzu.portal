@@ -1,0 +1,72 @@
+---
+title: Historical membership
+description: Import and independently verify records from before the portal.
+section: Certification
+sectionOrder: 30
+order: 25
+roles:
+  - admin
+  - instructor
+  - apprentice
+  - facilitator
+  - practitioner
+status: published
+---
+
+Open **Historical membership** in the sidebar. Members see their own claims and decisions. A designated senior reviewer sees only assigned claims while their Instructor authorization remains active. Administrators manage imports and independent final review.
+
+## Import an existing member
+
+An Administrator first matches the member to an existing portal account. Invite a missing member using the normal user-management workflow. This import creates no accounts and grants no roles.
+
+Paste an array of claims into **Claim batch (JSON)**. Use one claim per member per batch, up to 100 rows. Use a stable source and key for each claim. Enter the account ID and matching email, then choose **Validate only**. Resolve all duplicate identities, mismatches, invalid rows and conflicting source keys before **Import validated batch**. Validation does not save anything. Repeating the same import is safe; a changed claim must use the correction workflow, not a new key.
+
+A training example, using a fictitious account ID and restricted references:
+
+```json
+[
+  {
+    "source": "school-roster-2020",
+    "key": "member-17-level-1",
+    "memberId": "16010000-0000-4000-8000-000000000001",
+    "email": "member@example.test",
+    "kind": "training",
+    "details": {
+      "period": "January 2020",
+      "location": "Madrid",
+      "teachingInstructor": "Teaching Instructor",
+      "cohort": "2020-A",
+      "identityEvidence": "restricted:identity-check-17",
+      "declaration": "restricted:signed-declaration-17",
+      "evidence": [{"source": "School archive", "reference": "restricted:roster-2020", "type": "primary"}],
+      "level": "level_1",
+      "startedOn": "2020-01-01",
+      "completedOn": "2020-01-05",
+      "attendanceComplete": true,
+      "courseworkComplete": true
+    }
+  }
+]
+```
+
+For Level 2, use `level_2` and add `priorEligibilityEvidence`. A pending training claim may use an approximate period and omit exact dates/completion evidence; it cannot be approved until complete.
+
+For `sessions`, replace the training-specific fields with `coveredFrom`, `cutoff` (dates), `claimedTotal` (whole number), and `calculationMethod`. The covered period must follow verified Level 1 and include only qualifying one-to-one Janzu practice of at least 60 minutes. Never import participant names or individual session notes. Only the supported minimum is approved. Overlapping historical periods cannot both receive credit; native records within an approved period do not add credit again.
+
+For `facilitator` or `instructor` recognition, retain period, location, teaching Instructor and evidence, and add `historicalRecognitionEvidence`. Verified professional recognition does not activate roles or issue a certificate. Activation is a separate professional-recognition process.
+
+## Independent verification
+
+An Administrator designates a qualified senior Instructor or Assessor and records why they are authorized. The member, designated reviewer and final Administrator must be different people. Reviewers declare that they have no conflict; otherwise choose **Recuse and request another reviewer**.
+
+Approval requires verified identity, a signed declaration, and a primary source or two independent corroborating sources. Reviewers check the sources and the supported portion. The senior reviewer decides first; an independent Administrator cannot approve more than that evidence supports. Session totals may be partially approved; training and professional recognition are separate claims approved as complete units. Use zero as the approved session total for other claim types.
+
+The member receives a private in-app decision notice. **Open claim and history** shows the decision, reasons, evidence history and requested next action. No evidence text is emailed or made public.
+
+## Corrections, disputes and appeals
+
+Members or Administrators can choose **Correct or appeal with additional evidence**. Copy the complete current details, amend the relevant fields, and explain the change. Prior evidence and decisions remain in history. Credit is suspended immediately until the amended claim passes independent review. Reassignment or recusal also suspends existing credit. Appeals use different reviewers where staffing permits.
+
+A rejected, disputed or incomplete portion does not count or activate status. Read the reason for the next action. If another person changed the record, reload before submitting again. Failed imports may be retried with the same source keys.
+
+Use restricted evidence references rather than file contents. Do not paste participant data, contact details, private session notes or publicly accessible evidence links.

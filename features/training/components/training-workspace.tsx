@@ -28,6 +28,7 @@ import {
 } from "@/server/models/training.model";
 
 type Dictionary = {
+  historicalReview: string;
   title: string;
   description: string;
   guide: string;
@@ -307,13 +308,14 @@ export function TrainingWorkspace({
                 </dl>
               </details>
               {record.rejectionReason ? <p className="text-sm text-destructive">{record.rejectionReason}</p> : null}
-              {canSubmit && record.status !== "verified" ? (
+              {record.historicalClaimId ? <Link className="text-sm underline" href={`/${locale}/dashboard/historical-members?claimId=${record.historicalClaimId}`}>{dictionary.historicalReview}</Link> : null}
+              {canSubmit && !record.historicalClaimId && record.status !== "verified" ? (
                 <details>
                   <summary className="cursor-pointer text-sm font-medium">{dictionary.correct}</summary>
                   <TrainingRecordForm locale={locale} dictionary={dictionary} record={record} />
                 </details>
               ) : null}
-              {canReview && record.status === "claimed" ? (
+              {canReview && !record.historicalClaimId && record.status === "claimed" ? (
                 <TrainingReviewForm locale={locale} traineeUserId={traineeUserId} record={record} dictionary={dictionary} />
               ) : null}
             </div>

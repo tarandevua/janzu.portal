@@ -14,6 +14,7 @@ type TrainingSubjectRow = Database["public"]["Functions"]["get_training_history_
 function toTrainingRecord(row: TrainingHistoryRow): TrainingRecord {
   return {
     id: row.id,
+    historicalClaimId: row.historical_claim_id,
     traineeUserId: row.trainee_user_id,
     level: row.level,
     cohort: row.cohort,

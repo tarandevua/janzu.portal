@@ -177,6 +177,8 @@ Decide:
 **Priority:** P1  
 **Dependencies:** DEC-01, DEC-04, TASK-201
 
+**Historical activation boundary:** TASK-601 stores independently verified historical professional recognition. Activating roles from those claims belongs to TASK-104 and must preserve DEC-02/DEC-07 certification requirements.
+
 **Acceptance criteria:**
 
 - Existing professionals can request Facilitator or Instructor recognition.
@@ -409,9 +411,11 @@ Decide:
 
 #### TASK-601: Build historical member import and verification
 
-**Status:** Planned  
+**Status:** Verify
 **Priority:** P2  
 **Dependencies:** TASK-201, TASK-401, TASK-402
+
+**Scope decision:** Approved historical professional recognition is stored without activating roles or issuing certificates; activation is deferred to TASK-104, as recorded in DEC-04 on 2026-09-07. See [TASK-601 implementation and validation notes](./task-601-readiness.md).
 
 **Acceptance criteria:**
 
@@ -420,6 +424,8 @@ Decide:
 - Every historical claim records its source and verification state.
 - Trusted roles require verification.
 - Re-running the import is safe.
+
+**Verification:** Forward-only migrations `202609070002_add_historical_claim_notification.sql` and `202609070003_task_601_historical_members.sql` implement private idempotent imports, duplicate identity reporting, two-person verification, audited corrections/appeals, canonical training and aggregate-session integration, and localized decision notices. Lint, typecheck, 231 unit tests, production build, isolated SQL integration/upgrade/concurrency checks, and English/Spanish desktop/mobile browser verification pass. Verified professional recognition grants no roles. Real migrated-portal authenticated verification remains required; existing migration-chain and TASK-403 SQL-test limitations are documented in the implementation notes.
 
 #### TASK-602: Run a veteran-member pilot
 

@@ -10,6 +10,7 @@ export type TrainingSubject = {
 };
 
 export type TrainingRecord = {
+  historicalClaimId?: string | null;
   id: string;
   traineeUserId: string;
   level: TrainingLevel;

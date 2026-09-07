@@ -65,3 +65,9 @@ Verified historical aggregate session totals may be imported under these rules:
 - Historical aggregates must be modeled separately from individual platform-validated sessions while contributing safely to certification totals.
 - Partial approvals and disputes must not grant access or advance certification beyond the supported evidence.
 - Appeals and corrections must preserve every earlier claim, source, and decision.
+
+## TASK-601 activation boundary (accepted 2026-09-07)
+
+The stakeholder selected: **Store verified recognition; defer role activation.**
+
+TASK-601 imports and verifies historical training, supported aggregate session totals, and professional recognition. Approved training and aggregate totals may contribute to the existing certification journey under DEC-02/DEC-04. Approved historical Facilitator or Instructor recognition is a private verified claim; it does not assign a role, manufacture a current assessment, or issue a certificate. Professional role activation from this recognition is deferred to TASK-104. DEC-02/DEC-07 certificate issuance rules remain unchanged.

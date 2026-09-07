@@ -1,8 +1,21 @@
+import type { HistoricalClaim, HistoricalEvent, ImportReport } from "@/server/models/historical-member.model";
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   public: {
     Tables: {
+      historical_member_claims: {
+        Row: HistoricalClaim & { import_payload: Json };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      historical_member_events: {
+        Row: HistoricalEvent;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       users: {
         Row: {
           id: string;
@@ -337,6 +350,7 @@ export type Database = {
       };
       training_history: {
         Row: {
+          historical_claim_id: string | null;
           id: string;
           trainee_user_id: string;
           level: "level_1" | "level_2" | "level_3";
@@ -357,6 +371,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          historical_claim_id?: string | null;
           id?: string;
           trainee_user_id: string;
           level: "level_1" | "level_2" | "level_3";
@@ -377,6 +392,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          historical_claim_id?: string | null;
           id?: string;
           trainee_user_id?: string;
           level?: "level_1" | "level_2" | "level_3";
@@ -1598,6 +1614,14 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      import_historical_members: {
+        Args: { actor_user_id: string; import_rows: Json; commit_import: boolean };
+        Returns: ImportReport;
+      };
+      act_on_historical_claim: {
+        Args: { actor_user_id: string; command: Json };
+        Returns: HistoricalClaim;
+      };
       user_has_role: {
         Args: {
           target_user_id: string;
@@ -2402,6 +2426,7 @@ export type Database = {
         | "assessment_scheduled"
         | "assessment_outcome_recorded"
         | "assessment_remediation_verified"
+        | "historical_claim_updated"
         | "certificate_issued"
         | "certificate_replaced"
         | "certificate_revoked"

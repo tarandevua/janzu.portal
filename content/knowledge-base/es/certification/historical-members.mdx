@@ -1,0 +1,72 @@
+---
+title: Trayectoria histórica
+description: Importa y verifica de forma independiente registros anteriores al portal.
+section: Certificación
+sectionOrder: 30
+order: 25
+roles:
+  - admin
+  - instructor
+  - apprentice
+  - facilitator
+  - practitioner
+status: published
+---
+
+Abre **Trayectoria histórica** en el menú lateral. Cada miembro ve sus declaraciones y decisiones. Un revisor sénior designado solo ve las declaraciones asignadas mientras conserve su autorización de Instructor. Los Administradores gestionan las importaciones y la revisión final independiente.
+
+## Importar un miembro existente
+
+Un Administrador vincula primero al miembro con su cuenta del portal. Si no existe, usa el procedimiento habitual de invitación. Esta importación no crea cuentas ni concede roles.
+
+Pega una lista en **Lote de declaraciones (JSON)**: una declaración por miembro en cada lote, hasta 100 filas. Usa un origen y una clave estables para cada declaración. Introduce el ID y correo coincidentes de la cuenta y pulsa **Solo validar**. Resuelve todas las identidades duplicadas, discordancias, filas no válidas y claves en conflicto antes de **Importar lote validado**. La validación no guarda datos. Repetir la misma importación es seguro; para cambiar una declaración usa la corrección, no una clave nueva.
+
+Ejemplo de formación con una cuenta ficticia y referencias restringidas:
+
+```json
+[
+  {
+    "source": "school-roster-2020",
+    "key": "member-17-level-1",
+    "memberId": "16010000-0000-4000-8000-000000000001",
+    "email": "member@example.test",
+    "kind": "training",
+    "details": {
+      "period": "Enero de 2020",
+      "location": "Madrid",
+      "teachingInstructor": "Instructor de la formación",
+      "cohort": "2020-A",
+      "identityEvidence": "restricted:identity-check-17",
+      "declaration": "restricted:signed-declaration-17",
+      "evidence": [{"source": "Archivo de la escuela", "reference": "restricted:roster-2020", "type": "primary"}],
+      "level": "level_1",
+      "startedOn": "2020-01-01",
+      "completedOn": "2020-01-05",
+      "attendanceComplete": true,
+      "courseworkComplete": true
+    }
+  }
+]
+```
+
+Para el Nivel 2, usa `level_2` y añade `priorEligibilityEvidence`. Una declaración pendiente puede indicar un período aproximado y omitir fechas exactas o pruebas de finalización; no se puede aprobar hasta completarla.
+
+Para `sessions`, sustituye los campos específicos de formación por `coveredFrom`, `cutoff` (fechas), `claimedTotal` (entero) y `calculationMethod`. El período debe ser posterior al Nivel 1 verificado e incluir solo práctica individual de Janzu válida de al menos 60 minutos. No importes nombres de participantes ni notas de sesiones. Solo se aprueba el mínimo acreditado. Dos períodos históricos superpuestos no pueden recibir crédito; los registros del portal dentro de un período aprobado no suman crédito adicional.
+
+Para reconocimiento como `facilitator` o `instructor`, conserva el período, ubicación, Instructor y pruebas, y añade `historicalRecognitionEvidence`. El reconocimiento verificado no activa roles ni emite certificados. La activación es un proceso de reconocimiento profesional separado.
+
+## Verificación independiente
+
+Un Administrador designa a un Instructor sénior o Evaluador cualificado y registra el fundamento de su autoridad. El miembro, el revisor y el Administrador final deben ser personas distintas. Los revisores declaran que no tienen conflictos; si los tienen, eligen **Abstenerme y solicitar otro revisor**.
+
+La aprobación exige identidad verificada, declaración firmada y una fuente primaria o dos fuentes de corroboración independientes. El revisor sénior decide primero; el Administrador independiente no puede aprobar más de lo acreditado. Los totales de sesiones pueden aprobarse parcialmente. La formación y el reconocimiento profesional son declaraciones separadas que se aprueban como unidades completas. Para ellas, introduce cero en el total de sesiones aprobado.
+
+El miembro recibe un aviso privado de la decisión. **Abrir declaración e historial** muestra la decisión, motivos, pruebas anteriores y siguiente acción solicitada. Las pruebas no se envían por correo ni se hacen públicas.
+
+## Correcciones, disputas y apelaciones
+
+Los miembros y Administradores pueden elegir **Corregir o apelar con pruebas adicionales**. Copia todos los datos actuales, modifica los campos necesarios y explica el cambio. Las pruebas y decisiones anteriores se conservan. El crédito se suspende de inmediato hasta una nueva revisión independiente. La reasignación y abstención también suspenden el crédito. Las apelaciones usan revisores distintos cuando hay personal disponible.
+
+Las partes rechazadas, en disputa o incompletas no cuentan ni activan estado. Consulta el motivo para conocer el siguiente paso. Si otra persona cambió el registro, recarga antes de enviar. Puedes reintentar una importación fallida con las mismas claves de origen.
+
+Usa referencias a pruebas restringidas en lugar del contenido de archivos. No pegues datos de participantes, contactos, notas privadas ni enlaces públicos a pruebas.

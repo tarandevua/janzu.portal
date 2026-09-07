@@ -75,6 +75,7 @@
       "knowledgeBase": "Base de conocimiento",
       "firstSteps": "Primeros pasos",
       "supervision": "Relacion con Instructor",
+      "historicalMembers": "Trayectoria histórica",
       "training": "Historial de formacion",
       "communityDirectory": "Directorio de la comunidad",
       "logout": "Cerrar sesion",
@@ -984,6 +985,7 @@
     "updateError": "No se pudo guardar la actualizacion de Primeros pasos. Intentalo de nuevo."
   },
   "training": {
+    "historicalReview": "Formación histórica: la revisión y las correcciones requieren acceso específico a sus pruebas.",
     "title": "Historial de formación",
     "description": "Registra formaciones oficiales de Nivel 1, Nivel 2 o Nivel 3. Las declaraciones no afectan la certificación hasta que un Instructor autorizado o un Administrador las verifique.",
     "guide": "Leer la guía del historial de formación",
@@ -1209,5 +1211,84 @@
     "emailPreferencesInvalid": "No se pudieron guardar las preferencias de correo. Revisa las opciones e inténtalo de nuevo.",
     "emailPreferencesFailed": "Las preferencias de correo no están disponibles temporalmente. Inténtalo de nuevo.",
     "savingEmailPreferences": "Guardando preferencias de correo..."
+  },
+  "historicalMembers": {
+    "title": "Trayectoria histórica",
+    "description": "Importa y verifica formación, totales de sesiones acreditados y reconocimiento profesional histórico.",
+    "privacy": "Las pruebas y declaraciones son privadas. Usa referencias a pruebas de acceso restringido; nunca incluyas identidades de participantes, notas de sesiones ni datos de contacto.",
+    "guide": "Guía de formato de importación y verificación",
+    "importTitle": "Importar declaraciones históricas",
+    "importHelp": "Una declaración por miembro en cada lote, hasta 100 filas. Identifica una cuenta existente por su ID y correo. Valida primero; no se crean cuentas ni roles. Solo se importa un lote completamente válido.",
+    "importJson": "Lote de declaraciones (JSON)",
+    "working": "Procesando…",
+    "preview": "Solo validar",
+    "commit": "Importar lote validado",
+    "report": "Informe de validación",
+    "openClaim": "Abrir declaración e historial",
+    "assign": "Designar revisor sénior",
+    "designationHelp": "Designa a un Instructor sénior o Evaluador tras comprobar su autoridad. Registra el fundamento de la designación en el motivo. El miembro, el revisor y el Administrador final deben ser personas distintas. La reasignación suspende el crédito existente.",
+    "reviewerId": "ID de cuenta del revisor designado",
+    "memberId": "ID de cuenta del miembro",
+    "unassigned": "Pendiente de designación",
+    "reason": "Motivo, discrepancias o siguiente acción solicitada",
+    "decision": "Decisión",
+    "approvedTotal": "Total de sesiones acreditadas y aprobadas (cero para otras declaraciones)",
+    "noConflict": "No tengo conflicto de intereses. He comprobado la identidad, la declaración firmada, la independencia de las fuentes y las pruebas que respaldan esta decisión. Los totales solo incluyen práctica válida y excluyen duplicados.",
+    "review": "Registrar decisión independiente",
+    "recuse": "Abstenerme y solicitar otro revisor",
+    "revise": "Corregir o apelar con pruebas adicionales",
+    "revisionHelp": "Envía todos los datos corregidos y explica los cambios. Las pruebas y decisiones anteriores se conservan. El crédito existente se suspende de inmediato y requiere una nueva revisión independiente.",
+    "detailsJson": "Datos revisados completos (JSON)",
+    "claims": "Declaraciones disponibles para ti",
+    "empty": "No hay declaraciones accesibles. Los Administradores pueden importar un lote; los miembros pueden pedir a un Administrador que vincule sus registros históricos.",
+    "updated": "Última actualización",
+    "rolesDeferred": "El reconocimiento profesional verificado no activa un rol ni emite un certificado. La activación de roles profesionales se gestiona por separado.",
+    "evidence": "Ver referencias a pruebas y datos de la declaración",
+    "history": "Historial de decisiones y pruebas",
+    "allClaims": "Volver a todas las declaraciones",
+    "pagination": "Páginas de declaraciones",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "retry": "Reintentar",
+    "loadError": "No se pudieron cargar los registros históricos. Inténtalo de nuevo.",
+    "loading": "Cargando registros históricos…",
+    "results": {
+      "idle": "",
+      "preview": "Validación terminada. Revisa todas las filas antes de importar.",
+      "saved": "Guardado. Los registros siguientes reflejan el estado actual.",
+      "invalid": "Comprueba el formato, la revisión actual, las pruebas exigidas, la independencia de revisores, los totales acreditados y los registros superpuestos. Recarga si otro revisor cambió el registro.",
+      "denied": "Tu cuenta, designación o el estado de la declaración no permiten esta acción.",
+      "error": "No se pudo guardar el cambio. Reintenta sin cambiar la clave de origen."
+    },
+    "codes": {
+      "ready": "Válida",
+      "replay": "Ya importada; repetición segura",
+      "duplicate_identity": "Identidad duplicada o ambigua; resuélvela antes de importar",
+      "identity_mismatch": "El ID y correo no corresponden a una única cuenta activa",
+      "source_conflict": "La clave de origen tiene otros datos o está repetida",
+      "invalid": "Formato de declaración o fechas no válidos"
+    },
+    "states": {
+      "pending_information": "Pendiente de información o revisión de pruebas",
+      "awaiting_admin": "Pendiente de un Administrador independiente",
+      "approved": "Aprobada",
+      "partially_approved": "Aprobada parcialmente",
+      "rejected": "Rechazada",
+      "disputed": "En disputa"
+    },
+    "kinds": {
+      "training": "Formación",
+      "sessions": "Total histórico de sesiones",
+      "facilitator": "Reconocimiento como Facilitador",
+      "instructor": "Reconocimiento como Instructor"
+    },
+    "actions": {
+      "imported": "Importada",
+      "assign": "Revisor designado",
+      "recuse": "Abstención del revisor",
+      "revise": "Corrección o apelación enviada",
+      "senior_review": "Revisión de pruebas",
+      "admin_review": "Decisión del Administrador"
+    }
   }
 }
