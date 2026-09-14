@@ -196,7 +196,7 @@ export default async function RoleDashboardPage({ params }: RoleDashboardPagePro
   }
 
   if (role === "facilitator") {
-    const dashboardData = await getFacilitatorDashboardData(supabase);
+    const dashboardData = await getFacilitatorDashboardData(supabase, data.user.id);
 
     return (
       <FacilitatorDashboard

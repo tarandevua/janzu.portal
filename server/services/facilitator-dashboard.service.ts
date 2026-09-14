@@ -1,6 +1,7 @@
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import type { AdminSessionActivityPoint } from "@/server/services/admin-dashboard.service";
 import { buildAdminSessionActivity } from "@/server/services/admin-dashboard.service";
+import { findDashboardFeedback } from "@/server/services/feedback.service";
 
 type CountResult = {
   count: number | null;
@@ -80,8 +81,6 @@ export type FacilitatorUpcomingEvent = {
 
 export type FacilitatorDashboardData = {
   counts: {
-    practitioners: number;
-    publicPractitioners: number;
     sessions: number;
     validatedSessions: number;
     pendingSessionRequests: number;
@@ -160,35 +159,42 @@ function toUpcomingEvent(row: UpcomingEventRow): FacilitatorUpcomingEvent {
 }
 
 export async function getFacilitatorDashboardData(
-  supabase: SupabaseServerClient
+  supabase: SupabaseServerClient,
+  userId: string
 ): Promise<FacilitatorDashboardData> {
   const today = new Date();
   const normalizedToday = new Date(toDateKey(today));
   const activityStartDate = toDateKey(addDays(normalizedToday, -89));
   const now = today.toISOString();
+  const { data: practitionerData, error: practitionerError } = await supabase
+    .from("practitioners")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
 
-  const practitionersCountQuery = supabase
-    .from("practitioners")
-    .select("id", { count: "exact", head: true });
-  const publicPractitionersCountQuery = supabase
-    .from("practitioners")
-    .select("id", { count: "exact", head: true })
-    .eq("is_public", true);
+  if (practitionerError) {
+    throw new Error(practitionerError.message);
+  }
+
+  const practitioner = practitionerData as { id: string } | null;
+  const practitionerId = practitioner?.id ?? "00000000-0000-0000-0000-000000000000";
   const sessionsCountQuery = supabase
     .from("sessions")
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "exact", head: true })
+    .eq("practitioner_id", practitionerId);
   const validatedSessionsCountQuery = supabase
     .from("sessions")
     .select("id", { count: "exact", head: true })
+    .eq("practitioner_id", practitionerId)
     .eq("is_validated", true);
   const pendingRequestsCountQuery = supabase
-    .from("session_requests")
+    .from("sessions")
     .select("id", { count: "exact", head: true })
-    .eq("status", "pending");
-  const submittedFeedbackCountQuery = supabase
-    .from("session_feedback")
-    .select("id", { count: "exact", head: true })
-    .not("submitted_at", "is", null);
+    .eq("practitioner_id", practitionerId)
+    .eq("is_validated", false);
+  const submittedFeedbackQuery = practitioner
+    ? findDashboardFeedback(supabase, userId, practitioner.id, 1, 1)
+    : Promise.resolve({ items: [], totalCount: 0 });
   const upcomingEventsCountQuery = supabase
     .from("events")
     .select("id", { count: "exact", head: true })
@@ -197,6 +203,7 @@ export async function getFacilitatorDashboardData(
   const sessionActivityQuery = supabase
     .from("sessions")
     .select("session_date, is_validated")
+    .eq("practitioner_id", practitionerId)
     .gte("session_date", activityStartDate);
   const recentSessionsQuery = supabase
     .from("sessions")
@@ -221,24 +228,20 @@ export async function getFacilitatorDashboardData(
     .limit(5);
 
   const [
-    practitionersCount,
-    publicPractitionersCount,
     sessionsCount,
     validatedSessionsCount,
     pendingRequestsCount,
-    submittedFeedbackCount,
+    submittedFeedback,
     upcomingEventsCount,
     sessionActivity,
     recentSessions,
     recentFeedback,
     upcomingEvents,
   ] = await Promise.all([
-    practitionersCountQuery,
-    publicPractitionersCountQuery,
     sessionsCountQuery,
     validatedSessionsCountQuery,
     pendingRequestsCountQuery,
-    submittedFeedbackCountQuery,
+    submittedFeedbackQuery,
     upcomingEventsCountQuery,
     sessionActivityQuery,
     recentSessionsQuery,
@@ -264,12 +267,10 @@ export async function getFacilitatorDashboardData(
 
   return {
     counts: {
-      practitioners: getCount(practitionersCount),
-      publicPractitioners: getCount(publicPractitionersCount),
       sessions: getCount(sessionsCount),
       validatedSessions: getCount(validatedSessionsCount),
       pendingSessionRequests: getCount(pendingRequestsCount),
-      submittedFeedback: getCount(submittedFeedbackCount),
+      submittedFeedback: submittedFeedback.totalCount,
       upcomingEvents: getCount(upcomingEventsCount),
     },
     sessionActivity: buildAdminSessionActivity(

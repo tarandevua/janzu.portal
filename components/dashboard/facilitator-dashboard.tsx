@@ -1,9 +1,9 @@
 import Link from "next/link";
+import type { Route } from "next";
 import {
   BadgeCheckIcon,
   ClipboardListIcon,
   FileTextIcon,
-  UsersIcon,
 } from "lucide-react";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-frame";
@@ -30,15 +30,16 @@ import type { RoleAccess } from "@/server/models/rbac.model";
 import type { FacilitatorDashboardData } from "@/server/services/facilitator-dashboard.service";
 
 type FacilitatorDashboardDictionary = {
-  practitioners: string;
-  practitionersDescription: string;
-  publicProfiles: string;
   sessions: string;
   sessionsDescription: string;
+  sessionsFooter: string;
   validatedSessions: string;
   pendingRequests: string;
+  pendingRequestsDescription: string;
+  pendingRequestsFooter: string;
   feedback: string;
   feedbackDescription: string;
+  feedbackFooter: string;
   upcomingEvents: string;
   upcomingEventsDescription: string;
   recentSessions: string;
@@ -86,13 +87,15 @@ function StatCard({
   value,
   description,
   footer,
+  href,
   icon: Icon,
 }: {
   title: string;
   value: string | number;
   description: string;
   footer: string;
-  icon: typeof UsersIcon;
+  href: string;
+  icon: typeof ClipboardListIcon;
 }) {
   return (
     <Card className="@container/card">
@@ -105,7 +108,12 @@ function StatCard({
       </CardHeader>
       <CardFooter className="flex-col items-start gap-1 text-sm">
         <div className="font-medium">{description}</div>
-        <div className="text-muted-foreground">{footer}</div>
+        <Link
+          className="text-muted-foreground underline-offset-4 hover:underline"
+          href={href as Route}
+        >
+          {footer}
+        </Link>
       </CardFooter>
     </Card>
   );
@@ -123,33 +131,29 @@ export function FacilitatorDashboard({
     <JanzuDashboardFrame locale={locale} access={access} user={user} title={title}>
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-            <StatCard
-              title={dictionary.practitioners}
-              value={data.counts.practitioners}
-              description={dictionary.practitionersDescription}
-              footer={`${data.counts.publicPractitioners} ${dictionary.publicProfiles}`}
-              icon={UsersIcon}
-            />
+          <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
             <StatCard
               title={dictionary.sessions}
               value={data.counts.sessions}
               description={dictionary.sessionsDescription}
-              footer={`${data.counts.validatedSessions} ${dictionary.validatedSessions}`}
+              footer={`${data.counts.validatedSessions} ${dictionary.validatedSessions} · ${dictionary.sessionsFooter}`}
+              href={`/${locale}/dashboard/sessions`}
               icon={ClipboardListIcon}
             />
             <StatCard
               title={dictionary.pendingRequests}
               value={data.counts.pendingSessionRequests}
-              description={dictionary.recentSessionsDescription}
-              footer={dictionary.sessionsDescription}
+              description={dictionary.pendingRequestsDescription}
+              footer={dictionary.pendingRequestsFooter}
+              href={`/${locale}/dashboard/sessions?validation=pending`}
               icon={BadgeCheckIcon}
             />
             <StatCard
               title={dictionary.feedback}
               value={data.counts.submittedFeedback}
               description={dictionary.feedbackDescription}
-              footer={dictionary.validatedSessions}
+              footer={dictionary.feedbackFooter}
+              href={`/${locale}/dashboard/feedback`}
               icon={FileTextIcon}
             />
           </div>
