@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canAccessDashboard,
+  canAssignUserRole,
   canManageUserRole,
   getPrimaryRole,
   getRoleDashboardPath,
@@ -42,6 +43,11 @@ describe("RBAC service", () => {
     expect(canManageUserRole(["instructor"], "practitioner")).toBe(false);
     expect(canManageUserRole(["instructor"], "admin")).toBe(false);
     expect(canManageUserRole(["instructor"], "instructor")).toBe(false);
+  });
+
+  it("excludes Practitioner from manual role assignment", () => {
+    expect(canAssignUserRole(["admin"], "facilitator")).toBe(true);
+    expect(canAssignUserRole(["admin"], "practitioner")).toBe(false);
   });
 
   it("builds locale-aware role dashboard paths", () => {

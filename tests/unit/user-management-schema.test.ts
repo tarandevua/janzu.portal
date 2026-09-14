@@ -32,17 +32,26 @@ describe("userInviteSchema", () => {
     const parsed = userInviteSchema.parse({
       email: "new@example.com",
       fullName: "",
-      role: "practitioner",
+      role: "facilitator",
     });
 
     expect(parsed.fullName).toBeNull();
-    expect(parsed.role).toBe("practitioner");
+    expect(parsed.role).toBe("facilitator");
   });
 
   it("rejects invalid invite emails", () => {
     expect(() =>
       userInviteSchema.parse({
         email: "not-email",
+        role: "facilitator",
+      })
+    ).toThrow();
+  });
+
+  it("rejects Practitioner as an invitation role", () => {
+    expect(() =>
+      userInviteSchema.parse({
+        email: "new@example.com",
         role: "practitioner",
       })
     ).toThrow();

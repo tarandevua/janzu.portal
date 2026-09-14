@@ -12,7 +12,7 @@ export const userInviteSchema = z.object({
     (value) => (typeof value === "string" && value.trim() === "" ? null : value),
     z.string().trim().max(160).nullable().optional()
   ),
-  role: z.enum(roles),
+  role: z.enum(roles).refine((role) => role !== "practitioner"),
 });
 
 export const userInviteResendSchema = z.object({

@@ -70,6 +70,10 @@ export function canManageUserRole(actorRoles: Role[], targetRole: Role) {
   return hasRole(actorRoles, "admin") && roles.includes(targetRole);
 }
 
+export function canAssignUserRole(actorRoles: Role[], targetRole: Role) {
+  return targetRole !== "practitioner" && canManageUserRole(actorRoles, targetRole);
+}
+
 export function canAccessDashboard(userRoles: Role[], dashboardRole: Role) {
   return hasRole(userRoles, dashboardRole);
 }

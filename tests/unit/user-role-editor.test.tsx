@@ -65,7 +65,7 @@ describe("AJAX user role editor", () => {
         userId="14040000-0000-4000-8000-000000000001"
         userRoles={["apprentice"]}
         actorRoles={["admin"]}
-        assignableRoles={["practitioner"]}
+        assignableRoles={["facilitator"]}
         dictionary={dictionary}
       />
     );
@@ -73,14 +73,14 @@ describe("AJAX user role editor", () => {
     const button = screen.getByRole("button", { name: "Assign role" });
     const form = button.closest("form")!;
     fireEvent.change(screen.getByRole("combobox", { name: "Assign role" }), {
-      target: { value: "practitioner" },
+      target: { value: "facilitator" },
     });
     fireEvent.submit(form);
 
     await waitFor(() => expect(mocks.assign).toHaveBeenCalledOnce());
     const submitted = mocks.assign.mock.calls[0]?.[1] as FormData;
     expect(submitted.get("userId")).toBe("14040000-0000-4000-8000-000000000001");
-    expect(submitted.get("role")).toBe("practitioner");
+    expect(submitted.get("role")).toBe("facilitator");
     expect(mocks.success).toHaveBeenCalledWith("Role assigned.", { id: "role-toast" });
     expect(mocks.refresh).toHaveBeenCalledOnce();
   });

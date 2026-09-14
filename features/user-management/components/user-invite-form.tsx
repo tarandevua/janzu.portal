@@ -16,7 +16,7 @@ import {
 import { inviteUser } from "@/features/user-management/actions";
 import type { Locale } from "@/lib/i18n/config";
 import { roles, type Role } from "@/server/models/rbac.model";
-import { canManageUserRole } from "@/server/services/rbac.service";
+import { canAssignUserRole } from "@/server/services/rbac.service";
 
 export type UserInviteDictionary = {
   inviteTitle: string;
@@ -47,7 +47,7 @@ export function UserInviteForm({
 }: UserInviteFormProps) {
   const action = inviteUser.bind(null, locale);
   const [isPending, setIsPending] = useState(false);
-  const assignableRoles = roles.filter((role) => canManageUserRole(actorRoles, role));
+  const assignableRoles = roles.filter((role) => canAssignUserRole(actorRoles, role));
   const defaultRole = assignableRoles.includes("apprentice") ? "apprentice" : assignableRoles[0];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

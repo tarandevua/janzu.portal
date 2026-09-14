@@ -52,7 +52,7 @@ import {
 import { UserRoleEditor } from "@/features/user-management/components/user-role-editor";
 import type { Locale } from "@/lib/i18n/config";
 import { roles, type ManagedUser, type ManagedUserFilters, type Role } from "@/server/models/rbac.model";
-import { canManageUserRole } from "@/server/services/rbac.service";
+import { canAssignUserRole } from "@/server/services/rbac.service";
 
 type UserManagementDictionary = {
   title: string;
@@ -412,7 +412,7 @@ export function UserRoleManagementTable({
   dictionary,
 }: UserRoleManagementTableProps) {
   const router = useRouter();
-  const assignableRoles = roles.filter((role) => canManageUserRole(actorRoles, role));
+  const assignableRoles = roles.filter((role) => canAssignUserRole(actorRoles, role));
   const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1);
   const [isPending, startTransition] = useTransition();
   const [isShowingSkeleton, setIsShowingSkeleton] = useState(false);

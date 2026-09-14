@@ -9,7 +9,11 @@ import {
   listUserRoles,
   removeRoleFromUser,
 } from "@/server/repositories/rbac.repository";
-import { canManageUserRole, hasPermission } from "@/server/services/rbac.service";
+import {
+  canAssignUserRole,
+  canManageUserRole,
+  hasPermission,
+} from "@/server/services/rbac.service";
 import { sendInviteEmail } from "@/server/services/email.service";
 import type { Database } from "@/types/database";
 
@@ -57,7 +61,7 @@ export async function assignManagedUserRole(
 ) {
   const actorRoles = await listUserRoles(supabase, actorUserId);
 
-  if (!canManageUserRole(actorRoles, role)) {
+  if (!canAssignUserRole(actorRoles, role)) {
     throw new Error("You do not have permission to assign this role.");
   }
 
@@ -116,7 +120,7 @@ export async function inviteManagedUser(
 ) {
   const actorRoles = await listUserRoles(supabase, actorUserId);
 
-  if (!canManageUserRole(actorRoles, input.role)) {
+  if (!canAssignUserRole(actorRoles, input.role)) {
     throw new Error("You do not have permission to invite users with this role.");
   }
 
