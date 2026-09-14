@@ -444,11 +444,13 @@ Decide:
 
 #### TASK-701: Add audit logging
 
-**Status:** Ready  
+**Status:** Planned
 **Priority:** P1  
 **Dependencies:** None; extend with every sensitive workflow
 
 **Audit:** Role changes, supervision, training verification, visibility, agreement acceptance, certification overrides, assessment decisions, and certificate lifecycle.
+
+**Planning:** [TASK-701 implementation and validation](./task-701-audit-logging.md). Authorization, redaction, retention, and deleted-user behavior require acceptance of [DEC-08](../decisions/DEC-08-audit-logging.md) before the task is Ready.
 
 #### TASK-702: Add critical end-to-end tests
 
