@@ -315,14 +315,57 @@ function certificateFailureStatus(error: unknown) {
     : "certificate-action-failed";
 }
 
-export async function issueCertificateAction(locale: Locale, formData: FormData) {
-  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+export type CertificateIssueInlineActionResult =
+  | { ok: true; status: "certificate-issued" }
+  | {
+      ok: false;
+      status:
+        | "auth-required"
+        | "certificate-action-invalid"
+        | "certificate-template-unconfigured"
+        | "certificate-action-failed";
+      message: string | null;
+    };
+
+export async function issueCertificateInline(
+  locale: Locale,
+  formData: FormData
+): Promise<CertificateIssueInlineActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { ok: false, status: "auth-required", message: null };
+  }
+
   const parsed = certificateIssueSchema.safeParse({ journeyId: formData.get("journeyId") });
-  if (!parsed.success) certificateRedirect(locale, "certificate-action-invalid");
-  try { await issueDigitalCertificate(supabase, user.id, parsed.data.journeyId); }
-  catch (error) { certificateRedirect(locale, certificateFailureStatus(error)); }
+  if (!parsed.success) {
+    return { ok: false, status: "certificate-action-invalid", message: null };
+  }
+
+  try {
+    await issueDigitalCertificate(supabase, user.id, parsed.data.journeyId);
+  } catch (error) {
+    console.error("Certificate issuance failed.", {
+      journeyId: parsed.data.journeyId,
+      error: error instanceof Error ? error.message : "Unknown certificate issuance error",
+    });
+    return {
+      ok: false,
+      status: certificateFailureStatus(error),
+      message: error instanceof Error ? error.message : null,
+    };
+  }
+
   revalidatePath(`/${locale}/dashboard/certification`);
-  certificateRedirect(locale, "certificate-issued");
+  return { ok: true, status: "certificate-issued" };
+}
+
+export async function issueCertificateAction(locale: Locale, formData: FormData) {
+  const result = await issueCertificateInline(locale, formData);
+  if (!result.ok && result.status === "auth-required") {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+  certificateRedirect(locale, result.status);
 }
 
 export async function replaceCertificateAction(locale: Locale, formData: FormData) {
@@ -354,13 +397,53 @@ export async function revokeCertificateAction(locale: Locale, formData: FormData
 }
 
 export async function requestCertificateReplacementAction(locale: Locale, formData: FormData) {
-  const { supabase, user } = await getAuthenticatedAssessmentContext(locale);
+  const result = await requestCertificateReplacementInline(locale, formData);
+  if (!result.ok && result.status === "auth-required") {
+    redirect(`/${locale}/login?status=auth-required`);
+  }
+  const certificateId = formData.get("certificateId");
+  certificateRedirect(
+    locale,
+    result.status,
+    typeof certificateId === "string" ? certificateId : undefined
+  );
+}
+
+export type CertificateReplacementRequestInlineResult =
+  | { ok: true; status: "certificate-replacement-requested" }
+  | {
+      ok: false;
+      status: "auth-required" | "certificate-action-invalid" | "certificate-action-failed";
+    };
+
+export async function requestCertificateReplacementInline(
+  locale: Locale,
+  formData: FormData
+): Promise<CertificateReplacementRequestInlineResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, status: "auth-required" };
+
   const parsed = certificateReplacementRequestSchema.safeParse({ certificateId: formData.get("certificateId"), reason: formData.get("reason") });
-  if (!parsed.success) certificateRedirect(locale, "certificate-action-invalid");
-  try { await requestDigitalCertificateReplacement(supabase, user.id, parsed.data.certificateId, parsed.data.reason); }
-  catch { certificateRedirect(locale, "certificate-action-failed", parsed.data.certificateId); }
+  if (!parsed.success) return { ok: false, status: "certificate-action-invalid" };
+
+  try {
+    await requestDigitalCertificateReplacement(
+      supabase,
+      user.id,
+      parsed.data.certificateId,
+      parsed.data.reason
+    );
+  } catch (error) {
+    console.error("Certificate replacement request failed.", {
+      certificateId: parsed.data.certificateId,
+      error: error instanceof Error ? error.message : "Unknown replacement request error",
+    });
+    return { ok: false, status: "certificate-action-failed" };
+  }
+
   revalidatePath(`/${locale}/dashboard/certification`);
-  certificateRedirect(locale, "certificate-replacement-requested");
+  return { ok: true, status: "certificate-replacement-requested" };
 }
 
 export async function rejectCertificateReplacementAction(locale: Locale, formData: FormData) {

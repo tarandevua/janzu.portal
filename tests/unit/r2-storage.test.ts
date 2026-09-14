@@ -6,6 +6,7 @@ import {
   MAX_LOCATION_IMAGE_UPLOAD_BYTES,
   MAX_LOCATION_IMAGE_UPLOADS,
   createR2AuthorizationHeader,
+  getPrivateCertificateObjectLocation,
   isAllowedR2ImageKey,
   validateLocationImageUploadFiles,
   validateEventImageUploadFiles,
@@ -51,6 +52,31 @@ describe("avatar upload validation", () => {
     expect(getR2MediaUrl("avatars/user-id/profile image.jpg")).toBe(
       "/api/media/r2/avatars/user-id/profile%20image.jpg"
     );
+  });
+
+  it("routes signatures and generated certificates to separate private buckets", () => {
+    const storage = {
+      defaultBucket: "janzu",
+      signaturesBucket: "certificate-signatures",
+      signaturesJurisdiction: "us" as const,
+    };
+
+    expect(getPrivateCertificateObjectLocation(
+      "certificate-signatures/v1/maria-ornelas.png",
+      storage
+    )).toEqual({
+      bucket: "certificate-signatures",
+      key: "v1/maria-ornelas.png",
+      jurisdiction: "us",
+    });
+    expect(getPrivateCertificateObjectLocation(
+      "certificates/00000000-0000-4000-8000-000000000001/certificate.pdf",
+      storage
+    )).toEqual({
+      bucket: "janzu",
+      key: "certificates/00000000-0000-4000-8000-000000000001/certificate.pdf",
+      jurisdiction: "default",
+    });
   });
 
   it("only allows jpg avatar image keys to be served", () => {

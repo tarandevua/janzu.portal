@@ -312,7 +312,8 @@ begin
   if target_operation = 'issue' then
     select * into journey from public.certification_journeys where id = target_journey_id;
     if journey.id is null or journey.state <> 'assessment_passed' or journey.certification_status <> 'pending'
-      or exists (select 1 from public.certificates where member_user_id = journey.trainee_user_id and status = 'active') then
+      or exists (select 1 from public.certificates
+        where certificates.member_user_id = journey.trainee_user_id and certificates.status = 'active') then
       raise exception 'The journey is not ready for certificate issuance' using errcode = '23514';
     end if;
     select * into passed_assessment from public.assessments

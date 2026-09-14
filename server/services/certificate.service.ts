@@ -1,6 +1,8 @@
 import "server-only";
 
 import crypto from "node:crypto";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import { getClientEnv } from "@/lib/env";
 import {
@@ -27,17 +29,29 @@ import {
 } from "@/server/services/r2-storage.service";
 
 export class CertificateTemplateNotConfiguredError extends Error {
-  constructor() {
-    super("The production certificate template is not configured.");
+  constructor(message = "The production certificate template is not configured.") {
+    super(message);
     this.name = "CertificateTemplateNotConfiguredError";
   }
 }
 
+const certificateLogoPromise = readFile(path.join(process.cwd(), "public", "school_logo.png"))
+  .then((bytes) => new Uint8Array(bytes))
+  .catch(() => null);
+
 async function readApprovedSignature(path: string, expectedSha256: string) {
   const result = await fetchPrivateCertificateObject(path);
-  if (!result.ok) throw new CertificateTemplateNotConfiguredError();
+  if (!result.ok) {
+    throw new CertificateTemplateNotConfiguredError(
+      `The approved certificate signature could not be loaded: ${result.message}`
+    );
+  }
   const bytes = new Uint8Array(await result.response.arrayBuffer());
-  if (sha256Bytes(bytes) !== expectedSha256) throw new CertificateTemplateNotConfiguredError();
+  if (sha256Bytes(bytes) !== expectedSha256) {
+    throw new CertificateTemplateNotConfiguredError(
+      "The approved certificate signature failed its integrity check."
+    );
+  }
   return bytes;
 }
 
@@ -70,6 +84,7 @@ async function prepareCertificateArtifact(context: CertificateGenerationContext)
     issuerName: context.issuerName,
     templateVersion: context.templateVersion,
     verificationUrl,
+    issuerLogo: await certificateLogoPromise,
     signatoryOne: { name: context.signatoryOneName, png: signatureOne },
     signatoryTwo: { name: context.signatoryTwoName, png: signatureTwo },
   });

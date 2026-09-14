@@ -10,13 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   decideCertificateAppealAction,
-  issueCertificateAction,
   rejectCertificateReplacementAction,
   replaceCertificateAction,
-  requestCertificateReplacementAction,
   revokeCertificateAction,
   submitCertificateAppealAction,
 } from "@/features/certification/actions";
+import { CertificateIssueForm } from "@/features/certification/components/certificate-issue-form";
+import { CertificateReplacementRequestForm } from "@/features/certification/components/certificate-replacement-request-form";
 
 type CertificateDictionary = {
   certificateTitle: string; certificateDescription: string; certificateEmpty: string;
@@ -98,20 +98,21 @@ export function CertificateWorkflow({
                 <Button asChild><a href={`/api/certificates/${item.certificateId}/download`}>{dictionary.downloadCertificate}</a></Button>
               ) : null}
               {item.canIssue ? (
-                <form action={issueCertificateAction.bind(null, locale)}>
-                  <input type="hidden" name="journeyId" value={item.journeyId} />
-                  <Button type="submit" disabled={!item.templateReady}>{dictionary.issueCertificate}</Button>
-                </form>
+                <CertificateIssueForm
+                  locale={locale}
+                  journeyId={item.journeyId}
+                  templateReady={item.templateReady}
+                  dictionary={dictionary}
+                />
               ) : null}
             </div>
 
             {item.canRequestReplacement && item.certificateId ? (
-              <form action={requestCertificateReplacementAction.bind(null, locale)} className="grid gap-3 rounded-md border p-4">
-                <input type="hidden" name="certificateId" value={item.certificateId} />
-                <Label htmlFor={`replacement-request-${item.certificateId}`}>{dictionary.replacementReason}</Label>
-                <Textarea id={`replacement-request-${item.certificateId}`} name="reason" minLength={10} maxLength={1000} required placeholder={dictionary.replacementReasonPlaceholder} />
-                <Button type="submit" variant="outline">{dictionary.requestReplacement}</Button>
-              </form>
+              <CertificateReplacementRequestForm
+                locale={locale}
+                certificateId={item.certificateId}
+                dictionary={dictionary}
+              />
             ) : null}
 
             {item.replacementRequestStatus === "pending" ? (

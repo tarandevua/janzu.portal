@@ -10,6 +10,7 @@ export type CertificatePdfInput = {
   issuerName: string;
   templateVersion: string;
   verificationUrl: string;
+  issuerLogo?: Uint8Array | null;
   signatoryOne: { name: string; png: Uint8Array };
   signatoryTwo: { name: string; png: Uint8Array };
   testFixture?: boolean;
@@ -52,14 +53,30 @@ export async function generateCertificatePdf(input: CertificatePdfInput) {
     const textWidth = font.widthOfTextAtSize(text, size);
     page.drawText(text, { x: Math.max(42, (width - textWidth) / 2), y, size, font, color });
   };
+  const upperContentOffsetY = 20;
 
-  centered(input.issuerName, height - 82, 18, bold);
-  centered("CERTIFICADO DE PRACTICANTE JANZU", height - 130, 24, bold, rgb(0.07, 0.39, 0.48));
-  centered("CERTIFIED JANZU PRACTITIONER", height - 158, 18, bold, rgb(0.07, 0.39, 0.48));
-  centered("Se certifica que / This certifies that", height - 206, 12);
-  centered(input.officialName, height - 252, 28, bold, rgb(0.12, 0.12, 0.12));
-  centered("ha completado la formación, práctica y evaluación autorizada requerida", height - 286, 11);
-  centered("has completed the required authorized training, practice, and assessment", height - 304, 11);
+  if (input.issuerLogo) {
+    try {
+      const issuerLogo = await pdf.embedPng(input.issuerLogo);
+      const dimensions = issuerLogo.scaleToFit(240, 76);
+      page.drawImage(issuerLogo, {
+        x: (width - dimensions.width) / 2,
+        y: height - 21 - dimensions.height - upperContentOffsetY,
+        width: dimensions.width,
+        height: dimensions.height,
+      });
+    } catch {
+      centered(input.issuerName, height - 82 - upperContentOffsetY, 18, bold);
+    }
+  } else {
+    centered(input.issuerName, height - 82 - upperContentOffsetY, 18, bold);
+  }
+  centered("CERTIFICADO DE PRACTICANTE JANZU", height - 130 - upperContentOffsetY, 24, bold, rgb(0.07, 0.39, 0.48));
+  centered("CERTIFIED JANZU PRACTITIONER", height - 158 - upperContentOffsetY, 18, bold, rgb(0.07, 0.39, 0.48));
+  centered("Se certifica que / This certifies that", height - 206 - upperContentOffsetY, 12);
+  centered(input.officialName, height - 252 - upperContentOffsetY, 28, bold, rgb(0.12, 0.12, 0.12));
+  centered("ha completado la formación, práctica y evaluación autorizada requerida", height - 286 - upperContentOffsetY, 11);
+  centered("has completed the required authorized training, practice, and assessment", height - 304 - upperContentOffsetY, 11);
 
   page.drawText(`Fecha original de certificación / Original certification date: ${formatDate(input.originalCertificationDate, "es")} / ${formatDate(input.originalCertificationDate, "en")}`, {
     x: 70, y: 224, size: 9.5, font: regular, color: rgb(0.18, 0.18, 0.18),

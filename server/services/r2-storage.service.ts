@@ -66,7 +66,11 @@ type R2UploadConfig = {
   accessKeyId: string;
   secretAccessKey: string;
   bucket: string;
+  signaturesBucket: string;
+  signaturesJurisdiction: R2Jurisdiction;
 };
+
+type R2Jurisdiction = "default" | "eu" | "us" | "fedramp";
 
 export type R2ImageFetchResult =
   | { ok: true; response: Response; contentType: string; contentLength: string | null; etag: string | null }
@@ -105,18 +109,44 @@ function getR2Config(): R2UploadConfig | null {
       accessKeyId: env.CLOUDFLARE_R2_ACCESS_KEY_ID,
       secretAccessKey: env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
       bucket: env.CLOUDFLARE_R2_BUCKET,
+      signaturesBucket: env.CLOUDFLARE_R2_SIGNATURES_BUCKET,
+      signaturesJurisdiction: env.CLOUDFLARE_R2_SIGNATURES_JURISDICTION,
     };
   } catch (error) {
-    console.error("Cloudflare R2 avatar config is invalid.", error);
+    console.error("Cloudflare R2 config is invalid.", error);
 
     return null;
   }
 }
 
-function createR2ObjectUrl(config: R2UploadConfig, key: string) {
+function createR2ObjectUrl(
+  config: R2UploadConfig,
+  key: string,
+  bucket = config.bucket,
+  jurisdiction: R2Jurisdiction = "default"
+) {
+  const jurisdictionSegment = jurisdiction === "default" ? "" : `.${jurisdiction}`;
   return new URL(
-    `https://${config.accountId}.r2.cloudflarestorage.com/${config.bucket}/${encodeKeyPath(key)}`
+    `https://${config.accountId}${jurisdictionSegment}.r2.cloudflarestorage.com/${bucket}/${encodeKeyPath(key)}`
   );
+}
+
+export function getPrivateCertificateObjectLocation(
+  key: string,
+  storage: {
+    defaultBucket: string;
+    signaturesBucket: string;
+    signaturesJurisdiction: R2Jurisdiction;
+  }
+) {
+  const signaturePrefix = "certificate-signatures/";
+  return key.startsWith(signaturePrefix)
+    ? {
+        bucket: storage.signaturesBucket,
+        key: key.slice(signaturePrefix.length),
+        jurisdiction: storage.signaturesJurisdiction,
+      }
+    : { bucket: storage.defaultBucket, key, jurisdiction: "default" as const };
 }
 
 function getUploadErrorCode(status: number): Exclude<AvatarUploadResult, { ok: true }>["code"] {
@@ -740,7 +770,17 @@ export async function fetchPrivateCertificateObject(
   const config = getR2Config();
   if (!config) return { ok: false, status: 503, message: "Certificate storage is not configured." };
   const payloadHash = sha256Hex("");
-  const url = createR2ObjectUrl(config, key);
+  const location = getPrivateCertificateObjectLocation(key, {
+    defaultBucket: config.bucket,
+    signaturesBucket: config.signaturesBucket,
+    signaturesJurisdiction: config.signaturesJurisdiction,
+  });
+  const url = createR2ObjectUrl(
+    config,
+    location.key,
+    location.bucket,
+    location.jurisdiction
+  );
   try {
     const response = await fetch(url, {
       method: "GET",

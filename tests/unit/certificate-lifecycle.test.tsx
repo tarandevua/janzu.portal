@@ -4,6 +4,9 @@ import { PDFDocument } from "pdf-lib";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 import en from "@/messages/en.json";
 import es from "@/messages/es.json";
 import { CertificateWorkflow } from "@/features/certification/components/certificate-workflow";
@@ -68,7 +71,7 @@ describe("TASK-405 certificate lifecycle", () => {
     expect(normalizeCertificateNumber("JZ-2026-short")).toBeNull();
   });
 
-  it("generates a bilingual immutable PDF with a visible test-fixture watermark", async () => {
+  it("generates a bilingual immutable PDF and falls back to the issuer name without a logo", async () => {
     const bytes = await generateCertificatePdf({
       officialName: "María Ejemplo",
       certificateNumber: "JZ-2026-7K9M-X4QP-2D8R",
@@ -86,6 +89,25 @@ describe("TASK-405 certificate lifecycle", () => {
     expect(pdf.getTitle()).toContain("JZ-2026-7K9M-X4QP-2D8R");
     expect(pdf.getAuthor()).toBe("Escuela de Artes Acuáticas");
     expect(sha256Bytes(bytes)).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it("generates the certificate with an issuer logo", async () => {
+    const bytes = await generateCertificatePdf({
+      officialName: "María Ejemplo",
+      certificateNumber: "JZ-2026-7K9M-X4QP-2D8R",
+      originalCertificationDate: new Date("2026-08-20T00:00:00Z"),
+      documentIssuedAt: new Date("2026-08-29T00:00:00Z"),
+      issuerName: "Escuela de Artes Acuáticas",
+      issuerLogo: png,
+      templateVersion: "test-v1",
+      verificationUrl: "https://portal.example/en/certificates/verify/JZ-2026-7K9M-X4QP-2D8R",
+      signatoryOne: { name: "Maria Ornelas", png },
+      signatoryTwo: { name: "Iván Gonzáles", png },
+    });
+
+    const pdf = await PDFDocument.load(bytes);
+    expect(pdf.getPageCount()).toBe(1);
+    expect(pdf.getAuthor()).toBe("Escuela de Artes Acuáticas");
   });
 
   it("enforces lifecycle reasons and evidence at the server-validation boundary", () => {

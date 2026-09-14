@@ -98,6 +98,14 @@ select set_config('task.task_405_template_id',
   (select id::text from public.certificate_templates where version = 'v1'), false);
 
 set local role authenticated;
+select set_config('request.jwt.claim.sub', '14050000-0000-4000-8000-000000000004', true);
+select * from public.get_certificate_generation_context(
+  '14050000-0000-4000-8000-000000000004', 'issue',
+  current_setting('task.task_405_journey_id')::uuid, null, null
+);
+reset role;
+
+set local role authenticated;
 select set_config('request.jwt.claim.sub', '14050000-0000-4000-8000-000000000006', true);
 do $$
 begin
@@ -158,10 +166,16 @@ select set_config('request.jwt.claim.sub', '14050000-0000-4000-8000-000000000001
 select * from public.authorize_certificate_download(
   '14050000-0000-4000-8000-000000000001', 'b4050000-0000-4000-8000-000000000001'
 );
+select set_config('task.task_405_replacement_request_id',
+  (select (public.request_certificate_replacement(
+    '14050000-0000-4000-8000-000000000001', 'b4050000-0000-4000-8000-000000000001',
+    'The certificate name needs a documented correction.'
+  )).id::text), false);
 select set_config('request.jwt.claim.sub', '14050000-0000-4000-8000-000000000004', true);
 select public.replace_certificate(
   '14050000-0000-4000-8000-000000000004', 'b4050000-0000-4000-8000-000000000002',
-  'b4050000-0000-4000-8000-000000000001', 'Correcting an immutable certificate artifact.', null,
+  'b4050000-0000-4000-8000-000000000001', 'Correcting an immutable certificate artifact.',
+  current_setting('task.task_405_replacement_request_id')::uuid,
   'JZ-2026-DDDD-EEEE-FFFF', current_setting('task.task_405_template_id')::uuid,
   'certificates/14050000-0000-4000-8000-000000000001/b4050000-0000-4000-8000-000000000002.pdf',
   repeat('d', 64), 1100, repeat('a', 64), repeat('b', 64)
