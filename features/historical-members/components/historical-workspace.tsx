@@ -5,13 +5,22 @@ import type { Locale } from "@/lib/i18n/config";
 import type { HistoricalClaim, HistoricalEvent } from "@/server/models/historical-member.model";
 import { historicalMemberAction, type HistoricalActionState } from "@/features/historical-members/actions";
 import type en from "@/messages/en.json";
+import { StatusToast } from "@/components/status-toast";
 
 type Copy = typeof en.historicalMembers;
 const initial: HistoricalActionState = { status: "idle" };
 const inputClass = "w-full min-w-0 rounded-md border bg-background p-2 text-sm";
 const buttonClass = "rounded-md border px-3 py-2 text-sm font-medium disabled:opacity-50";
 function Status({ state, copy }: { state: HistoricalActionState; copy: Copy }) {
-  return <p role={state.status === "error" || state.status === "invalid" || state.status === "denied" ? "alert" : "status"} className="text-sm">{copy.results[state.status]}</p>;
+  const isError = state.status === "error" || state.status === "invalid" || state.status === "denied";
+  return <>
+    <StatusToast
+      message={state.status === "idle" ? null : copy.results[state.status]}
+      status={state.status}
+      variant={isError ? "error" : "success"}
+    />
+    <p role={isError ? "alert" : "status"} className="text-sm">{copy.results[state.status]}</p>
+  </>;
 }
 function ImportForm({ locale, copy }: { locale: Locale; copy: Copy }) {
   const [state, action, pending] = useActionState(historicalMemberAction.bind(null, locale), initial);

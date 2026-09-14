@@ -13,6 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { StatusToast } from "@/components/status-toast";
+import { statusToastVariant } from "@/lib/status-toast";
 
 type StateLabels = Record<CertificationJourneyState, string>;
 
@@ -90,6 +92,7 @@ export function CertificationJourneyReview({
         <CardDescription>{dictionary.reviewDescription}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
+        <StatusToast message={statusMessage} status={status} variant={statusToastVariant(status)} />
         {statusMessage ? (
           <Alert>
             <AlertDescription>{statusMessage}</AlertDescription>

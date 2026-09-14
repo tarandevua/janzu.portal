@@ -12,6 +12,8 @@ import { getLocationMediaItems } from "@/features/locations/utils/location-media
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusToast } from "@/components/status-toast";
+import { statusToastVariant } from "@/lib/status-toast";
 import {
   Table,
   TableBody,
@@ -189,6 +191,7 @@ export function LocationReviewQueue({
 
   return (
     <Card>
+      <StatusToast message={message} status={status} variant={statusToastVariant(status)} />
       <CardHeader>
         <CardTitle>{dictionary.reviewTitle}</CardTitle>
         <CardDescription>{dictionary.reviewDescription}</CardDescription>

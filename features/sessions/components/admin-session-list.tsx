@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useTransition, type ComponentProps, type FormEvent, type MouseEvent } from "react";
+import { toast } from "sonner";
 import type { Locale } from "@/lib/i18n/config";
 import type {
   AdminSession,
@@ -110,6 +111,7 @@ export function AdminSessionList({
 
   function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    toast.success(dictionary.applyFilters);
 
     const formData = new FormData(event.currentTarget);
     const params = new URLSearchParams();

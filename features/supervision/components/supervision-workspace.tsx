@@ -11,6 +11,7 @@ import {
   adminAssignInstructorAction,
 } from "@/features/supervision/actions";
 import { InstructorRequestForm } from "@/features/supervision/components/instructor-request-form";
+import { StatusToast } from "@/components/status-toast";
 import {
   CancelInstructorRequestForm,
   EndInstructorRelationshipForm,
@@ -123,6 +124,11 @@ export function SupervisionWorkspace({
 
   return (
     <div className="grid gap-4">
+      <StatusToast
+        message={statusMessage}
+        status={status}
+        variant={status === "assigned" ? "success" : "error"}
+      />
       {statusMessage ? (
         <p role="status" className="rounded-md border bg-muted p-3 text-sm">
           {statusMessage}

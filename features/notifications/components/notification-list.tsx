@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import type { Route } from "next";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition, type FormEvent } from "react";
 import { BellIcon, CheckCheckIcon, CheckIcon, ExternalLinkIcon } from "lucide-react";
+import { toast } from "sonner";
 import { PaginationControls } from "@/components/dashboard/pagination-controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -161,10 +162,30 @@ export function NotificationList({
   const markReadAction = markNotificationRead.bind(null, locale);
   const markAllReadAction = markAllNotificationsRead.bind(null, locale);
   const [isPaginating, setIsPaginating] = useState(false);
+  const [isMutating, startMutation] = useTransition();
 
   useEffect(() => {
     setIsPaginating(false);
   }, [notifications, page]);
+
+  function handleMarkAllRead(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    startMutation(() => {
+      void markAllReadAction()
+        .then(() => toast.success(dictionary.markAllRead))
+        .catch(() => toast.error(dictionary.invalid));
+    });
+  }
+
+  function handleMarkRead(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startMutation(() => {
+      void markReadAction(formData)
+        .then(() => toast.success(dictionary.markRead))
+        .catch(() => toast.error(dictionary.invalid));
+    });
+  }
 
   return (
     <Card>
@@ -181,8 +202,8 @@ export function NotificationList({
             {unreadCount} {dictionary.unread}
           </Badge>
           {unreadCount > 0 ? (
-            <form action={markAllReadAction}>
-              <Button type="submit" variant="outline" size="sm">
+            <form onSubmit={handleMarkAllRead}>
+              <Button type="submit" variant="outline" size="sm" disabled={isMutating}>
                 <CheckCheckIcon className="h-4 w-4" />
                 {dictionary.markAllRead}
               </Button>
@@ -261,13 +282,13 @@ export function NotificationList({
                             </Button>
                           ) : null}
                           {isUnread ? (
-                            <form action={markReadAction}>
+                            <form onSubmit={handleMarkRead}>
                               <input
                                 type="hidden"
                                 name="notificationId"
                                 value={notification.id}
                               />
-                              <Button type="submit" variant="secondary" size="sm">
+                              <Button type="submit" variant="secondary" size="sm" disabled={isMutating}>
                                 <CheckIcon className="h-4 w-4" />
                                 {dictionary.markRead}
                               </Button>

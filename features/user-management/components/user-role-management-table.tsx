@@ -44,6 +44,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusToast } from "@/components/status-toast";
 import {
   resendUserInvite,
   updateUserPublicProfile,
@@ -416,6 +417,21 @@ export function UserRoleManagementTable({
   const [isPending, startTransition] = useTransition();
   const [isShowingSkeleton, setIsShowingSkeleton] = useState(false);
   const isLoading = isPending || isShowingSkeleton;
+  const statusMessage = status === "assigned"
+    ? dictionary.assigned
+    : status === "removed"
+      ? dictionary.removed
+      : status === "public-profile-updated"
+        ? dictionary.publicProfileUpdated
+        : status === "public-profile-invalid"
+          ? dictionary.publicProfileInvalid
+          : status === "invalid"
+            ? dictionary.invalid
+            : status === "forbidden"
+              ? dictionary.forbidden
+              : status === "role-update-failed"
+                ? dictionary.roleUpdateFailed
+                : null;
 
   useEffect(() => {
     setIsShowingSkeleton(false);
@@ -430,6 +446,7 @@ export function UserRoleManagementTable({
 
   function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    toast.success(dictionary.applyFilters);
 
     const formData = new FormData(event.currentTarget);
     const params = new URLSearchParams();
@@ -449,7 +466,7 @@ export function UserRoleManagementTable({
       params.set("profile", profile);
     }
 
-    const query = params.toString();
+  const query = params.toString();
     navigateWithSkeleton(`/${locale}/dashboard/users${query ? `?${query}` : ""}`);
   }
 
@@ -467,6 +484,11 @@ export function UserRoleManagementTable({
         <CardDescription>{dictionary.description}</CardDescription>
       </CardHeader>
       <CardContent>
+        <StatusToast
+          message={statusMessage}
+          status={status}
+          variant={status === "assigned" || status === "removed" || status === "public-profile-updated" ? "success" : "error"}
+        />
         <form onSubmit={handleFilterSubmit} className="mb-4 grid gap-3 rounded-md border p-3 md:grid-cols-[1fr_12rem_13rem_auto_auto] md:items-end">
           <input type="hidden" name="usersPage" value="1" />
           <div className="grid gap-2">

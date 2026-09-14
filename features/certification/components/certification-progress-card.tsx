@@ -10,12 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/i18n/config";
 import { requestLevel2Review } from "@/features/certification/actions";
+import { StatusToast } from "@/components/status-toast";
+import { statusToastVariant } from "@/lib/status-toast";
 
 type StateLabels = Record<CertificationJourneyState, string>;
 
 type CertificationProgressCardProps = {
   progress: CertificationJourneySummary;
   locale: Locale;
+  status?: string;
   dictionary: {
     journeyDescription: string;
     countedSessions: string;
@@ -27,6 +30,9 @@ type CertificationProgressCardProps = {
     level2ReviewAvailable: string;
     level2ReviewUnavailable: string;
     requestLevel2Review: string;
+    readinessRequested: string;
+    readinessInvalid: string;
+    readinessFailed: string;
     decisionReasonLabel: string;
     readinessStatuses: Record<"pending" | "approved" | "rejected" | "revision_required" | "invalidated", string>;
   };
@@ -35,10 +41,19 @@ type CertificationProgressCardProps = {
 export function CertificationProgressCard({
   progress,
   locale,
+  status,
   dictionary,
 }: CertificationProgressCardProps) {
+  const statusMessage = status === "readiness-requested"
+    ? dictionary.readinessRequested
+    : status === "readiness-invalid"
+      ? dictionary.readinessInvalid
+      : status === "readiness-failed"
+        ? dictionary.readinessFailed
+        : null;
   return (
     <Card>
+      <StatusToast message={statusMessage} status={status} variant={statusToastVariant(status)} />
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>

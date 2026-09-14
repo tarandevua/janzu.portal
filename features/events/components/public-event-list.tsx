@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusToast } from "@/components/status-toast";
 
 type PublicEventListProps = {
   locale: Locale;
@@ -73,6 +74,11 @@ export function PublicEventList({ locale, events, isSignedIn, status, dictionary
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-6">
+      <StatusToast
+        message={message}
+        status={status}
+        variant={status === "rsvp-invalid" ? "error" : "success"}
+      />
       <div className="space-y-2">
         {isSignedIn ? (
           <Button asChild variant="ghost" className="w-fit">

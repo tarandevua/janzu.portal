@@ -6,10 +6,11 @@ import { listPublicLocations } from "@/server/services/location.service";
 
 type PublicLocationsPageProps = {
   params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ status?: string }>;
 };
 
-export default async function PublicLocationsPage({ params }: PublicLocationsPageProps) {
-  const { locale } = await params;
+export default async function PublicLocationsPage({ params, searchParams }: PublicLocationsPageProps) {
+  const [{ locale }, { status }] = await Promise.all([params, searchParams]);
   const supabase = await createSupabaseServerClient();
   const [{ data }, dictionary] = await Promise.all([
     supabase.auth.getUser(),
@@ -25,6 +26,7 @@ export default async function PublicLocationsPage({ params }: PublicLocationsPag
       locations={locations}
       canReview={Boolean(data.user)}
       currentUserId={data.user?.id ?? null}
+      status={status}
       dictionary={dictionary.locations}
     />
   );

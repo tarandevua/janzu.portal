@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { StatusToast } from "@/components/status-toast";
 import { updateEmailPreferences } from "@/features/settings/actions";
 import type { Locale } from "@/lib/i18n/config";
 import type { EmailPreference, EmailPreferenceKey } from "@/server/models/transactional-email.model";
@@ -61,6 +62,13 @@ export function EmailPreferencesForm({
     Object.fromEntries(preferences.map((item) => [item.key, item.enabled])) as Record<EmailPreferenceKey, boolean>
   );
   const action = updateEmailPreferences.bind(null, locale);
+  const statusMessage = status === "email-preferences-saved"
+    ? dictionary.emailPreferencesSaved
+    : status === "email-preferences-invalid"
+      ? dictionary.emailPreferencesInvalid
+      : status === "email-preferences-failed"
+        ? dictionary.emailPreferencesFailed
+        : null;
 
   return (
     <Card>
@@ -69,6 +77,11 @@ export function EmailPreferencesForm({
         <CardDescription>{dictionary.emailDescription}</CardDescription>
       </CardHeader>
       <CardContent>
+        <StatusToast
+          message={statusMessage}
+          status={status}
+          variant={status === "email-preferences-saved" ? "success" : "error"}
+        />
         {status === "email-preferences-saved" ? (
           <p className="mb-4 text-sm font-medium text-emerald-700" role="status">
             {dictionary.emailPreferencesSaved}

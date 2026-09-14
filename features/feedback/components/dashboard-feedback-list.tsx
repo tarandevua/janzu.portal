@@ -1,4 +1,10 @@
+"use client";
+
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import { useTransition, type FormEvent } from "react";
 import { StarIcon } from "lucide-react";
+import { toast } from "sonner";
 import { PaginationControls } from "@/components/dashboard/pagination-controls";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -193,6 +199,25 @@ export function DashboardFeedbackList({
   nextHref,
   dictionary,
 }: DashboardFeedbackListProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const participantId = new FormData(event.currentTarget).get("participantId");
+    const params = new URLSearchParams();
+
+    if (typeof participantId === "string" && participantId !== "all") {
+      params.set("participantId", participantId);
+    }
+
+    toast.success(dictionary.applyFilter);
+    startTransition(() => {
+      const query = params.toString();
+      router.push(`/${locale}/dashboard/feedback${query ? `?${query}` : ""}` as Route);
+    });
+  }
+
   return (
     <Card>
       <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -201,7 +226,7 @@ export function DashboardFeedbackList({
           <CardDescription>{dictionary.dashboardDescription}</CardDescription>
         </div>
         {canFilterParticipants ? (
-          <form method="get" className="flex min-w-64 gap-2">
+          <form onSubmit={handleFilterSubmit} className="flex min-w-64 gap-2">
             <Select name="participantId" defaultValue={selectedParticipantId ?? "all"}>
               <SelectTrigger aria-label={dictionary.participant}>
                 <SelectValue />
@@ -215,7 +240,7 @@ export function DashboardFeedbackList({
                 ))}
               </SelectContent>
             </Select>
-            <Button type="submit" variant="outline">
+            <Button type="submit" variant="outline" disabled={isPending}>
               {dictionary.applyFilter}
             </Button>
           </form>

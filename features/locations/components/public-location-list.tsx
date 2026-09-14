@@ -19,12 +19,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { StatusToast } from "@/components/status-toast";
+import { statusToastVariant } from "@/lib/status-toast";
 
 type PublicLocationListProps = {
   locale: Locale;
   locations: LocationWithMedia[];
   canReview: boolean;
   currentUserId: string | null;
+  status?: string;
   dictionary: {
     publicTitle: string;
     publicDescription: string;
@@ -49,6 +52,10 @@ type PublicLocationListProps = {
     helpful: string;
     markedHelpful: string;
     yourReview: string;
+    reviewSaved: string;
+    communityReviewInvalid: string;
+    helpfulUpdated: string;
+    helpfulInvalid: string;
   };
 };
 
@@ -112,6 +119,7 @@ export function PublicLocationList({
   locations,
   canReview,
   currentUserId,
+  status,
   dictionary,
 }: PublicLocationListProps) {
   const markers: MapMarker[] = locations.map((location) => ({
@@ -123,9 +131,19 @@ export function PublicLocationList({
     longitude: location.longitude,
     meta: getTypeLabel(location.locationType, dictionary),
   }));
+  const statusMessage = status === "review-saved"
+    ? dictionary.reviewSaved
+    : status === "review-invalid"
+      ? dictionary.communityReviewInvalid
+      : status === "helpful-updated"
+        ? dictionary.helpfulUpdated
+        : status === "helpful-invalid"
+          ? dictionary.helpfulInvalid
+          : null;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-6">
+      <StatusToast message={statusMessage} status={status} variant={statusToastVariant(status)} />
       <div className="space-y-2">
         {canReview ? (
           <Button asChild variant="ghost" className="w-fit">

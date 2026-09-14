@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { requestPractitionerSession } from "@/features/session-requests/actions";
 import type { Locale } from "@/lib/i18n/config";
 import type { SessionAvailabilitySlot } from "@/server/models/session-availability.model";
+import { StatusToast } from "@/components/status-toast";
 
 type SessionRequestFormProps = {
   locale: Locale;
@@ -44,6 +45,11 @@ export function SessionRequestForm({
 }: SessionRequestFormProps) {
   const action = requestPractitionerSession.bind(null, locale);
   const hasSlots = availableSlots.length > 0;
+  const statusMessage = status === "request-sent"
+    ? dictionary.sent
+    : status === "request-invalid"
+      ? dictionary.invalid
+      : null;
 
   return (
     <Card>
@@ -52,6 +58,11 @@ export function SessionRequestForm({
         <CardDescription>{dictionary.formDescription}</CardDescription>
       </CardHeader>
       <CardContent>
+        <StatusToast
+          message={statusMessage}
+          status={status}
+          variant={status === "request-sent" ? "success" : "error"}
+        />
         {status === "request-sent" ? (
           <p className="mb-4 text-sm font-medium text-emerald-700">{dictionary.sent}</p>
         ) : null}

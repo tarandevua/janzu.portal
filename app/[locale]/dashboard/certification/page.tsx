@@ -137,6 +137,7 @@ export default async function CertificationPage({ params, searchParams }: Certif
         <CertificationProgressCard
           progress={displayedJourney}
           locale={locale}
+          status={status}
           dictionary={dictionary.certification}
         />
       ),

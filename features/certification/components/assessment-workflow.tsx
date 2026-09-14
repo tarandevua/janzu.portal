@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { StatusToast } from "@/components/status-toast";
+import { statusToastVariant } from "@/lib/status-toast";
 import {
   decideAssessmentReview,
   recordAssessmentOutcomeAction,
@@ -120,6 +122,7 @@ export function AssessmentQueueSection({
           <CardDescription>{dictionary.assessmentDescription}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
+          <StatusToast message={statusMessage} status={status} variant={statusToastVariant(status)} />
           {statusMessage ? <Alert><AlertDescription>{statusMessage}</AlertDescription></Alert> : null}
           {items.length === 0 ? <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">{dictionary.assessmentEmpty}</div> : null}
           {items.map((item) => (

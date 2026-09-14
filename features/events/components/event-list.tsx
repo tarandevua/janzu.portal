@@ -6,6 +6,7 @@ import { PencilIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { StatusToast } from "@/components/status-toast";
 import {
   Sheet,
   SheetContent,
@@ -131,6 +132,11 @@ export function EventList({
         <CardDescription>{dictionary.listDescription}</CardDescription>
       </CardHeader>
       <CardContent>
+        <StatusToast
+          message={statusMessage}
+          status={status}
+          variant={status === "deleted" ? "success" : "error"}
+        />
         {statusMessage ? (
           <p className="mb-4 text-sm font-medium text-muted-foreground">{statusMessage}</p>
         ) : null}

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StatusToast } from "@/components/status-toast";
 
 type EventFormProps = {
   locale: Locale;
@@ -85,6 +86,11 @@ export function EventForm({ locale, status, event, dictionary }: EventFormProps)
 
   return (
     <form action={action} className="grid min-w-0 gap-4">
+      <StatusToast
+        message={message}
+        status={status}
+        variant={status === "created" || status === "updated" ? "success" : "error"}
+      />
       {event ? <input type="hidden" name="eventId" value={event.id} /> : null}
       {message ? (
         <Alert variant={status === "created" ? "default" : "destructive"}>

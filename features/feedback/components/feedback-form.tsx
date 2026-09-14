@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { StatusToast } from "@/components/status-toast";
 
 type FeedbackFormProps = {
   locale: Locale;
@@ -115,6 +116,11 @@ export function FeedbackForm({
         </div>
       </CardHeader>
       <CardContent>
+        <StatusToast
+          message={message}
+          status={status}
+          variant={status === "invalid" ? "error" : "success"}
+        />
         <form action={action} className="grid gap-4">
           {message ? (
             <Alert variant={status === "invalid" ? "destructive" : "default"}>

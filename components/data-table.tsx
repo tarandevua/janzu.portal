@@ -733,7 +733,18 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
               <Separator />
             </>
           )}
-          <form className="flex flex-col gap-4">
+          <form
+            id={`row-form-${item.id}`}
+            className="flex flex-col gap-4"
+            onSubmit={(event) => {
+              event.preventDefault()
+              toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+                loading: `Saving ${item.header}`,
+                success: "Done",
+                error: "Error",
+              })
+            }}
+          >
             <div className="flex flex-col gap-3">
               <Label htmlFor="header">Header</Label>
               <Input id="header" defaultValue={item.header} />
@@ -807,7 +818,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </form>
         </div>
         <SheetFooter className="mt-auto flex gap-2 sm:flex-col sm:space-x-0">
-          <Button className="w-full">Submit</Button>
+          <Button type="submit" form={`row-form-${item.id}`} className="w-full">Submit</Button>
           <SheetClose asChild>
             <Button variant="outline" className="w-full">
               Done

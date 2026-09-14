@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { StatusToast } from "@/components/status-toast";
 
 type LocationFormProps = {
   locale: Locale;
@@ -83,6 +84,11 @@ export function LocationForm({
 
   const form = (
     <form action={formAction} className="grid gap-4">
+          <StatusToast
+            message={message}
+            status={status}
+            variant={isError ? "error" : "success"}
+          />
           {message ? (
             <Alert variant={isError ? "destructive" : "default"}>
               <AlertDescription>{message}</AlertDescription>

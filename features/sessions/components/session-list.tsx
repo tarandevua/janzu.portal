@@ -1,5 +1,11 @@
+"use client";
+
+import Link from "next/link";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import type { Client } from "@/server/models/client.model";
-import type { ComponentProps } from "react";
+import { useTransition, type ComponentProps, type FormEvent } from "react";
+import { toast } from "sonner";
 import type { SessionFeedback } from "@/server/models/feedback.model";
 import type { Session } from "@/server/models/session.model";
 import type { Locale } from "@/lib/i18n/config";
@@ -81,8 +87,26 @@ export function SessionList({
   dictionary,
   feedbackDictionary,
 }: SessionListProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const clientNames = new Map(clients.map((client) => [client.id, client.name]));
   const feedbackBySessionId = new Map(feedbackLinks.map((feedback) => [feedback.sessionId, feedback]));
+
+  function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const validation = new FormData(event.currentTarget).get("validation");
+    const params = new URLSearchParams();
+
+    if (typeof validation === "string" && validation !== "all") {
+      params.set("validation", validation);
+    }
+
+    toast.success(dictionary.applyFilters);
+    startTransition(() => {
+      const query = params.toString();
+      router.push(`/${locale}/dashboard/sessions${query ? `?${query}` : ""}` as Route);
+    });
+  }
 
   return (
     <Card>
@@ -92,7 +116,7 @@ export function SessionList({
       </CardHeader>
       <CardContent>
           <form
-            action={`/${locale}/dashboard/sessions`}
+            onSubmit={handleFilterSubmit}
             className="mb-4 grid gap-3 rounded-md border p-3 md:grid-cols-[12rem_auto] md:items-end"
           >
             <div className="grid gap-2">
@@ -109,11 +133,11 @@ export function SessionList({
               </Select>
             </div>
             <div className="flex gap-2">
-              <Button type="submit">
+              <Button type="submit" disabled={isPending}>
                 {dictionary.applyFilters}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <a href={resetHref}>{dictionary.clearFilters}</a>
+                <Link href={resetHref as Route}>{dictionary.clearFilters}</Link>
               </Button>
             </div>
           </form>

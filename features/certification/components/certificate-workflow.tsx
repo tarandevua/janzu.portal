@@ -17,6 +17,8 @@ import {
 } from "@/features/certification/actions";
 import { CertificateIssueForm } from "@/features/certification/components/certificate-issue-form";
 import { CertificateReplacementRequestForm } from "@/features/certification/components/certificate-replacement-request-form";
+import { StatusToast } from "@/components/status-toast";
+import { statusToastVariant } from "@/lib/status-toast";
 
 type CertificateDictionary = {
   certificateTitle: string; certificateDescription: string; certificateEmpty: string;
@@ -58,6 +60,7 @@ export function CertificateWorkflow({
         <CardDescription>{dictionary.certificateDescription}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
+        <StatusToast message={statusMessage} status={status} variant={statusToastVariant(status)} />
         {statusMessage ? <Alert><AlertDescription>{statusMessage}</AlertDescription></Alert> : null}
         {items.length === 0 ? <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">{dictionary.certificateEmpty}</div> : null}
         {items.map((item) => (

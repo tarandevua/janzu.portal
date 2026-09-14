@@ -14,6 +14,7 @@ import {
 import { reviewSessionRequest } from "@/features/session-requests/actions";
 import type { Locale } from "@/lib/i18n/config";
 import type { SessionRequest } from "@/server/models/session-request.model";
+import { StatusToast } from "@/components/status-toast";
 
 type SessionRequestListProps = {
   locale: Locale;
@@ -74,6 +75,13 @@ export function SessionRequestList({
   dictionary,
 }: SessionRequestListProps) {
   const action = reviewSessionRequest.bind(null, locale);
+  const statusMessage = status === "request-review-invalid"
+    ? dictionary.reviewInvalid
+    : status === "request-accepted"
+      ? dictionary.reviewAccepted
+      : status === "request-declined"
+        ? dictionary.reviewDeclined
+        : null;
 
   return (
     <Card className="md:col-span-2">
@@ -82,6 +90,11 @@ export function SessionRequestList({
         <CardDescription>{dictionary.listDescription}</CardDescription>
       </CardHeader>
       <CardContent>
+        <StatusToast
+          message={statusMessage}
+          status={status}
+          variant={status === "request-accepted" || status === "request-declined" ? "success" : "error"}
+        />
         {status === "request-review-invalid" ? (
           <p className="mb-4 text-sm font-medium text-destructive">{dictionary.reviewInvalid}</p>
         ) : null}

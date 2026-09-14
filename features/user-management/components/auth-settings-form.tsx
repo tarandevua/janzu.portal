@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { StatusToast } from "@/components/status-toast";
 
 type AuthSettingsFormProps = {
   locale: Locale;
@@ -32,6 +33,11 @@ export function AuthSettingsForm({
 }: AuthSettingsFormProps) {
   const [isAllowed, setIsAllowed] = useState(allowUnknownMagicLinkLogin);
   const action = updateAuthSettings.bind(null, locale);
+  const statusMessage = status === "auth-settings-saved"
+    ? dictionary.authSettingsSaved
+    : status === "auth-settings-invalid"
+      ? dictionary.authSettingsInvalid
+      : null;
 
   return (
     <Card>
@@ -40,6 +46,11 @@ export function AuthSettingsForm({
         <CardDescription>{dictionary.authSettingsDescription}</CardDescription>
       </CardHeader>
       <CardContent>
+        <StatusToast
+          message={statusMessage}
+          status={status}
+          variant={status === "auth-settings-saved" ? "success" : "error"}
+        />
         {status === "auth-settings-saved" ? (
           <p className="mb-4 text-sm font-medium text-emerald-700">
             {dictionary.authSettingsSaved}
