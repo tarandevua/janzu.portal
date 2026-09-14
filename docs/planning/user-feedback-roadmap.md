@@ -363,7 +363,7 @@ Decide:
 
 #### TASK-405: Issue digital certificates and activate Facilitator
 
-**Status:** Verify
+**Status:** Done
 **Priority:** P2  
 **Dependencies:** TASK-404
 
