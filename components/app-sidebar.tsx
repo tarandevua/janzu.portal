@@ -118,7 +118,7 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
     }
   ],
   documents: [
-    { name: dictionary.historicalMembers, url: `/${locale}/dashboard/historical-members`, icon: FileTextIcon },
+    // { name: dictionary.historicalMembers, url: `/${locale}/dashboard/historical-members`, icon: FileTextIcon },
     ...(isTrainee ? [{
       name: dictionary.firstSteps,
       url: `/${locale}/dashboard/first-steps`,

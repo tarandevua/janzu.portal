@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, type ChangeEvent, type FormEvent } from "react";
+import React, { useEffect, useRef, useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { CircleHelpIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -112,6 +112,7 @@ export function PractitionerProfileForm({
   status,
 }: PractitionerProfileFormProps) {
   const formRef = useRef<HTMLFormElement | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
@@ -189,10 +190,17 @@ export function PractitionerProfileForm({
             <div className="grid gap-2">
               <Label htmlFor="avatarImage">{dictionary.profileImageUpload}</Label>
               <div className="flex items-center gap-3">
-                <Avatar className="h-24 w-24 shrink-0 rounded-lg">
-                  <AvatarImage src={avatarImageSrc} alt={fullName} className="object-cover" />
-                  <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
-                </Avatar>
+                <button
+                  type="button"
+                  aria-label={dictionary.profileImageUpload}
+                  className="shrink-0 cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  onClick={() => avatarInputRef.current?.click()}
+                >
+                  <Avatar className="h-24 w-24 rounded-lg">
+                    <AvatarImage src={avatarImageSrc} alt={fullName} className="object-cover" />
+                    <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
+                  </Avatar>
+                </button>
                 <div className="grid flex-1 gap-1">
                   <input
                     type="hidden"
@@ -201,6 +209,7 @@ export function PractitionerProfileForm({
                     value={profile?.profileImageUrl ?? ""}
                   />
                   <Input
+                    ref={avatarInputRef}
                     id="avatarImage"
                     name="avatarImage"
                     type="file"

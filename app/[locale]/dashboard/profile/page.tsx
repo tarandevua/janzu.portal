@@ -3,6 +3,7 @@ import { JanzuDashboardFrame } from "@/components/dashboard/janzu-dashboard-fram
 import { PractitionerProfileForm } from "@/features/practitioners/components/practitioner-profile-form";
 import { ProfileVisibilityForm } from "@/features/practitioners/components/profile-visibility-form";
 import { ProfileMapPreview } from "@/features/practitioners/components/profile-map-preview";
+import { ProfileReadinessCard } from "@/features/practitioners/components/profile-readiness-card";
 import { WhatsAppConsentForm } from "@/features/practitioners/components/whatsapp-consent-form";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
@@ -73,6 +74,10 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <ProfileReadinessCard
+          profile={profile}
+          dictionary={dictionary.dashboard.apprenticeData}
+        />
         <PractitionerProfileForm
           locale={locale}
           profile={profile}

@@ -30,10 +30,6 @@ import type { Locale } from "@/lib/i18n/config";
 import type { ApprenticeDashboardData } from "@/server/services/apprentice-dashboard.service";
 
 type ApprenticeDashboardDictionary = {
-  profileReadiness: string;
-  profileReadinessDescription: string;
-  profileFields: string;
-  editProfile: string;
   certificationProgress: string;
   validatedSessions: string;
   totalSessions: string;
@@ -58,8 +54,6 @@ type ApprenticeDashboardDictionary = {
   status: string;
   date: string;
   location: string;
-  publicProfile: string;
-  privateProfile: string;
   notStarted: string;
   firstSteps: string;
   firstStepsDescription: string;
@@ -173,9 +167,6 @@ export function ApprenticeDashboardContent({
   const certificationDescription = data.certification
     ? `${data.certification.validatedSessionsCount}/${data.certification.requiredSessionsCount} ${dictionary.certificationRequired}`
     : dictionary.notStarted;
-  const showProfileReadiness =
-    data.profileCompletion.completedFields < data.profileCompletion.totalFields;
-
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
@@ -199,44 +190,6 @@ export function ApprenticeDashboardContent({
           </CardContent>
         </Card>
         ) : null}
-        {showProfileReadiness ? (
-          <Card>
-            <CardHeader className="flex-row items-start justify-between gap-4">
-              <div>
-                <CardTitle>{dictionary.profileReadiness}</CardTitle>
-                <CardDescription>{dictionary.profileReadinessDescription}</CardDescription>
-              </div>
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/${locale}/dashboard/profile`}>{dictionary.editProfile}</Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div
-                aria-label={dictionary.profileReadiness}
-                aria-valuemax={100}
-                aria-valuemin={0}
-                aria-valuenow={data.profileCompletion.percentComplete}
-                className="h-3 overflow-hidden rounded-full bg-muted"
-                role="progressbar"
-              >
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${data.profileCompletion.percentComplete}%` }}
-                />
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                <span>
-                  {data.profileCompletion.completedFields}/{data.profileCompletion.totalFields}{" "}
-                  {dictionary.profileFields}
-                </span>
-                <Badge variant={data.profile?.isPublic ? "default" : "secondary"}>
-                  {data.profile?.isPublic ? dictionary.publicProfile : dictionary.privateProfile}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ) : null}
-
         {data.onboarding.complete ? (
         <>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
