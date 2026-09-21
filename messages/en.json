@@ -10,6 +10,8 @@
       "submit": "Send magic link",
       "sending": "Sending...",
       "success": "Check your email for the sign-in link.",
+      "successTitle": "Check your email",
+      "successDescription": "We sent a secure sign-in link to the email address below. You can close this page after opening the link.",
       "invalidEmail": "Enter a valid email address.",
       "genericError": "We could not send the magic link. Try again.",
       "authRequired": "Please sign in to continue.",

@@ -10,6 +10,8 @@
       "submit": "Enviar enlace magico",
       "sending": "Enviando...",
       "success": "Revisa tu correo para acceder con el enlace.",
+      "successTitle": "Revisa tu correo",
+      "successDescription": "Enviamos un enlace seguro de acceso a la dirección de correo que aparece abajo. Puedes cerrar esta página después de abrir el enlace.",
       "invalidEmail": "Ingresa un correo electronico valido.",
       "genericError": "No pudimos enviar el enlace magico. Intentalo nuevamente.",
       "authRequired": "Inicia sesion para continuar.",
