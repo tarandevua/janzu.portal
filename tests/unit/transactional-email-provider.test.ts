@@ -2,7 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { sendTransactionalEmailMessage } from "@/server/services/email.service";
+import {
+  EmailDeliveryError,
+  sendTransactionalEmailMessage,
+} from "@/server/services/email.service";
 
 const firstDeliveryId = "50000000-0000-4000-8000-000000000001";
 const secondDeliveryId = "50000000-0000-4000-8000-000000000002";
@@ -65,5 +68,29 @@ describe("TASK-502 Brevo provider idempotency", () => {
     expect(requestBody(0).headers.idempotencyKey).toBe(firstDeliveryId);
     expect(requestBody(1).headers.idempotencyKey).toBe(firstDeliveryId);
     expect(requestBody(2).headers.idempotencyKey).toBe(secondDeliveryId);
+  });
+
+  it("captures sanitized Brevo error metadata without retaining the response body", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: vi.fn().mockResolvedValue({
+        code: "invalid_parameter",
+        message: "Sender sender@example.test is not verified",
+        ignored: "must not be retained",
+      }),
+    });
+
+    const error = await send(firstDeliveryId).catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(EmailDeliveryError);
+    expect(error).toMatchObject({
+      code: "email_provider_http_400",
+      retryable: false,
+      providerStatus: 400,
+      providerCode: "invalid_parameter",
+      providerMessage: "Sender [redacted-email] is not verified",
+    });
+    expect(error).not.toHaveProperty("ignored");
   });
 });

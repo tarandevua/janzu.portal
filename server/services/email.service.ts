@@ -29,14 +29,42 @@ type BrevoEmail = {
 };
 
 export class EmailDeliveryError extends Error {
+  readonly providerStatus?: number;
+  readonly providerCode?: string;
+  readonly providerMessage?: string;
+
   constructor(
     message: string,
     readonly code: string,
-    readonly retryable: boolean
+    readonly retryable: boolean,
+    provider?: {
+      status?: number;
+      code?: string;
+      message?: string;
+    }
   ) {
     super(message);
     this.name = "EmailDeliveryError";
+    this.providerStatus = provider?.status;
+    this.providerCode = provider?.code;
+    this.providerMessage = provider?.message;
   }
+}
+
+const EMAIL_ADDRESS_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+const MAX_PROVIDER_DETAIL_LENGTH = 500;
+
+function sanitizeProviderDetail(value: unknown) {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const sanitized = value
+    .replace(EMAIL_ADDRESS_PATTERN, "[redacted-email]")
+    .trim()
+    .slice(0, MAX_PROVIDER_DETAIL_LENGTH);
+
+  return sanitized || undefined;
 }
 
 function escapeHtml(value: string) {
@@ -103,12 +131,22 @@ async function sendBrevoEmail(email: BrevoEmail) {
 
   if (!response.ok) {
     const retryable = response.status === 429 || response.status >= 500;
+    const providerError = (await response.json().catch(() => null)) as {
+      code?: unknown;
+      message?: unknown;
+    } | null;
+
     throw new EmailDeliveryError(
       retryable
         ? "The email provider temporarily rejected the request."
         : "The email provider rejected the request.",
       `email_provider_http_${response.status}`,
-      retryable
+      retryable,
+      {
+        status: response.status,
+        code: sanitizeProviderDetail(providerError?.code),
+        message: sanitizeProviderDetail(providerError?.message),
+      }
     );
   }
 

@@ -14,6 +14,7 @@ import {
 } from "@/server/services/user-management.service";
 import { EmailDeliveryError } from "@/server/services/email.service";
 import { updateAdminAuthSettings } from "@/server/services/platform-settings.service";
+import { logUserInviteFailure } from "@/server/services/user-invite-logging.service";
 import {
   authSettingsSchema,
   userPublicProfileSchema,
@@ -152,6 +153,8 @@ export async function inviteUser(
       roleLabel: parsed.data.role,
     });
   } catch (error) {
+    logUserInviteFailure("create", error);
+
     if (
       error instanceof EmailDeliveryError
       && error.code === "email_provider_http_401"
@@ -203,6 +206,8 @@ export async function resendUserInvite(
   try {
     await resendManagedUserInvite(supabase, user.id, parsed.data.userId, locale);
   } catch (error) {
+    logUserInviteFailure("resend", error);
+
     if (error instanceof UserInviteResendError) {
       return {
         ok: false,
