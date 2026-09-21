@@ -49,6 +49,7 @@ export type RolePermission =
   | "users:manage"
   | "locations:approve"
   | "certifications:approve"
+  | "events:view"
   | "events:manage"
   | "sessions:facilitate"
   | "clients:manage"

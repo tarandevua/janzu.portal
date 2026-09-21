@@ -1,5 +1,6 @@
 "use server";
 
+import type { Route } from "next";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
@@ -49,6 +50,21 @@ export type LocationPermanentDeleteActionResult = {
     | "permanent-delete-invalid"
     | "permanent-delete-forbidden";
 };
+
+function buildCommunityLocationsRedirect(
+  locale: Locale,
+  formData: FormData,
+  status: string
+): Route {
+  const params = new URLSearchParams({ status });
+
+  if (formData.get("returnTo") === "dashboard") {
+    params.set("tab", "locations");
+    return `/${locale}/dashboard/locations?${params.toString()}` as Route;
+  }
+
+  return `/${locale}/locations?${params.toString()}` as Route;
+}
 
 export async function submitLocation(locale: Locale, formData: FormData) {
   const supabase = await createSupabaseServerClient();
@@ -360,7 +376,7 @@ export async function submitLocationCommunityReview(locale: Locale, formData: Fo
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/locations?status=review-invalid`);
+    redirect(buildCommunityLocationsRedirect(locale, formData, "review-invalid"));
   }
 
   await saveLocationCommunityReview(
@@ -372,7 +388,8 @@ export async function submitLocationCommunityReview(locale: Locale, formData: Fo
   );
 
   revalidatePath(`/${locale}/locations`);
-  redirect(`/${locale}/locations?status=review-saved`);
+  revalidatePath(`/${locale}/dashboard/locations`);
+  redirect(buildCommunityLocationsRedirect(locale, formData, "review-saved"));
 }
 
 export async function toggleHelpfulLocationReview(locale: Locale, formData: FormData) {
@@ -390,11 +407,12 @@ export async function toggleHelpfulLocationReview(locale: Locale, formData: Form
   });
 
   if (!parsed.success) {
-    redirect(`/${locale}/locations?status=helpful-invalid`);
+    redirect(buildCommunityLocationsRedirect(locale, formData, "helpful-invalid"));
   }
 
   await toggleLocationReviewHelpful(supabase, parsed.data.reviewId, user.id);
 
   revalidatePath(`/${locale}/locations`);
-  redirect(`/${locale}/locations?status=helpful-updated`);
+  revalidatePath(`/${locale}/dashboard/locations`);
+  redirect(buildCommunityLocationsRedirect(locale, formData, "helpful-updated"));
 }

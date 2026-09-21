@@ -34,6 +34,22 @@ export function listEventsForManagement(supabase: SupabaseServerClient, roles: R
   return listManagedEvents(supabase);
 }
 
+export function listEventsForDashboard(
+  supabase: SupabaseServerClient,
+  roles: Role[],
+  currentUserId: string
+) {
+  if (hasPermission(roles, "events:manage")) {
+    return listManagedEvents(supabase);
+  }
+
+  if (hasPermission(roles, "events:view")) {
+    return listPublishedEvents(supabase, currentUserId);
+  }
+
+  throw new Error("Event access is required.");
+}
+
 export function createManagedEvent(
   supabase: SupabaseServerClient,
   userId: string,

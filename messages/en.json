@@ -767,6 +767,7 @@
     "deletedTitle": "Deleted Locations",
     "deletedDescription": "Review soft-deleted locations and restore records when needed.",
     "publicTitle": "Janzu water locations",
+    "publicTab": "Locations",
     "publicDescription": "Browse approved pools, spas, and natural water locations shared by the Janzu community.",
     "backToPortal": "Back to portal",
     "name": "Name",

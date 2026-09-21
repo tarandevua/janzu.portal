@@ -11,6 +11,7 @@ import {
 import { LocationForm } from "@/features/locations/components/location-form";
 import { LocationList } from "@/features/locations/components/location-list";
 import { LocationReviewQueue } from "@/features/locations/components/location-review-queue";
+import { PublicLocationList } from "@/features/locations/components/public-location-list";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -20,6 +21,7 @@ import {
   listDeletedLocationQueue,
   listLocationReviewQueue,
   listMyLocations,
+  listPublicLocations,
 } from "@/server/services/location.service";
 import { getPrimaryRole, getRoleAccessList, hasPermission, hasRole } from "@/server/services/rbac.service";
 
@@ -29,7 +31,7 @@ type LocationsPageProps = {
 };
 
 function parseTab(value: string | undefined): LocationDashboardTab {
-  if (value === "approvals" || value === "deleted") {
+  if (value === "approvals" || value === "deleted" || value === "locations") {
     return value;
   }
 
@@ -74,10 +76,11 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
 
   const practitionerProfileRequired = !practitioner && !canApproveLocations;
 
-  const [myLocations, reviewLocations, deletedLocations] = await Promise.all([
+  const [myLocations, reviewLocations, deletedLocations, publicLocations] = await Promise.all([
     practitioner ? listMyLocations(supabase, data.user.id) : Promise.resolve([]),
     canApproveLocations ? listLocationReviewQueue(supabase) : Promise.resolve([]),
     canDeleteAnyLocations ? listDeletedLocationQueue(supabase) : Promise.resolve([]),
+    listPublicLocations(supabase, { communityReviewerUserId: data.user.id }),
   ]);
   const availableTabs = [
     ...(practitioner
@@ -126,6 +129,22 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
           },
         ]
       : []),
+    {
+      value: "locations" as const,
+      label: dictionary.locations.publicTab,
+      href: buildLocationsHref(locale, "locations") as Route,
+      content: (
+        <PublicLocationList
+          locale={locale}
+          locations={publicLocations}
+          canReview
+          currentUserId={data.user.id}
+          embedded
+          status={status}
+          dictionary={dictionary.locations}
+        />
+      ),
+    },
   ];
   const activeTab = availableTabs.some((item) => item.value === requestedTab)
     ? requestedTab
@@ -153,30 +172,27 @@ export default async function LocationsPage({ params, searchParams }: LocationsP
               description={dictionary.clients.profileRequiredDescription}
               actionLabel={dictionary.clients.profileRequiredAction}
             />
-          ) : (
-            <>
-              {practitioner ? (
-                <div className="flex justify-end">
-                  <DashboardActionDrawer
-                    title={dictionary.locations.formTitle}
-                    description={dictionary.locations.formDescription}
-                    triggerLabel={dictionary.locations.formTitle}
-                    cancelLabel={dictionary.common.cancel}
-                    closeLabel={dictionary.common.close}
-                    defaultOpen={shouldOpenCreateDrawer}
-                  >
-                    <LocationForm
-                      locale={locale}
-                      status={status}
-                      variant="plain"
-                      dictionary={dictionary.locations}
-                    />
-                  </DashboardActionDrawer>
-                </div>
-              ) : null}
-              <LocationDashboardTabs activeTab={activeTab} tabs={availableTabs} />
-            </>
-          )}
+          ) : null}
+          {practitioner ? (
+            <div className="flex justify-end">
+              <DashboardActionDrawer
+                title={dictionary.locations.formTitle}
+                description={dictionary.locations.formDescription}
+                triggerLabel={dictionary.locations.formTitle}
+                cancelLabel={dictionary.common.cancel}
+                closeLabel={dictionary.common.close}
+                defaultOpen={shouldOpenCreateDrawer}
+              >
+                <LocationForm
+                  locale={locale}
+                  status={status}
+                  variant="plain"
+                  dictionary={dictionary.locations}
+                />
+              </DashboardActionDrawer>
+            </div>
+          ) : null}
+          <LocationDashboardTabs activeTab={activeTab} tabs={availableTabs} />
         </div>
       </div>
     </JanzuDashboardFrame>

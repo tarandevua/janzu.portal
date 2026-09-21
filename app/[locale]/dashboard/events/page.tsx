@@ -7,7 +7,7 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
-import { listEventsForManagement } from "@/server/services/event.service";
+import { listEventsForDashboard } from "@/server/services/event.service";
 import { getPrimaryRole, getRoleAccessList, hasPermission, hasRole } from "@/server/services/rbac.service";
 
 type EventsPageProps = {
@@ -34,11 +34,14 @@ export default async function EventsPage({ params, searchParams }: EventsPagePro
     redirect(`/${locale}/dashboard`);
   }
 
-  if (!hasPermission(roles, "events:manage")) {
+  const canManageEvents = hasPermission(roles, "events:manage");
+  const canViewEvents = hasPermission(roles, "events:view");
+
+  if (!canManageEvents && !canViewEvents) {
     redirect(`/${locale}/dashboard`);
   }
 
-  const events = await listEventsForManagement(supabase, roles);
+  const events = await listEventsForDashboard(supabase, roles, data.user.id);
   const shouldOpenCreateDrawer = status === "invalid" || status === "forbidden";
 
   return (
@@ -55,21 +58,24 @@ export default async function EventsPage({ params, searchParams }: EventsPagePro
     >
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:p-6">
-          <div className="flex justify-end">
-            <EventCreateDrawer
-              defaultOpen={shouldOpenCreateDrawer}
-              dictionary={{
-                ...dictionary.events,
-                cancel: dictionary.common.cancel,
-                close: dictionary.common.close,
-              }}
-            >
-              <EventForm locale={locale} status={status} dictionary={dictionary.events} />
-            </EventCreateDrawer>
-          </div>
+          {canManageEvents ? (
+            <div className="flex justify-end">
+              <EventCreateDrawer
+                defaultOpen={shouldOpenCreateDrawer}
+                dictionary={{
+                  ...dictionary.events,
+                  cancel: dictionary.common.cancel,
+                  close: dictionary.common.close,
+                }}
+              >
+                <EventForm locale={locale} status={status} dictionary={dictionary.events} />
+              </EventCreateDrawer>
+            </div>
+          ) : null}
           <EventList
             locale={locale}
             events={events}
+            canManageEvents={canManageEvents}
             canDeleteEvents={hasRole(roles, "admin")}
             status={status}
             dictionary={dictionary.events}

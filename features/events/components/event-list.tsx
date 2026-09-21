@@ -27,6 +27,7 @@ import {
 type EventListProps = {
   locale: Locale;
   events: CommunityEvent[];
+  canManageEvents: boolean;
   canDeleteEvents: boolean;
   status?: string;
   dictionary: {
@@ -110,6 +111,7 @@ function getStatusLabel(status: CommunityEvent["status"], dictionary: EventListP
 export function EventList({
   locale,
   events,
+  canManageEvents,
   canDeleteEvents,
   status,
   dictionary,
@@ -154,7 +156,9 @@ export function EventList({
                   <TableHead>{dictionary.capacity}</TableHead>
                   <TableHead>{dictionary.images}</TableHead>
                   <TableHead>{dictionary.status}</TableHead>
-                  <TableHead className="text-right">{dictionary.edit}</TableHead>
+                  {canManageEvents ? (
+                    <TableHead className="text-right">{dictionary.edit}</TableHead>
+                  ) : null}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -173,40 +177,42 @@ export function EventList({
                         {getStatusLabel(event.status, dictionary)}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-2">
-                        <Sheet>
-                          <SheetTrigger asChild>
-                            <Button type="button" size="sm" variant="outline">
-                              <PencilIcon className="h-4 w-4" />
-                              {dictionary.edit}
-                            </Button>
-                          </SheetTrigger>
-                          <SheetContent className="flex h-full w-full max-w-[100vw] flex-col overflow-hidden sm:max-w-xl">
-                            <SheetHeader className="shrink-0 pr-8">
-                              <SheetTitle>{dictionary.edit}</SheetTitle>
-                              <SheetDescription>{dictionary.formDescription}</SheetDescription>
-                            </SheetHeader>
-                            <div className="min-h-0 flex-1 overflow-y-auto py-4">
-                              <EventForm
-                                locale={locale}
-                                status={status}
-                                event={event}
-                                dictionary={dictionary}
-                              />
-                            </div>
-                          </SheetContent>
-                        </Sheet>
-                        {canDeleteEvents ? (
-                          <EventDeleteButton
-                            locale={locale}
-                            eventId={event.id}
-                            label={dictionary.delete}
-                            confirmMessage={dictionary.deleteConfirm}
-                          />
-                        ) : null}
-                      </div>
-                    </TableCell>
+                    {canManageEvents ? (
+                      <TableCell>
+                        <div className="flex justify-end gap-2">
+                          <Sheet>
+                            <SheetTrigger asChild>
+                              <Button type="button" size="sm" variant="outline">
+                                <PencilIcon className="h-4 w-4" />
+                                {dictionary.edit}
+                              </Button>
+                            </SheetTrigger>
+                            <SheetContent className="flex h-full w-full max-w-[100vw] flex-col overflow-hidden sm:max-w-xl">
+                              <SheetHeader className="shrink-0 pr-8">
+                                <SheetTitle>{dictionary.edit}</SheetTitle>
+                                <SheetDescription>{dictionary.formDescription}</SheetDescription>
+                              </SheetHeader>
+                              <div className="min-h-0 flex-1 overflow-y-auto py-4">
+                                <EventForm
+                                  locale={locale}
+                                  status={status}
+                                  event={event}
+                                  dictionary={dictionary}
+                                />
+                              </div>
+                            </SheetContent>
+                          </Sheet>
+                          {canDeleteEvents ? (
+                            <EventDeleteButton
+                              locale={locale}
+                              eventId={event.id}
+                              label={dictionary.delete}
+                              confirmMessage={dictionary.deleteConfirm}
+                            />
+                          ) : null}
+                        </div>
+                      </TableCell>
+                    ) : null}
                   </TableRow>
                 ))}
               </TableBody>

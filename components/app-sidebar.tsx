@@ -66,6 +66,9 @@ type SidebarDictionary = {
 
 function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictionary) {
   const canManageUsers = access.some((item) => item.permissions.includes("users:manage"))
+  const canUseEvents = access.some((item) =>
+    item.permissions.includes("events:view") || item.permissions.includes("events:manage")
+  )
   const isTrainee = access.some((item) => item.role === "apprentice")
   const canUseSupervision = access.some((item) => ["admin", "instructor", "apprentice"].includes(item.role))
   const canUsePracticeRecords = access.some((item) => ["admin", "facilitator", "practitioner", "apprentice"].includes(item.role))
@@ -100,7 +103,7 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
       url: `/${locale}/dashboard/locations`,
       icon: MapPinnedIcon,
     }] : []),
-    ...(canManageUsers
+    ...(canUseEvents
       ? [
           {
             title: dictionary.events,
@@ -145,7 +148,7 @@ function getData(locale: Locale, access: RoleAccess[], dictionary: SidebarDictio
     },
     {
       name: dictionary.locationMap,
-      url: `/${locale}/locations`,
+      url: `/${locale}/dashboard/locations?tab=locations`,
       icon: MapPinnedIcon,
     },
     {

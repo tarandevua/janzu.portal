@@ -27,6 +27,7 @@ type PublicLocationListProps = {
   locations: LocationWithMedia[];
   canReview: boolean;
   currentUserId: string | null;
+  embedded?: boolean;
   status?: string;
   dictionary: {
     publicTitle: string;
@@ -119,6 +120,7 @@ export function PublicLocationList({
   locations,
   canReview,
   currentUserId,
+  embedded = false,
   status,
   dictionary,
 }: PublicLocationListProps) {
@@ -142,23 +144,33 @@ export function PublicLocationList({
           : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-6">
+    <div
+      className={
+        embedded
+          ? "flex w-full flex-col gap-6"
+          : "mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-6"
+      }
+    >
       <StatusToast message={statusMessage} status={status} variant={statusToastVariant(status)} />
-      <div className="space-y-2">
-        {canReview ? (
-          <Button asChild variant="ghost" className="w-fit">
-            <Link href={`/${locale}`}>
-              <Shell className="h-5 w-5" />
-              <span className="text-base font-semibold">Janzu Portal</span>
-            </Link>
-          </Button>
-        ) : null}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
-          <LanguageSelector locale={locale} />
+      {embedded ? (
+        <p className="max-w-3xl text-sm text-muted-foreground">{dictionary.publicDescription}</p>
+      ) : (
+        <div className="space-y-2">
+          {canReview ? (
+            <Button asChild variant="ghost" className="w-fit">
+              <Link href={`/${locale}`}>
+                <Shell className="h-5 w-5" />
+                <span className="text-base font-semibold">Janzu Portal</span>
+              </Link>
+            </Button>
+          ) : null}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
+            <LanguageSelector locale={locale} />
+          </div>
+          <p className="max-w-3xl text-muted-foreground">{dictionary.publicDescription}</p>
         </div>
-        <p className="max-w-3xl text-muted-foreground">{dictionary.publicDescription}</p>
-      </div>
+      )}
 
       <ClusteredMap markers={markers} emptyText={dictionary.emptyMap} className="min-h-[460px]" />
 
@@ -217,6 +229,7 @@ export function PublicLocationList({
                     </div>
                     <form action={submitLocationCommunityReview.bind(null, locale)} className="grid gap-2">
                       <Input type="hidden" name="locationId" value={location.id} />
+                      {embedded ? <Input type="hidden" name="returnTo" value="dashboard" /> : null}
                       <div className="grid gap-2 sm:grid-cols-[10rem_1fr]">
                         <div className="grid gap-1">
                           <Label htmlFor={`rating-${location.id}`}>{dictionary.rating}</Label>
@@ -265,6 +278,7 @@ export function PublicLocationList({
                               {review.reviewerId !== currentUserId ? (
                                 <form action={toggleHelpfulLocationReview.bind(null, locale)}>
                                   <Input type="hidden" name="reviewId" value={review.id} />
+                                  {embedded ? <Input type="hidden" name="returnTo" value="dashboard" /> : null}
                                   <Button type="submit" size="sm" variant="ghost">
                                     {review.viewerMarkedHelpful
                                       ? dictionary.markedHelpful

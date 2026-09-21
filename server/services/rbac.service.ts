@@ -25,7 +25,7 @@ export const roleAccess: Record<Role, Omit<RoleAccess, "role">> = {
   apprentice: {
     label: "Trainee",
     dashboardPath: "apprentice",
-    permissions: ["profile:manage"]
+    permissions: ["profile:manage", "events:view"]
   }
 };
 

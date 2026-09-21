@@ -15,6 +15,7 @@ type PublicEventListProps = {
   locale: Locale;
   events: CommunityEvent[];
   isSignedIn: boolean;
+  embedded?: boolean;
   status?: string;
   dictionary: {
     publicTitle: string;
@@ -68,32 +69,49 @@ function EventDescription({ html }: { html: string }) {
   );
 }
 
-export function PublicEventList({ locale, events, isSignedIn, status, dictionary }: PublicEventListProps) {
+export function PublicEventList({
+  locale,
+  events,
+  isSignedIn,
+  embedded = false,
+  status,
+  dictionary,
+}: PublicEventListProps) {
   const action = rsvpToEvent.bind(null, locale);
   const message = getMessage(status, dictionary);
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-6">
+    <main
+      className={
+        embedded
+          ? "flex w-full flex-col gap-6"
+          : "mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-6"
+      }
+    >
       <StatusToast
         message={message}
         status={status}
         variant={status === "rsvp-invalid" ? "error" : "success"}
       />
-      <div className="space-y-2">
-        {isSignedIn ? (
-          <Button asChild variant="ghost" className="w-fit">
-            <Link href={`/${locale}`}>
-              <Shell className="h-5 w-5" />
-              <span className="text-base font-semibold">Janzu Portal</span>
-            </Link>
-          </Button>
-        ) : null}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
-          <LanguageSelector locale={locale} />
+      {embedded ? (
+        <p className="max-w-3xl text-sm text-muted-foreground">{dictionary.publicDescription}</p>
+      ) : (
+        <div className="space-y-2">
+          {isSignedIn ? (
+            <Button asChild variant="ghost" className="w-fit">
+              <Link href={`/${locale}`}>
+                <Shell className="h-5 w-5" />
+                <span className="text-base font-semibold">Janzu Portal</span>
+              </Link>
+            </Button>
+          ) : null}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-3xl font-semibold tracking-normal">{dictionary.publicTitle}</h1>
+            <LanguageSelector locale={locale} />
+          </div>
+          <p className="max-w-3xl text-muted-foreground">{dictionary.publicDescription}</p>
         </div>
-        <p className="max-w-3xl text-muted-foreground">{dictionary.publicDescription}</p>
-      </div>
+      )}
 
       {message ? (
         <Alert variant={status === "rsvp-invalid" ? "destructive" : "default"}>

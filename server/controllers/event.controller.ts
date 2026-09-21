@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listUserRoles } from "@/server/repositories/rbac.repository";
 import {
   createManagedEvent,
-  listEventsForManagement,
+  listEventsForDashboard,
   listPublicEvents,
   rsvpCurrentUserToEvent,
 } from "@/server/services/event.service";
@@ -38,14 +38,14 @@ export async function listManagedCommunityEvents() {
 
   const roles = await listUserRoles(supabase, user.id);
 
-  if (!hasPermission(roles, "events:manage")) {
+  if (!hasPermission(roles, "events:manage") && !hasPermission(roles, "events:view")) {
     return NextResponse.json(
-      { data: null, error: { code: "FORBIDDEN", message: "Instructor access is required." } },
+      { data: null, error: { code: "FORBIDDEN", message: "Event access is required." } },
       { status: 403 }
     );
   }
 
-  const events = await listEventsForManagement(supabase, roles);
+  const events = await listEventsForDashboard(supabase, roles, user.id);
 
   return NextResponse.json({ data: events, error: null });
 }

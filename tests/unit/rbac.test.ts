@@ -34,6 +34,8 @@ describe("RBAC service", () => {
     expect(hasPermission(["instructor"], "trainees:supervise")).toBe(true);
     expect(hasPermission(["instructor"], "users:manage")).toBe(false);
     expect(hasPermission(["instructor"], "events:manage")).toBe(false);
+    expect(hasPermission(["apprentice"], "events:view")).toBe(true);
+    expect(hasPermission(["apprentice"], "events:manage")).toBe(false);
     expect(hasPermission(["practitioner"], "certifications:approve")).toBe(false);
   });
 
