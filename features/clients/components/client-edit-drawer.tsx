@@ -6,7 +6,7 @@ import { EditIcon, XIcon } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Client } from "@/server/models/client.model";
 import { ClientForm } from "@/features/clients/components/client-form";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -17,12 +17,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type ClientEditDrawerProps = {
   client: Client;
   locale: Locale;
   status?: string;
   shouldOpen?: boolean;
+  triggerVariant?: ButtonProps["variant"];
+  tooltip?: string;
   dictionary: {
     edit: string;
     editFormTitle: string;
@@ -37,6 +40,8 @@ export function ClientEditDrawer({
   locale,
   status,
   shouldOpen = false,
+  triggerVariant = "ghost",
+  tooltip,
   dictionary,
 }: ClientEditDrawerProps) {
   const [open, setOpen] = useState(shouldOpen);
@@ -47,14 +52,23 @@ export function ClientEditDrawer({
     }
   }, [shouldOpen]);
 
+  const trigger = (
+    <DrawerTrigger asChild>
+      <Button type="button" size="icon" variant={triggerVariant}>
+        <EditIcon className="h-4 w-4" />
+        <span className="sr-only">{dictionary.edit}</span>
+      </Button>
+    </DrawerTrigger>
+  );
+
   return (
     <Drawer direction="right" open={open} onOpenChange={setOpen} handleOnly>
-      <DrawerTrigger asChild>
-        <Button type="button" size="icon" variant="ghost">
-          <EditIcon className="h-4 w-4" />
-          <span className="sr-only">{dictionary.edit}</span>
-        </Button>
-      </DrawerTrigger>
+      {tooltip ? (
+        <Tooltip>
+          <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+          <TooltipContent>{tooltip}</TooltipContent>
+        </Tooltip>
+      ) : trigger}
       <DrawerContent className="inset-x-auto bottom-0 left-auto right-0 top-0 mt-0 flex h-[100dvh] max-h-[100dvh] w-[min(100vw,36rem)] max-w-[100vw] overflow-hidden rounded-none border-l">
         <DrawerHeader className="relative shrink-0 border-b pr-14 text-left">
           <DrawerTitle>{dictionary.editFormTitle}</DrawerTitle>

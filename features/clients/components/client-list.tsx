@@ -4,17 +4,19 @@ import React, { useEffect, useState } from "react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { MessageSquareText } from "lucide-react";
+import { MessageSquarePlus, MessageSquareText } from "lucide-react";
 import { toast } from "sonner";
 import type { Locale } from "@/lib/i18n/config";
 import type { Client, ClientOutreachPage } from "@/server/models/client.model";
 import { PaginationControls } from "@/components/dashboard/pagination-controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientEditDrawer } from "@/features/clients/components/client-edit-drawer";
 import {
   ClientOutreachDrawer,
+  OutreachRecordDialog,
   type ClientOutreachCopy,
 } from "@/features/clients/components/client-outreach-workspace";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -89,20 +91,16 @@ function ClientTableSkeleton() {
             <TableHead><Skeleton className="h-4 w-16" /></TableHead>
             <TableHead><Skeleton className="h-4 w-16" /></TableHead>
             <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-            <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
+            <TableHead className="w-32"><span className="sr-only">Actions</span></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {Array.from({ length: 5 }).map((_, index) => (
             <TableRow key={index}>
               <TableCell><Skeleton className="h-4 w-36" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-44" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-28" /></TableCell>
               <TableCell><Skeleton className="h-4 w-20" /></TableCell>
               <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-              <TableCell className="text-right"><Skeleton className="ml-auto h-9 w-20" /></TableCell>
+              <TableCell className="text-right"><Skeleton className="ml-auto h-10 w-[7.5rem]" /></TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -200,11 +198,9 @@ export function ClientList({
               <TableHeader>
                 <TableRow>
                   <TableHead>{dictionary.name}</TableHead>
-                  <TableHead>{dictionary.email}</TableHead>
-                  <TableHead>{dictionary.phone}</TableHead>
                   <TableHead>{dictionary.lifecycleStatus}</TableHead>
                   <TableHead>{dictionary.nextFollowUp}</TableHead>
-                  <TableHead className="w-12">
+                  <TableHead className="w-32">
                     <span className="sr-only">{dictionary.actions}</span>
                   </TableHead>
                 </TableRow>
@@ -214,9 +210,17 @@ export function ClientList({
                   const manageHref = `${closeHref}${closeHref.includes("?") ? "&" : "?"}outreachClientId=${client.id}` as Route;
                   return (
                   <TableRow key={client.id}>
-                    <TableCell className="font-medium">{client.name}</TableCell>
-                    <TableCell>{client.email ?? ""}</TableCell>
-                    <TableCell>{client.phone ?? ""}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link
+                        href={manageHref}
+                        className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        onClick={() => setOpenClientId(client.id)}
+                        onMouseEnter={() => router.prefetch(manageHref)}
+                        onFocus={() => router.prefetch(manageHref)}
+                      >
+                        {client.name}
+                      </Link>
+                    </TableCell>
                     <TableCell><Badge variant="outline">{dictionary.statusLabels[client.lifecycleStatus]}</Badge></TableCell>
                     <TableCell>
                       {client.nextFollowUp ? (
@@ -233,29 +237,46 @@ export function ClientList({
                       ) : <span className="text-muted-foreground">{dictionary.noFollowUp}</span>}
                     </TableCell>
                     <TableCell className="text-right">
-                      <ClientEditDrawer
-                        client={client}
-                        locale={locale}
-                        status={editingClientId === client.id ? status : undefined}
-                        shouldOpen={editingClientId === client.id && status === "edit-invalid"}
-                        dictionary={dictionary}
-                      />
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button asChild size="icon" variant="ghost">
-                            <Link
-                              href={manageHref}
-                              onClick={() => setOpenClientId(client.id)}
-                              onMouseEnter={() => router.prefetch(manageHref)}
-                              onFocus={() => router.prefetch(manageHref)}
-                            >
-                              <MessageSquareText className="h-4 w-4" />
-                              <span className="sr-only">{dictionary.manage}</span>
-                            </Link>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{dictionary.manage}</TooltipContent>
-                      </Tooltip>
+                      <ButtonGroup className="ml-auto" aria-label={dictionary.actions}>
+                        <ClientEditDrawer
+                          client={client}
+                          locale={locale}
+                          status={editingClientId === client.id ? status : undefined}
+                          shouldOpen={editingClientId === client.id && status === "edit-invalid"}
+                          triggerVariant="outline"
+                          tooltip={dictionary.edit}
+                          dictionary={dictionary}
+                        />
+                        <OutreachRecordDialog
+                          locale={locale}
+                          clientId={client.id}
+                          copy={dictionary}
+                          today={today}
+                          tooltip={dictionary.addOutreach}
+                          trigger={
+                            <Button type="button" size="icon" variant="outline">
+                              <MessageSquarePlus className="h-4 w-4" />
+                              <span className="sr-only">{dictionary.addOutreach}</span>
+                            </Button>
+                          }
+                        />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button asChild size="icon" variant="outline">
+                              <Link
+                                href={manageHref}
+                                onClick={() => setOpenClientId(client.id)}
+                                onMouseEnter={() => router.prefetch(manageHref)}
+                                onFocus={() => router.prefetch(manageHref)}
+                              >
+                                <MessageSquareText className="h-4 w-4" />
+                                <span className="sr-only">{dictionary.manage}</span>
+                              </Link>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>{dictionary.manage}</TooltipContent>
+                        </Tooltip>
+                      </ButtonGroup>
                     </TableCell>
                   </TableRow>
                 );})}

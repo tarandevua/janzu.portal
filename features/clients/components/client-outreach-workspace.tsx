@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition, type ReactElement } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2Icon, XIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon, XIcon, EditIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { Locale } from "@/lib/i18n/config";
 import type { Client, ClientOutreachPage, ClientOutreachRecord } from "@/server/models/client.model";
@@ -34,6 +34,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export type ClientOutreachCopy = {
   [key: string]: unknown;
@@ -201,7 +202,6 @@ function DeleteOutreachDialog({ locale, clientId, recordId, copy }: {
       <DialogTrigger asChild>
         <Button type="button" size="sm" variant="destructive">
           <Trash2Icon className="h-4 w-4" />
-          {copy.deleteOutreach}
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -225,24 +225,34 @@ function DeleteOutreachDialog({ locale, clientId, recordId, copy }: {
   );
 }
 
-function EditOutreachDialog({ locale, clientId, record, copy, today }: {
+export function OutreachRecordDialog({ locale, clientId, record, copy, today, trigger, tooltip }: {
   locale: Locale;
   clientId: string;
-  record: ClientOutreachRecord;
+  record?: ClientOutreachRecord;
   copy: ClientOutreachCopy;
   today: string;
+  trigger: ReactElement;
+  tooltip?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const title = record ? copy.editOutreach : copy.addOutreach;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button type="button" size="sm" variant="outline">{copy.editOutreach}</Button>
-      </DialogTrigger>
+      {tooltip ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>{trigger}</DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>{tooltip}</TooltipContent>
+        </Tooltip>
+      ) : <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{copy.editOutreach}</DialogTitle>
-          <DialogDescription>{formatDate(locale, record.contactedOn)}</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {record ? formatDate(locale, record.contactedOn) : copy.timelineDescription}
+          </DialogDescription>
         </DialogHeader>
         <OutreachForm
           locale={locale}
@@ -266,17 +276,16 @@ export function ClientOutreachWorkspace({ locale, client, outreach, page, today,
 
   return <div className="grid gap-4">
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card><CardHeader><div className="flex items-start justify-between gap-3"><div><CardTitle>{copy.profileTitle}</CardTitle><CardDescription>{client.name}</CardDescription></div><Badge>{copy.statusLabels[client.lifecycleStatus]}</Badge></div></CardHeader><CardContent className="grid gap-3 text-sm">
+      <Card><CardHeader><div className="flex items-start justify-between gap-3"><div className="flex justify-between gap-2"><div><CardTitle>{copy.profileTitle}</CardTitle><CardDescription>{client.name}</CardDescription></div><ClientEditDrawer client={client} locale={locale} dictionary={copy} /></div><Badge>{copy.statusLabels[client.lifecycleStatus]}</Badge></div></CardHeader><CardContent className="grid gap-3 text-sm">
         <p>{client.email ?? "—"}</p><p>{client.phone ?? "—"}</p><p>{[client.city, client.country].filter(Boolean).join(", ") || "—"}</p>{client.notes ? <p className="whitespace-pre-wrap text-muted-foreground">{client.notes}</p> : null}
-        <div><ClientEditDrawer client={client} locale={locale} dictionary={copy} /></div>
+
       </CardContent></Card>
       <NextAction locale={locale} client={client} copy={copy} />
     </div>
-    <Card><CardHeader><CardTitle>{copy.addOutreach}</CardTitle></CardHeader><CardContent><OutreachForm locale={locale} clientId={client.id} copy={copy} today={today} /></CardContent></Card>
-    <Card><CardHeader><CardTitle>{copy.timelineTitle}</CardTitle><CardDescription>{copy.timelineDescription}</CardDescription></CardHeader><CardContent>
+    <Card><CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle>{copy.timelineTitle}</CardTitle><CardDescription>{copy.timelineDescription}</CardDescription></div><OutreachRecordDialog locale={locale} clientId={client.id} copy={copy} today={today} trigger={<Button type="button" size="sm"><PlusIcon className="h-4 w-4" />{copy.addOutreach}</Button>} /></div></CardHeader><CardContent>
       {outreach.items.length === 0 ? <p className="text-sm text-muted-foreground">{copy.emptyTimeline}</p> : <div className="grid gap-4">
         {outreach.items.map((record) => <article key={record.id} className="rounded-lg border p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-medium">{formatDate(locale, record.contactedOn)} · {record.channel === "other" ? record.channelOther : copy.channelLabels[record.channel]}</p><p className="text-sm text-muted-foreground">{record.response === "other" ? record.responseOther : copy.responseLabels[record.response]} · {record.sessionOffered ? copy.offered : copy.notOffered}</p></div><div className="flex gap-2">
-          <EditOutreachDialog locale={locale} clientId={client.id} record={record} copy={copy} today={today} />
+          <OutreachRecordDialog locale={locale} clientId={client.id} record={record} copy={copy} today={today} trigger={<Button type="button" size="sm" variant="outline"><EditIcon className="h-4 w-4" /></Button>} />
           <DeleteOutreachDialog locale={locale} clientId={client.id} recordId={record.id} copy={copy} />
         </div></div>{record.notes ? <p className="mt-3 whitespace-pre-wrap text-sm">{record.notes}</p> : null}{record.followUpOn ? <p className="mt-3 text-sm"><strong>{copy.followUpOn}:</strong> {formatDate(locale, record.followUpOn)} {record.followUpStatus === "completed" ? `· ${copy.completed}` : ""}</p> : null}</article>)}
         <PaginationControls page={page} pageSize={pageSize} totalCount={outreach.totalCount} previousHref={href(page - 1)} nextHref={href(page + 1)} dictionary={copy} />

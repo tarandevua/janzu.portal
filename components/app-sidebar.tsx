@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import type { Route } from "next"
 import {
   Shell,
@@ -209,9 +210,9 @@ export function AppSidebar({
               <Link
                 href={dashboardHref as Route}
                 onClick={() => navigationLoading?.startNavigation(dashboardHref)}
+                className="flex items-center justify-center w-full h-full"
               >
-                <Shell className="h-5 w-5" />
-                <span className="text-base font-semibold">Janzu Portal</span>
+                <Image src="/school_logo.png" width={160} height={80} alt="Janzu Portal" />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

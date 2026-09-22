@@ -14,6 +14,7 @@ vi.mock("@/features/clients/components/client-edit-drawer", () => ({ ClientEditD
 vi.mock("@/components/dashboard/pagination-controls", () => ({ PaginationControls: () => null }));
 vi.mock("@/features/clients/components/client-outreach-workspace", () => ({
   ClientOutreachDrawer: ({ loading }: { loading: boolean }) => loading ? <div>Loading outreach records</div> : <div>Outreach loaded</div>,
+  OutreachRecordDialog: ({ trigger }: { trigger: React.ReactElement }) => trigger,
 }));
 
 import { ClientList } from "@/features/clients/components/client-list";
@@ -23,7 +24,7 @@ const dictionary = { ...en.clients, cancel: "Cancel", close: "Close" };
 describe("ClientList management summary", () => {
   afterEach(cleanup);
 
-  it("links each client to outreach and shows lifecycle and due state", () => {
+  it("groups row actions, hides contact columns, and opens outreach from the client name", () => {
     render(<ClientList
       locale="en" page={1} pageSize={10} totalCount={2} today="2026-09-22"
       previousHref="/previous" nextHref="/next" closeHref="/en/dashboard/clients?clientsPage=1" dictionary={dictionary}
@@ -34,10 +35,17 @@ describe("ClientList management summary", () => {
     />);
 
     expect(screen.getAllByRole("link", { name: "Manage outreach" })[0].getAttribute("href")).toBe("/en/dashboard/clients?clientsPage=1&outreachClientId=client-1");
+    expect(screen.getByRole("link", { name: "Prospect One" }).getAttribute("href")).toBe("/en/dashboard/clients?clientsPage=1&outreachClientId=client-1");
+    expect(screen.queryByRole("columnheader", { name: "Email" })).toBeNull();
+    expect(screen.queryByRole("columnheader", { name: "Phone" })).toBeNull();
+    expect(screen.getAllByRole("group", { name: "Actions" })).toHaveLength(2);
     expect(screen.getAllByText("Prospect").length).toBeGreaterThan(0);
     expect(screen.getByText("Overdue")).toBeTruthy();
     expect(screen.getByText("No follow-up")).toBeTruthy();
-    fireEvent.click(screen.getAllByRole("link", { name: "Manage outreach" })[0]);
+    expect(screen.getAllByRole("button", { name: "Add outreach record" })).toHaveLength(2);
+    fireEvent.click(screen.getAllByRole("button", { name: "Add outreach record" })[0]);
+    expect(screen.queryByText("Loading outreach records")).toBeNull();
+    fireEvent.click(screen.getByRole("link", { name: "Prospect One" }));
     expect(screen.getByText("Loading outreach records")).toBeTruthy();
   });
 });
