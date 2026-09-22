@@ -35,6 +35,8 @@ type ClientFormProps = {
     country: string;
     city: string;
     notes: string;
+    lifecycleStatus: string;
+    statusLabels: Record<"prospect" | "active" | "inactive", string>;
     create: string;
     update: string;
     created: string;
@@ -55,6 +57,7 @@ export function ClientForm({
 }: ClientFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const handledResultIdRef = useRef<string | null>(null);
   const action =
     mode === "edit" && client
       ? updateClientInline.bind(null, locale, client.id)
@@ -79,25 +82,28 @@ export function ClientForm({
   const description = mode === "edit" ? dictionary.editFormDescription : dictionary.formDescription;
 
   useEffect(() => {
-    if (!state.resultId) {
+    if (!state.resultId || handledResultIdRef.current === state.resultId) {
       return;
     }
+    handledResultIdRef.current = state.resultId;
 
     if (state.status === "created") {
-      toast.success(dictionary.created);
+      toast.success(dictionary.created, { id: state.resultId });
       formRef.current?.reset();
       router.refresh();
       onSuccess?.();
     }
 
     if (state.status === "updated") {
-      toast.success(dictionary.updated);
+      toast.success(dictionary.updated, { id: state.resultId });
       router.refresh();
       onSuccess?.();
     }
 
     if (state.status === "invalid") {
-      toast.error(mode === "edit" ? dictionary.editInvalid : dictionary.invalid);
+      toast.error(mode === "edit" ? dictionary.editInvalid : dictionary.invalid, {
+        id: state.resultId,
+      });
     }
   }, [
     dictionary.created,
@@ -127,6 +133,19 @@ export function ClientForm({
               defaultValue={client?.name ?? ""}
               required
             />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor={`client-status-${fieldSuffix}`}>{dictionary.lifecycleStatus}</Label>
+            <select
+              id={`client-status-${fieldSuffix}`}
+              name="lifecycleStatus"
+              defaultValue={client?.lifecycleStatus ?? "prospect"}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="prospect">{dictionary.statusLabels.prospect}</option>
+              <option value="active">{dictionary.statusLabels.active}</option>
+              <option value="inactive">{dictionary.statusLabels.inactive}</option>
+            </select>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="grid gap-2">

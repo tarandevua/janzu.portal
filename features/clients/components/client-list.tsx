@@ -1,16 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { MessageSquareText } from "lucide-react";
 import { toast } from "sonner";
 import type { Locale } from "@/lib/i18n/config";
-import type { Client } from "@/server/models/client.model";
+import type { Client, ClientOutreachPage } from "@/server/models/client.model";
 import { PaginationControls } from "@/components/dashboard/pagination-controls";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientEditDrawer } from "@/features/clients/components/client-edit-drawer";
+import {
+  ClientOutreachDrawer,
+  type ClientOutreachCopy,
+} from "@/features/clients/components/client-outreach-workspace";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -30,7 +38,10 @@ type ClientListProps = {
   totalCount: number;
   previousHref: string;
   nextHref: string;
-  dictionary: {
+  closeHref: string;
+  today: string;
+  selectedOutreach?: { client: Client; outreach: ClientOutreachPage; page: number } | null;
+  dictionary: ClientOutreachCopy & {
     listTitle: string;
     listDescription: string;
     empty: string;
@@ -58,6 +69,14 @@ type ClientListProps = {
     previous: string;
     next: string;
     page: string;
+    lifecycleStatus: string;
+    statusLabels: Record<"prospect" | "active" | "inactive", string>;
+    nextFollowUp: string;
+    noFollowUp: string;
+    manage: string;
+    dueOverdue: string;
+    dueToday: string;
+    dueUpcoming: string;
   };
 };
 
@@ -70,6 +89,8 @@ function ClientTableSkeleton() {
             <TableHead><Skeleton className="h-4 w-16" /></TableHead>
             <TableHead><Skeleton className="h-4 w-16" /></TableHead>
             <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+            <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+            <TableHead><Skeleton className="h-4 w-16" /></TableHead>
             <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
           </TableRow>
         </TableHeader>
@@ -78,6 +99,8 @@ function ClientTableSkeleton() {
             <TableRow key={index}>
               <TableCell><Skeleton className="h-4 w-36" /></TableCell>
               <TableCell><Skeleton className="h-4 w-44" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
               <TableCell><Skeleton className="h-4 w-28" /></TableCell>
               <TableCell className="text-right"><Skeleton className="ml-auto h-9 w-20" /></TableCell>
             </TableRow>
@@ -105,14 +128,32 @@ export function ClientList({
   totalCount,
   previousHref,
   nextHref,
+  closeHref,
+  today,
+  selectedOutreach,
   dictionary,
 }: ClientListProps) {
   const router = useRouter();
   const [isPaginating, setIsPaginating] = useState(false);
+  const [openClientId, setOpenClientId] = useState<string | null>(
+    selectedOutreach?.client.id ?? null
+  );
+
+  const drawerClient = openClientId
+    ? clients.find((client) => client.id === openClientId)
+      ?? (selectedOutreach?.client.id === openClientId ? selectedOutreach.client : null)
+    : null;
+  const loadedOutreach = selectedOutreach?.client.id === openClientId
+    ? selectedOutreach
+    : null;
 
   useEffect(() => {
     setIsPaginating(false);
   }, [clients, page]);
+
+  useEffect(() => {
+    setOpenClientId(selectedOutreach?.client.id ?? null);
+  }, [selectedOutreach?.client.id]);
 
   useEffect(() => {
     if (status === "created") {
@@ -137,7 +178,8 @@ export function ClientList({
   }, [dictionary.created, dictionary.updated, locale, page, router, status]);
 
   return (
-    <Card>
+    <TooltipProvider>
+      <Card>
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -153,24 +195,43 @@ export function ClientList({
         ) : isPaginating ? (
           <ClientTableSkeleton />
         ) : (
-          <div className="overflow-hidden rounded-md border">
+          <div className="overflow-x-auto rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{dictionary.name}</TableHead>
                   <TableHead>{dictionary.email}</TableHead>
                   <TableHead>{dictionary.phone}</TableHead>
+                  <TableHead>{dictionary.lifecycleStatus}</TableHead>
+                  <TableHead>{dictionary.nextFollowUp}</TableHead>
                   <TableHead className="w-12">
                     <span className="sr-only">{dictionary.actions}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {clients.map((client) => (
+                {clients.map((client) => {
+                  const manageHref = `${closeHref}${closeHref.includes("?") ? "&" : "?"}outreachClientId=${client.id}` as Route;
+                  return (
                   <TableRow key={client.id}>
                     <TableCell className="font-medium">{client.name}</TableCell>
                     <TableCell>{client.email ?? ""}</TableCell>
                     <TableCell>{client.phone ?? ""}</TableCell>
+                    <TableCell><Badge variant="outline">{dictionary.statusLabels[client.lifecycleStatus]}</Badge></TableCell>
+                    <TableCell>
+                      {client.nextFollowUp ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${client.nextFollowUp.followUpOn}T00:00:00Z`))}</span>
+                          <Badge variant={client.nextFollowUp.followUpOn < today ? "destructive" : "secondary"}>
+                            {client.nextFollowUp.followUpOn < today
+                              ? dictionary.dueOverdue
+                              : client.nextFollowUp.followUpOn === today
+                                ? dictionary.dueToday
+                                : dictionary.dueUpcoming}
+                          </Badge>
+                        </div>
+                      ) : <span className="text-muted-foreground">{dictionary.noFollowUp}</span>}
+                    </TableCell>
                     <TableCell className="text-right">
                       <ClientEditDrawer
                         client={client}
@@ -179,9 +240,25 @@ export function ClientList({
                         shouldOpen={editingClientId === client.id && status === "edit-invalid"}
                         dictionary={dictionary}
                       />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button asChild size="icon" variant="ghost">
+                            <Link
+                              href={manageHref}
+                              onClick={() => setOpenClientId(client.id)}
+                              onMouseEnter={() => router.prefetch(manageHref)}
+                              onFocus={() => router.prefetch(manageHref)}
+                            >
+                              <MessageSquareText className="h-4 w-4" />
+                              <span className="sr-only">{dictionary.manage}</span>
+                            </Link>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{dictionary.manage}</TooltipContent>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
-                ))}
+                );})}
               </TableBody>
             </Table>
             <PaginationControls
@@ -196,6 +273,20 @@ export function ClientList({
           </div>
         )}
       </CardContent>
-    </Card>
+      {drawerClient ? (
+        <ClientOutreachDrawer
+          locale={locale}
+          client={drawerClient}
+          outreach={loadedOutreach?.outreach}
+          page={loadedOutreach?.page ?? 1}
+          today={today}
+          copy={dictionary}
+          closeHref={closeHref}
+          loading={!loadedOutreach}
+          onClose={() => setOpenClientId(null)}
+        />
+      ) : null}
+      </Card>
+    </TooltipProvider>
   );
 }

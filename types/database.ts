@@ -670,6 +670,7 @@ export type Database = {
           country: string | null;
           city: string | null;
           notes: string | null;
+          lifecycle_status: Database["public"]["Enums"]["client_lifecycle_status"];
           created_at: string;
           updated_at: string;
         };
@@ -682,6 +683,7 @@ export type Database = {
           country?: string | null;
           city?: string | null;
           notes?: string | null;
+          lifecycle_status?: Database["public"]["Enums"]["client_lifecycle_status"];
           created_at?: string;
           updated_at?: string;
         };
@@ -694,6 +696,61 @@ export type Database = {
           country?: string | null;
           city?: string | null;
           notes?: string | null;
+          lifecycle_status?: Database["public"]["Enums"]["client_lifecycle_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      client_outreach_records: {
+        Row: {
+          id: string;
+          client_id: string;
+          practitioner_id: string;
+          contacted_on: string;
+          channel: Database["public"]["Enums"]["client_outreach_channel"];
+          channel_other: string | null;
+          session_offered: boolean;
+          response: Database["public"]["Enums"]["client_outreach_response"];
+          response_other: string | null;
+          notes: string | null;
+          follow_up_on: string | null;
+          follow_up_status: Database["public"]["Enums"]["client_follow_up_status"] | null;
+          follow_up_completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          practitioner_id: string;
+          contacted_on: string;
+          channel: Database["public"]["Enums"]["client_outreach_channel"];
+          channel_other?: string | null;
+          session_offered?: boolean;
+          response: Database["public"]["Enums"]["client_outreach_response"];
+          response_other?: string | null;
+          notes?: string | null;
+          follow_up_on?: string | null;
+          follow_up_status?: Database["public"]["Enums"]["client_follow_up_status"] | null;
+          follow_up_completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          client_id?: string;
+          practitioner_id?: string;
+          contacted_on?: string;
+          channel?: Database["public"]["Enums"]["client_outreach_channel"];
+          channel_other?: string | null;
+          session_offered?: boolean;
+          response?: Database["public"]["Enums"]["client_outreach_response"];
+          response_other?: string | null;
+          notes?: string | null;
+          follow_up_on?: string | null;
+          follow_up_status?: Database["public"]["Enums"]["client_follow_up_status"] | null;
+          follow_up_completed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1614,6 +1671,39 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      create_client_outreach_record: {
+        Args: {
+          p_client_id: string;
+          p_contacted_on: string;
+          p_channel: Database["public"]["Enums"]["client_outreach_channel"];
+          p_channel_other: string | null;
+          p_session_offered: boolean;
+          p_response: Database["public"]["Enums"]["client_outreach_response"];
+          p_response_other: string | null;
+          p_notes: string | null;
+          p_follow_up_on: string | null;
+        };
+        Returns: Json;
+      };
+      complete_client_follow_up: {
+        Args: { p_record_id: string };
+        Returns: Json;
+      };
+      reschedule_client_follow_up: {
+        Args: { p_record_id: string; p_follow_up_on: string };
+        Returns: Json;
+      };
+      list_my_client_management: {
+        Args: {
+          p_practitioner_id: string;
+          p_lifecycle_status?: Database["public"]["Enums"]["client_lifecycle_status"] | null;
+          p_follow_up_filter?: string;
+          p_today?: string;
+          p_offset?: number;
+          p_limit?: number;
+        };
+        Returns: Json;
+      };
       import_historical_members: {
         Args: { actor_user_id: string; import_rows: Json; commit_import: boolean };
         Returns: ImportReport;
@@ -2367,6 +2457,10 @@ export type Database = {
       };
     };
     Enums: {
+      client_lifecycle_status: "prospect" | "active" | "inactive";
+      client_outreach_channel: "phone" | "email" | "whatsapp" | "message" | "in_person" | "other";
+      client_outreach_response: "interested" | "needs_time" | "declined" | "no_response" | "booked" | "other";
+      client_follow_up_status: "open" | "completed";
       app_role: "admin" | "instructor" | "facilitator" | "practitioner" | "apprentice";
       certification_status: "in_progress" | "eligible" | "approved";
       certification_journey_state:
