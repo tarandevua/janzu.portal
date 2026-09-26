@@ -50,11 +50,12 @@ import {
   updateUserPublicProfile,
 } from "@/features/user-management/actions";
 import { UserRoleEditor } from "@/features/user-management/components/user-role-editor";
+import { UserDeleteConfirmation } from "@/features/user-management/components/user-delete-confirmation";
 import type { Locale } from "@/lib/i18n/config";
 import { roles, type ManagedUser, type ManagedUserFilters, type Role } from "@/server/models/rbac.model";
 import { canAssignUserRole } from "@/server/services/rbac.service";
 
-type UserManagementDictionary = {
+export type UserManagementDictionary = {
   title: string;
   description: string;
   user: string;
@@ -67,6 +68,27 @@ type UserManagementDictionary = {
   assigningRole: string;
   removingRole: string;
   roleUpdateFailed: string;
+  deleteUser: string;
+  deleteUserTitle: string;
+  deleteUserDescription: string;
+  deletingUser: string;
+  userDeleted: string;
+  userDeleteInvalid: string;
+  userDeleteForbidden: string;
+  userDeleteFailed: string;
+  restoreUser: string;
+  restoringUser: string;
+  userRestored: string;
+  userRestoreInvalid: string;
+  userRestoreForbidden: string;
+  userRestoreFailed: string;
+  activeUsers: string;
+  deletedUsers: string;
+  userViews: string;
+  deletedUsersDescription: string;
+  deletedAt: string;
+  deletedBy: string;
+  systemActor: string;
   viewDetails: string;
   cancel: string;
   close: string;
@@ -128,6 +150,7 @@ type UserManagementDictionary = {
 type UserRoleManagementTableProps = {
   locale: Locale;
   users: ManagedUser[];
+  actorUserId: string;
   actorRoles: Role[];
   status?: string;
   page: number;
@@ -256,12 +279,14 @@ function UserManagementSkeleton() {
 function UserDetailsDrawer({
   locale,
   managedUser,
+  actorUserId,
   actorRoles,
   assignableRoles,
   dictionary,
 }: {
   locale: Locale;
   managedUser: ManagedUser;
+  actorUserId: string;
   actorRoles: Role[];
   assignableRoles: Role[];
   dictionary: UserManagementDictionary;
@@ -383,6 +408,20 @@ function UserDetailsDrawer({
                 <DetailItem label={dictionary.eventRsvpsCount} value={managedUser.eventRsvpsCount} />
               </dl>
             </section>
+
+            {managedUser.userId !== actorUserId ? (
+              <section className="grid gap-3 rounded-md border border-destructive/40 p-3">
+                <h3 className="text-sm font-semibold text-destructive">
+                  {dictionary.deleteUser}
+                </h3>
+                <UserDeleteConfirmation
+                  locale={locale}
+                  userId={managedUser.userId}
+                  userName={displayName}
+                  dictionary={dictionary}
+                />
+              </section>
+            ) : null}
           </div>
         </div>
         <DrawerFooter className="shrink-0 border-t bg-background">
@@ -400,6 +439,7 @@ function UserDetailsDrawer({
 export function UserRoleManagementTable({
   locale,
   users,
+  actorUserId,
   actorRoles,
   status,
   page,
@@ -592,6 +632,7 @@ export function UserRoleManagementTable({
                         <UserDetailsDrawer
                           locale={locale}
                           managedUser={managedUser}
+                          actorUserId={actorUserId}
                           actorRoles={actorRoles}
                           assignableRoles={assignableRoles}
                           dictionary={dictionary}

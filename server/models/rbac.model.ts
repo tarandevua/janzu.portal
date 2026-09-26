@@ -33,6 +33,22 @@ export type ManagedUsersPage = {
   totalCount: number;
 };
 
+export type DeletedManagedUser = {
+  userId: string;
+  email: string;
+  fullName: string | null;
+  createdAt: string;
+  deletedAt: string;
+  deletedBy: string | null;
+  deletedByEmail: string | null;
+  deletedByFullName: string | null;
+};
+
+export type DeletedManagedUsersPage = {
+  items: DeletedManagedUser[];
+  totalCount: number;
+};
+
 export type ManagedUserProfileFilter =
   | "with_profile"
   | "without_profile"

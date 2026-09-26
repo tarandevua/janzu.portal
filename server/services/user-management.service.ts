@@ -5,9 +5,12 @@ import { getClientEnv } from "@/lib/env";
 import type { ManagedUserFilters, Role } from "@/server/models/rbac.model";
 import {
   assignRoleToUser,
+  listDeletedManagedUsers,
   listManagedUsers,
   listUserRoles,
   removeRoleFromUser,
+  restoreDeletedManagedUserById,
+  softDeleteManagedUserById,
 } from "@/server/repositories/rbac.repository";
 import {
   canAssignUserRole,
@@ -37,6 +40,18 @@ export class UserInviteResendError extends Error {
   }
 }
 
+export class ManagedUserMutationError extends Error {
+  constructor(
+    message: string,
+    readonly code: "forbidden" | "invalid-state" | "auth-update-failed"
+  ) {
+    super(message);
+    this.name = "ManagedUserMutationError";
+  }
+}
+
+const MANAGED_USER_BAN_DURATION = "876000h";
+
 export async function listUsersForManagement(
   supabase: SupabaseServerClient,
   actorUserId: string,
@@ -51,6 +66,120 @@ export async function listUsersForManagement(
   }
 
   return listManagedUsers(supabase, actorUserId, page, pageSize, filters);
+}
+
+export async function listDeletedUsersForManagement(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  page = 1,
+  pageSize = 10,
+  search?: string
+) {
+  const roles = await listUserRoles(supabase, actorUserId);
+
+  if (!hasPermission(roles, "users:manage")) {
+    throw new ManagedUserMutationError(
+      "User management access is required.",
+      "forbidden"
+    );
+  }
+
+  return listDeletedManagedUsers(supabase, actorUserId, page, pageSize, search);
+}
+
+async function getManagedUserDeletionState(targetUserId: string) {
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("users")
+    .select("id, is_deleted")
+    .eq("id", targetUserId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new ManagedUserMutationError("User was not found.", "invalid-state");
+  }
+
+  return { admin, isDeleted: data.is_deleted };
+}
+
+export async function softDeleteManagedUser(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  targetUserId: string
+) {
+  const roles = await listUserRoles(supabase, actorUserId);
+
+  if (!hasPermission(roles, "users:manage") || actorUserId === targetUserId) {
+    throw new ManagedUserMutationError(
+      actorUserId === targetUserId
+        ? "Administrators cannot delete their own account."
+        : "User management access is required.",
+      "forbidden"
+    );
+  }
+
+  const { admin, isDeleted } = await getManagedUserDeletionState(targetUserId);
+
+  if (isDeleted) {
+    throw new ManagedUserMutationError("User is already deleted.", "invalid-state");
+  }
+
+  const { error: banError } = await admin.auth.admin.updateUserById(targetUserId, {
+    ban_duration: MANAGED_USER_BAN_DURATION,
+  });
+
+  if (banError) {
+    throw new ManagedUserMutationError(banError.message, "auth-update-failed");
+  }
+
+  try {
+    await softDeleteManagedUserById(supabase, actorUserId, targetUserId);
+  } catch (error) {
+    await admin.auth.admin.updateUserById(targetUserId, { ban_duration: "none" });
+    throw error;
+  }
+}
+
+export async function restoreDeletedManagedUser(
+  supabase: SupabaseServerClient,
+  actorUserId: string,
+  targetUserId: string
+) {
+  const roles = await listUserRoles(supabase, actorUserId);
+
+  if (!hasPermission(roles, "users:manage")) {
+    throw new ManagedUserMutationError(
+      "User management access is required.",
+      "forbidden"
+    );
+  }
+
+  const { admin, isDeleted } = await getManagedUserDeletionState(targetUserId);
+
+  if (!isDeleted) {
+    throw new ManagedUserMutationError("User is not deleted.", "invalid-state");
+  }
+
+  const { error: unbanError } = await admin.auth.admin.updateUserById(targetUserId, {
+    ban_duration: "none",
+  });
+
+  if (unbanError) {
+    throw new ManagedUserMutationError(unbanError.message, "auth-update-failed");
+  }
+
+  try {
+    await restoreDeletedManagedUserById(supabase, actorUserId, targetUserId);
+  } catch (error) {
+    await admin.auth.admin.updateUserById(targetUserId, {
+      ban_duration: MANAGED_USER_BAN_DURATION,
+    });
+    throw error;
+  }
 }
 
 export async function assignManagedUserRole(

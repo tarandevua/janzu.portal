@@ -19,6 +19,10 @@ export const userInviteResendSchema = z.object({
   userId: z.string().uuid(),
 });
 
+export const managedUserMutationSchema = z.object({
+  userId: z.string().uuid(),
+});
+
 export const authSettingsSchema = z.object({
   allowUnknownMagicLinkLogin: z.enum(["true", "false"]).transform((value) => value === "true"),
 });
@@ -31,5 +35,6 @@ export const userPublicProfileSchema = z.object({
 export type UserRoleMutationPayload = z.infer<typeof userRoleMutationSchema>;
 export type UserInvitePayload = z.infer<typeof userInviteSchema>;
 export type UserInviteResendPayload = z.infer<typeof userInviteResendSchema>;
+export type ManagedUserMutationPayload = z.infer<typeof managedUserMutationSchema>;
 export type AuthSettingsPayload = z.infer<typeof authSettingsSchema>;
 export type UserPublicProfilePayload = z.infer<typeof userPublicProfileSchema>;

@@ -23,6 +23,8 @@ export type Database = {
           full_name: string | null;
           official_full_name: string | null;
           is_deleted: boolean;
+          deleted_at: string | null;
+          deleted_by: string | null;
           preferred_locale: "en" | "es" | null;
           activated_at: string | null;
           created_at: string;
@@ -34,6 +36,8 @@ export type Database = {
           full_name?: string | null;
           official_full_name?: string | null;
           is_deleted?: boolean;
+          deleted_at?: string | null;
+          deleted_by?: string | null;
           preferred_locale?: "en" | "es" | null;
           activated_at?: string | null;
           created_at?: string;
@@ -45,6 +49,8 @@ export type Database = {
           full_name?: string | null;
           official_full_name?: string | null;
           is_deleted?: boolean;
+          deleted_at?: string | null;
+          deleted_by?: string | null;
           preferred_locale?: "en" | "es" | null;
           activated_at?: string | null;
           created_at?: string;
@@ -1756,6 +1762,33 @@ export type Database = {
           event_rsvps_count: number;
           total_count: number;
         }[];
+      };
+      list_deleted_user_management: {
+        Args: {
+          actor_user_id: string;
+          page_number?: number;
+          page_size?: number;
+          search_query?: string | null;
+        };
+        Returns: {
+          user_id: string;
+          email: string;
+          full_name: string | null;
+          created_at: string;
+          deleted_at: string;
+          deleted_by: string | null;
+          deleted_by_email: string | null;
+          deleted_by_full_name: string | null;
+          total_count: number;
+        }[];
+      };
+      soft_delete_managed_user: {
+        Args: { actor_user_id: string; target_user_id: string };
+        Returns: string;
+      };
+      restore_deleted_managed_user: {
+        Args: { actor_user_id: string; target_user_id: string };
+        Returns: string;
       };
       assign_user_role: {
         Args: {

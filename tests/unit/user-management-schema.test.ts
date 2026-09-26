@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   authSettingsSchema,
+  managedUserMutationSchema,
   userPublicProfileSchema,
   userInviteSchema,
   userInviteResendSchema,
@@ -65,6 +66,16 @@ describe("userInviteResendSchema", () => {
     }).userId).toBe("38ec640a-d72b-4c27-944e-3ff5e63d4b9c");
 
     expect(() => userInviteResendSchema.parse({ userId: "invalid" })).toThrow();
+  });
+});
+
+describe("managedUserMutationSchema", () => {
+  it("accepts a valid user ID and rejects malformed IDs", () => {
+    expect(managedUserMutationSchema.parse({
+      userId: "38ec640a-d72b-4c27-944e-3ff5e63d4b9c",
+    }).userId).toBe("38ec640a-d72b-4c27-944e-3ff5e63d4b9c");
+
+    expect(() => managedUserMutationSchema.parse({ userId: "invalid" })).toThrow();
   });
 });
 

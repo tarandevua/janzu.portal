@@ -7,8 +7,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   assignManagedUserRole,
   inviteManagedUser,
+  ManagedUserMutationError,
   removeManagedUserRole,
   resendManagedUserInvite,
+  restoreDeletedManagedUser,
+  softDeleteManagedUser,
   UserInviteResendError,
   updateManagedUserPublicProfileVisibility,
 } from "@/server/services/user-management.service";
@@ -17,11 +20,94 @@ import { updateAdminAuthSettings } from "@/server/services/platform-settings.ser
 import { logUserInviteFailure } from "@/server/services/user-invite-logging.service";
 import {
   authSettingsSchema,
+  managedUserMutationSchema,
   userPublicProfileSchema,
   userInviteSchema,
   userInviteResendSchema,
   userRoleMutationSchema,
 } from "@/server/validators/user-management.schema";
+
+export type ManagedUserDeleteResult =
+  | { ok: true; status: "deleted" }
+  | {
+      ok: false;
+      status: "auth-required" | "delete-invalid" | "delete-forbidden" | "delete-failed";
+    };
+
+export type ManagedUserRestoreResult =
+  | { ok: true; status: "restored" }
+  | {
+      ok: false;
+      status: "auth-required" | "restore-invalid" | "restore-forbidden" | "restore-failed";
+    };
+
+export async function softDeleteUserInline(
+  locale: Locale,
+  formData: FormData
+): Promise<ManagedUserDeleteResult> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false, status: "auth-required" };
+  }
+
+  const parsed = managedUserMutationSchema.safeParse({ userId: formData.get("userId") });
+
+  if (!parsed.success) {
+    return { ok: false, status: "delete-invalid" };
+  }
+
+  try {
+    await softDeleteManagedUser(supabase, user.id, parsed.data.userId);
+  } catch (error) {
+    if (error instanceof ManagedUserMutationError && error.code === "forbidden") {
+      return { ok: false, status: "delete-forbidden" };
+    }
+
+    return { ok: false, status: "delete-failed" };
+  }
+
+  revalidatePath(`/${locale}/dashboard/users`);
+  revalidatePath(`/${locale}/practitioners`);
+  return { ok: true, status: "deleted" };
+}
+
+export async function restoreDeletedUserInline(
+  locale: Locale,
+  formData: FormData
+): Promise<ManagedUserRestoreResult> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false, status: "auth-required" };
+  }
+
+  const parsed = managedUserMutationSchema.safeParse({ userId: formData.get("userId") });
+
+  if (!parsed.success) {
+    return { ok: false, status: "restore-invalid" };
+  }
+
+  try {
+    await restoreDeletedManagedUser(supabase, user.id, parsed.data.userId);
+  } catch (error) {
+    if (error instanceof ManagedUserMutationError && error.code === "forbidden") {
+      return { ok: false, status: "restore-forbidden" };
+    }
+
+    return { ok: false, status: "restore-failed" };
+  }
+
+  revalidatePath(`/${locale}/dashboard/users`);
+  revalidatePath(`/${locale}/practitioners`);
+  return { ok: true, status: "restored" };
+}
 
 export type UserRoleMutationResult =
   | { ok: true; status: "assigned" | "removed" }
